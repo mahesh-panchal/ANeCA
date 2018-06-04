@@ -1,0 +1,532 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Spring.java
+
+package EDU.auburn.VGJ.algorithm.shawn;
+
+import EDU.auburn.VGJ.algorithm.GraphAlgorithm;
+import EDU.auburn.VGJ.algorithm.GraphUpdate;
+import EDU.auburn.VGJ.graph.Graph;
+import EDU.auburn.VGJ.graph.Node;
+import EDU.auburn.VGJ.util.DPoint;
+import EDU.auburn.VGJ.util.DRect;
+
+// Referenced classes of package EDU.auburn.VGJ.algorithm.shawn:
+//            Queue
+
+public class Spring
+    implements GraphAlgorithm
+{
+
+    private static void CheckPositions(Graph G)
+    {
+        for(boolean OK = false; !OK;)
+        {
+            OK = true;
+            for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+            {
+                for(Node u = G.nextNode(v); u != null; u = G.nextNode(u))
+                {
+                    if(v.getPosition().x == u.getPosition().x && v.getPosition().y == u.getPosition().y)
+                    {
+                        int vi = enum(G.getIndexFromNode(v));
+                        int ui = enum(G.getIndexFromNode(u));
+                        double rand = (1.3999999999999999D * Math.random() - 1.0D) * L[vi][ui];
+                        u.setPosition(u.getPosition().x + rand, u.getPosition().y);
+                        rand = (1.3999999999999999D * Math.random() - 1.0D) * L[vi][ui];
+                        u.setPosition(u.getPosition().x, u.getPosition().y + rand);
+                        OK = false;
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+    public String compute(Graph G, GraphUpdate update)
+    {
+        int maxTimes = 0;
+        rect = update.windowRect();
+        Initialize(G);
+        for(int i = 0; i < G.numberOfNodes(); i++)
+        {
+            if(!connected)
+            {
+                return "Error:  This algorithm should not be run on a non-connected graph!";
+            }
+        }
+
+        if(G.isDirected())
+        {
+            return "Error:  This algorithm should not be run on an undirected graph.";
+        }
+        for(; Boolean.TRUE.booleanValue(); update.update(false))
+        {
+            CheckPositions(G);
+            double maxDel = 0.0D;
+            for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+            {
+                delta[enum(G.getIndexFromNode(v))] = Math.sqrt(findDelta2(G, v));
+                if(delta[enum(G.getIndexFromNode(v))] > maxDel)
+                {
+                    maxDel = delta[enum(G.getIndexFromNode(v))];
+                }
+                if(NUM_TIMES_MOVED[enum(G.getIndexFromNode(v))] > maxTimes)
+                {
+                    maxTimes = NUM_TIMES_MOVED[enum(G.getIndexFromNode(v))];
+                }
+            }
+
+            mv = G.firstNode();
+            int mvi = enum(G.getIndexFromNode(mv));
+            double maxValue = 0.0D;
+            for(Node v = mv; v != null; v = G.nextNode(v))
+            {
+                double tempValue;
+                if(maxTimes != 0)
+                {
+                    tempValue = TempFunction(delta[enum(G.getIndexFromNode(v))] / maxDel, 1 - NUM_TIMES_MOVED[enum(G.getIndexFromNode(v))] / maxTimes);
+                } else
+                {
+                    tempValue = delta[enum(G.getIndexFromNode(v))] / maxDel;
+                }
+                if(tempValue > maxValue)
+                {
+                    mv = v;
+                    mvi = enum(G.getIndexFromNode(mv));
+                    maxValue = tempValue;
+                }
+            }
+
+            if(delta[mvi] < epsilon || COUNTER > HY_SIZE && (E_HY[COUNTER % HY_SIZE] * (double)HY_PERCENTAGE) / 100D > (E = findE(G)))
+            {
+                break;
+            }
+            E_HY[COUNTER % HY_SIZE] = E;
+            for(numTimesRepositioned = 0; delta[mvi] > epsilon && numTimesRepositioned < MAX_TIMES_REPOSITIONED; numTimesRepositioned++)
+            {
+                MoveToNewPosition2(G);
+                delta[mvi] = Math.sqrt(findDelta2(G, mv));
+            }
+
+            NUM_TIMES_MOVED[mvi]++;
+        }
+
+        update.update(false);
+        return null;
+    }
+
+    private static int enum(int Index)
+    {
+        int i = 0;
+        do
+        {
+            if(orderedList[i] == Index)
+            {
+                return i;
+            }
+            i++;
+        } while(true);
+    }
+
+    private static void find_l_and_k(Graph G)
+    {
+        Ko = 0.0D;
+        L = new double[G.numberOfNodes()][G.numberOfNodes()];
+        K = new double[G.numberOfNodes()][G.numberOfNodes()];
+        long diam = D[0][0];
+        for(int i = 0; i < G.numberOfNodes(); i++)
+        {
+            for(int j = i + 1; j < G.numberOfNodes(); j++)
+            {
+                if(diam < D[i][j] && D[i][j] < 0x7fffffffffffffffL)
+                {
+                    diam = D[i][j];
+                }
+                Ko += D[i][j];
+            }
+
+        }
+
+        Ko /= G.numberOfNodes();
+        for(int i = 0; i < G.numberOfNodes(); i++)
+        {
+            for(int j = i + 1; j < G.numberOfNodes(); j++)
+            {
+                double Lo = Math.sqrt(rect.width * rect.height * 4D) / (double)diam;
+                L[i][j] = Lo * (double)D[i][j];
+                L[j][i] = L[i][j];
+                if(D[i][j] < 0x7fffffffffffffffL)
+                {
+                    K[i][j] = (Ko * Ko) / (double)(D[i][j] * D[i][j]);
+                } else
+                {
+                    K[i][j] = 0.0D;
+                }
+                K[j][i] = K[i][j];
+            }
+
+        }
+
+    }
+
+    private static double findDelta2(Graph G, Node v)
+    {
+        findPartials(G, v);
+        return partial_x * partial_x + partial_y * partial_y;
+    }
+
+    private static void findDistances(Graph G)
+    {
+        Queue queue = new Queue();
+        boolean done[] = new boolean[G.numberOfNodes()];
+        D = new long[G.numberOfNodes()][G.numberOfNodes()];
+        for(int i = 0; i < G.numberOfNodes(); i++)
+        {
+            for(int j = i; j < G.numberOfNodes(); j++)
+            {
+                D[i][j] = 0L;
+                D[j][i] = 0L;
+            }
+
+        }
+
+        for(Node s = G.firstNode(); s != null; s = G.nextNode(s))
+        {
+            for(int i = 0; i < G.numberOfNodes(); i++)
+            {
+                done[i] = false;
+            }
+
+            int si = enum(G.getIndexFromNode(s));
+            done[si] = true;
+            for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+            {
+                if(s.hasChild(v))
+                {
+                    queue.push(G.getIndexFromNode(v));
+                    queue.push(G.getIndexFromNode(s));
+                    int vi = enum(G.getIndexFromNode(v));
+                    done[vi] = true;
+                }
+            }
+
+            while(!queue.isEmpty()) 
+            {
+                Node v = G.getNodeFromIndex(queue.pop());
+                Node p = G.getNodeFromIndex(queue.pop());
+                int pi = enum(G.getIndexFromNode(p));
+                int vi = enum(G.getIndexFromNode(v));
+                D[si][vi] = D[pi][si] + 1L;
+                D[vi][si] = D[si][vi];
+                for(Node u = G.firstNode(); u != null; u = G.nextNode(u))
+                {
+                    if(v.hasChild(u))
+                    {
+                        int ui = enum(G.getIndexFromNode(u));
+                        if(!done[ui])
+                        {
+                            queue.push(G.getIndexFromNode(u));
+                            queue.push(G.getIndexFromNode(v));
+                            done[ui] = true;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        connected = true;
+        for(int i = 0; i < G.numberOfNodes(); i++)
+        {
+            for(int j = i + 1; j < G.numberOfNodes(); j++)
+            {
+                if(D[i][j] == 0L)
+                {
+                    connected = false;
+                    D[i][j] = 0x7fffffffffffffffL;
+                    D[j][i] = 0x7fffffffffffffffL;
+                }
+            }
+
+        }
+
+    }
+
+    private static double findE(Graph G)
+    {
+        double total = 0.0D;
+        for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+        {
+            int vi = enum(G.getIndexFromNode(v));
+            for(Node u = G.nextNode(v); u != null; u = G.nextNode(u))
+            {
+                int ui = enum(G.getIndexFromNode(u));
+                double dx = v.getPosition().x - u.getPosition().x;
+                double dy = v.getPosition().y - u.getPosition().y;
+                double dd = Math.sqrt(dx * dx + dy * dy);
+                double dif = dd - L[vi][ui];
+                total += K[vi][ui] * dif * dif;
+            }
+
+        }
+
+        return total / 2D;
+    }
+
+    private static void findPartials(Graph G, Node v)
+    {
+        int vi = enum(G.getIndexFromNode(v));
+        partial_x = 0.0D;
+        partial_y = 0.0D;
+        partial_xx = 0.0D;
+        partial_xy = 0.0D;
+        partial_yx = 0.0D;
+        partial_yy = 0.0D;
+        for(Node u = G.firstNode(); u != null; u = G.nextNode(u))
+        {
+            if(v != u)
+            {
+                int ui = enum(G.getIndexFromNode(u));
+                double dx = v.getPosition().x - u.getPosition().x;
+                double dy = v.getPosition().y - u.getPosition().y;
+                double dd = Math.sqrt(dx * dx + dy * dy);
+                partial_x += K[vi][ui] * (dx - (L[vi][ui] * dx) / dd);
+                partial_y += K[vi][ui] * (dy - (L[vi][ui] * dy) / dd);
+                partial_xx += K[vi][ui] * (1.0D - (L[vi][ui] * dy * dy) / (dd * dd * dd));
+                partial_xy += K[vi][ui] * ((L[vi][ui] * dx * dy) / (dd * dd * dd));
+                partial_yx += K[vi][ui] * ((L[vi][ui] * dy * dx) / (dd * dd * dd));
+                partial_yy += K[vi][ui] * (1.0D - (L[vi][ui] * dx * dx) / (dd * dd * dd));
+            }
+        }
+
+    }
+
+    private static void Initialize(Graph G)
+    {
+        N = G.numberOfNodes();
+        makeOrderedList(G);
+        NUM_TIMES_MOVED = new int[N];
+        for(int i = 0; i < N; i++)
+        {
+            NUM_TIMES_MOVED[i] = 0;
+        }
+
+        EDGES = 0;
+        for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+        {
+            for(Node u = G.nextNode(v); u != null; u = G.nextNode(u))
+            {
+                if(v.hasChild(u))
+                {
+                    EDGES++;
+                }
+            }
+
+        }
+
+        epsilon = N + EDGES;
+        findDistances(G);
+        find_l_and_k(G);
+        delta = new double[N];
+        E_HY = new double[HY_SIZE];
+        xmin = rect.x;
+        xmax = xmin + rect.width;
+        ymin = rect.y;
+        ymax = ymin + rect.height;
+    }
+
+    private static void makeOrderedList(Graph G)
+    {
+        orderedList = new int[G.numberOfNodes()];
+        int i = 0;
+        for(Node v = G.firstNode(); v != null; v = G.nextNode(v))
+        {
+            orderedList[i] = G.getIndexFromNode(v);
+            i++;
+        }
+
+    }
+
+    private static void MoveToNewPosition(Graph G)
+    {
+        double xpos = mv.getPosition().x;
+        double ypos = mv.getPosition().y;
+        int mvi = enum(G.getIndexFromNode(mv));
+        findPartials(G, mv);
+        double A = partial_xx;
+        double B = partial_xy;
+        double C = -partial_x;
+        double D = partial_yx;
+        double E = partial_yy;
+        double F = -partial_y;
+        double dy = (A * F - C * D) / (A * E - B * D);
+        for(double dx = (C * E - B * F) / (A * E - B * D); dy != 0.0D && dx != 0.0D;)
+        {
+            double xfrac;
+            if(xpos + dx < xmin)
+            {
+                xfrac = (xpos - xmin) / dx;
+            } else
+            if(xpos + dx > xmax)
+            {
+                xfrac = (xmax - xpos) / dx;
+            } else
+            {
+                xfrac = 1.0D;
+            }
+            double yfrac;
+            if(ypos + dy < ymin)
+            {
+                yfrac = (ypos - ymin) / dy;
+            } else
+            if(ypos + dy > ymax)
+            {
+                yfrac = (ymax - ypos) / dy;
+            } else
+            {
+                yfrac = 1.0D;
+            }
+            double x = xpos + dx;
+            double y = ypos + dy;
+            if(xfrac < yfrac)
+            {
+                xpos += dx * xfrac;
+                dx *= xfrac - 1.0D;
+                ypos += dy * xfrac;
+                dy *= 1.0D - xfrac;
+            } else
+            if(yfrac < xfrac)
+            {
+                ypos += dy * yfrac;
+                dy *= yfrac - 1.0D;
+                xpos += dx * yfrac;
+                dx *= 1.0D - yfrac;
+            } else
+            {
+                xpos += dx;
+                dx = 0.0D;
+                ypos += dy;
+                dy = 0.0D;
+            }
+        }
+
+        mv.setPosition(xpos, ypos);
+    }
+
+    private static void MoveToNewPosition1(Graph G)
+    {
+        double xpos = mv.getPosition().x;
+        double ypos = mv.getPosition().y;
+        int mvi = enum(G.getIndexFromNode(mv));
+        findPartials(G, mv);
+        double A = partial_xx;
+        double B = partial_xy;
+        double C = -partial_x;
+        double D = partial_yx;
+        double E = partial_yy;
+        double F = -partial_y;
+        double dy = (A * F - C * D) / (A * E - B * D);
+        double dx = (C * E - B * F) / (A * E - B * D);
+        double xfrac;
+        if(xpos + dx < xmin)
+        {
+            xfrac = (xpos - xmin) / dx;
+        } else
+        if(xpos + dx > xmax)
+        {
+            xfrac = (xmax - xpos) / dx;
+        } else
+        {
+            xfrac = 1.0D;
+        }
+        double yfrac;
+        if(ypos + dy < ymin)
+        {
+            yfrac = (ypos - ymin) / dy;
+        } else
+        if(ypos + dy > ymax)
+        {
+            yfrac = (ymax - ypos) / dy;
+        } else
+        {
+            yfrac = 1.0D;
+        }
+        if(xfrac < yfrac)
+        {
+            yfrac = xfrac;
+        } else
+        if(yfrac < xfrac)
+        {
+            xfrac = yfrac;
+        }
+        double x = xpos + dx;
+        double y = ypos + dy;
+        xpos += dx * xfrac;
+        dx = 0.0D;
+        ypos += dy * yfrac;
+        dy = 0.0D;
+        mv.setPosition(xpos, ypos);
+    }
+
+    private static void MoveToNewPosition2(Graph G)
+    {
+        double xpos = mv.getPosition().x;
+        double ypos = mv.getPosition().y;
+        int mvi = enum(G.getIndexFromNode(mv));
+        findPartials(G, mv);
+        double A = partial_xx;
+        double B = partial_xy;
+        double C = -partial_x;
+        double D = partial_yx;
+        double E = partial_yy;
+        double F = -partial_y;
+        double dy = (A * F - C * D) / (A * E - B * D);
+        double dx = (C * E - B * F) / (A * E - B * D);
+        mv.setPosition(xpos + dx, ypos + dy);
+    }
+
+    private static double TempFunction(double del, double times)
+    {
+        return 0.5D * del + 0.5D * times;
+    }
+
+    public Spring()
+    {
+    }
+
+    private static DRect rect;
+    private static double xmax;
+    private static double xmin;
+    private static double ymax;
+    private static double ymin;
+    private static int orderedList[];
+    private static int N;
+    private static int EDGES;
+    private static long D[][];
+    private static double K[][];
+    private static double Ko;
+    private static double L[][];
+    private static double epsilon;
+    private static double delta[];
+    private static int MAX_TIMES_REPOSITIONED = 10;
+    private static int numTimesRepositioned = 0;
+    private static int NUM_TIMES_MOVED[];
+    private static int HY_SIZE = 10;
+    private static int HY_PERCENTAGE = 5;
+    private static double E;
+    private static double E_HY[];
+    private static int COUNTER = 0;
+    private static Node mv = null;
+    private static double partial_x;
+    private static double partial_y;
+    private static double partial_xx;
+    private static double partial_xy;
+    private static double partial_yx;
+    private static double partial_yy;
+    private static boolean connected;
+
+}

@@ -1,0 +1,77 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   AngleControlPanel.java
+
+package EDU.auburn.VGJ.gui;
+
+import EDU.auburn.VGJ.util.DPoint;
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel, AngleControl
+
+class AngleControlPanel extends LPanel
+{
+
+    public AngleControlPanel(int width, int height)
+    {
+        super.constraints.insets.top = super.constraints.insets.bottom = 0;
+        addLabel("Viewing Angles", 0, 0, 1.0D, 0.0D, 0, 0);
+        super.constraints.insets.top = super.constraints.insets.bottom = 0;
+        angle_ = new AngleControl(width, height);
+        addComponent(angle_, 0, 0, 1.0D, 1.0D, 3, 0);
+        super.constraints.insets.top = super.constraints.insets.bottom = 0;
+        addLabel("Plane:", 1, -1, 0.0D, 0.0D, 0, 0);
+        addButton("XY", 1, 0, 1.0D, 0.0D, 0, 0);
+        addButton("XZ", 1, 0, 1.0D, 0.0D, 0, 0);
+        addButton("YZ", 0, 0, 1.0D, 0.0D, 0, 0);
+        finish();
+    }
+
+    public boolean action(Event event, Object what)
+    {
+        if(event.target instanceof Button)
+        {
+            if(((String)what).equals("XY"))
+            {
+                angle_.setAngles(0.0D, 1.5707963267948966D);
+                postEvent(new Event(this, DONE, new DPoint(0.0D, 1.5707963267948966D)));
+            } else
+            if(((String)what).equals("XZ"))
+            {
+                angle_.setAngles(0.0D, 0.0D);
+                postEvent(new Event(this, DONE, new DPoint(0.0D, 0.0D)));
+            } else
+            if(((String)what).equals("YZ"))
+            {
+                angle_.setAngles(1.5707963267948966D, 0.0D);
+                postEvent(new Event(this, DONE, new DPoint(1.5707963267948966D, 0.0D)));
+            }
+        }
+        return true;
+    }
+
+    public boolean handleEvent(Event event)
+    {
+        if(event.target instanceof AngleControl)
+        {
+            if(event.id == AngleControl.ANGLE)
+            {
+                DPoint angles = (DPoint)event.arg;
+                postEvent(new Event(this, ANGLE, new DPoint(angles.x, angles.y)));
+            } else
+            if(event.id == AngleControl.DONE)
+            {
+                DPoint angles = (DPoint)event.arg;
+                postEvent(new Event(this, DONE, new DPoint(angles.x, angles.y)));
+            }
+        }
+        return super.handleEvent(event);
+    }
+
+    public static int ANGLE = 38793;
+    public static int DONE = 38794;
+    private AngleControl angle_;
+
+}

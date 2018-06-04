@@ -1,0 +1,184 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   ScrolledPanel.java
+
+package EDU.auburn.VGJ.gui;
+
+import EDU.auburn.VGJ.util.DDimension;
+import EDU.auburn.VGJ.util.DPoint;
+import java.awt.*;
+import javax.swing.JComponent;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel, DragFix, OffsetCanvas
+
+public class ScrolledPanel extends LPanel
+{
+
+    public ScrolledPanel(OffsetCanvas offsetCanvas)
+    {
+        pageFraction_ = 0.25D;
+        xoffset_ = 0.0D;
+        yoffset_ = 0.0D;
+        dragFix_ = new DragFix(this);
+        offsetCanvas_ = offsetCanvas;
+        super.spacing = 0;
+        super.constraints.insets.top = super.constraints.insets.bottom = 0;
+        label_ = addLabel("", 0, -1, 1.0D, 0.0D, 1, 0);
+        addComponent(offsetCanvas_, 1, 0, 1.0D, 1.0D, 3, 0);
+        vscroll_ = new Scrollbar(1);
+        addComponent(vscroll_, 0, 0, 0.0D, 1.0D, 2, 0);
+        hscroll_ = new Scrollbar(0);
+        addComponent(hscroll_, 1, -1, 1.0D, 0.0D, 1, 0);
+        finish();
+    }
+
+    public void center()
+    {
+        hscroll_.setValue(hscroll_.getMaximum() / 2);
+        vscroll_.setValue(vscroll_.getMaximum() / 2);
+        configure();
+        getParent().postEvent(new Event(this, OFFSET, this));
+    }
+
+    private void configure()
+    {
+        Dimension tmpD = offsetCanvas_.size();
+        win_size = new DDimension(tmpD.width, tmpD.height);
+        img_size = offsetCanvas_.contentsSize();
+        DPoint tmpdim = offsetCanvas_.getOffset();
+        xoffset_ = tmpdim.x;
+        yoffset_ = tmpdim.y;
+        double hmax = Math.max(img_size.width - win_size.width, 0.0D);
+        double vmax = Math.max(img_size.height - win_size.height, 0.0D);
+        if(xoffset_ > hmax)
+        {
+            xoffset_ = hmax;
+        }
+        if(yoffset_ > vmax)
+        {
+            yoffset_ = vmax;
+        }
+        hscroll_.setValues((int)xoffset_, 1, 0, (int)hmax + 1);
+        vscroll_.setValues((int)yoffset_, 1, 0, (int)vmax + 1);
+        double pageh = Math.max(win_size.width * pageFraction_, 1.0D);
+        double pagew = Math.max(win_size.height * pageFraction_, 1.0D);
+        hscroll_.setBlockIncrement((int)pageh);
+        vscroll_.setBlockIncrement((int)pagew);
+        if(win_size.width > img_size.width || win_size.height > img_size.height)
+        {
+            if(win_size.width > img_size.width)
+            {
+                xoffset_ = -((win_size.width - img_size.width) + 1.0D) / 2D;
+            }
+            if(win_size.height > img_size.height)
+            {
+                yoffset_ = -((win_size.height - img_size.height) + 1.0D) / 2D;
+            }
+        }
+        offsetCanvas_.setOffsets(xoffset_, yoffset_, false);
+    }
+
+    public DDimension getContentSize()
+    {
+        return new DDimension(img_size.width, img_size.height);
+    }
+
+    public DDimension getOffset()
+    {
+        return new DDimension(xoffset_, yoffset_);
+    }
+
+    public DDimension getPortSize()
+    {
+        return new DDimension(win_size.width, win_size.height);
+    }
+
+    public boolean handleEvent(Event e)
+    {
+        if(e.id == 0x2bd7f)
+        {
+            Event event = (Event)e.arg;
+            if((event.target instanceof Scrollbar) && (event.id == 605 || event.id == 602 || event.id == 601 || event.id == 604 || event.id == 603 || event.id == 607))
+            {
+                xoffset_ = hscroll_.getValue();
+                yoffset_ = vscroll_.getValue();
+                offsetCanvas_.setOffsets(xoffset_, yoffset_, true);
+                getParent().postEvent(new Event(this, OFFSET, this));
+                return true;
+            }
+            if(event.target instanceof OffsetCanvas)
+            {
+                if(event.id == OffsetCanvas.RESIZE)
+                {
+                    configure();
+                    getParent().postEvent(new Event(this, RESIZE, this));
+                    return true;
+                }
+                if(event.id == OffsetCanvas.LABEL)
+                {
+                    String string = (String)event.arg;
+                    label_.setText(string);
+                }
+            }
+            super.handleEvent((Event)e.arg);
+            getParent().postEvent((Event)e.arg);
+            return true;
+        } else
+        {
+            dragFix_.queueEvent(e);
+            return true;
+        }
+    }
+
+    public synchronized void removeNotify()
+    {
+        dragFix_.killThread();
+        super.removeNotify();
+    }
+
+    public void scrollTo(double x, double y)
+    {
+        if(x < 0.0D)
+        {
+            x = 0.0D;
+        }
+        if(y < 0.0D)
+        {
+            y = 0.0D;
+        }
+        if(x > (double)hscroll_.getMaximum())
+        {
+            x = hscroll_.getMaximum();
+        }
+        if(y > (double)vscroll_.getMaximum())
+        {
+            y = vscroll_.getMaximum();
+        }
+        xoffset_ = x;
+        yoffset_ = y;
+        hscroll_.setValue((int)x);
+        vscroll_.setValue((int)y);
+        offsetCanvas_.setOffsets(x, y, true);
+    }
+
+    public void setPageFraction(double fraction)
+    {
+        pageFraction_ = fraction;
+    }
+
+    public static int RESIZE = 49900;
+    public static int OFFSET = 49901;
+    public static Scrollbar vscroll_;
+    public static Scrollbar hscroll_;
+    private OffsetCanvas offsetCanvas_;
+    private Label label_;
+    private double pageFraction_;
+    private double xoffset_;
+    private double yoffset_;
+    private DDimension win_size;
+    private DDimension img_size;
+    private DragFix dragFix_;
+
+}

@@ -1,0 +1,41 @@
+Begin Clade Group - RGF_IBD
+testData/PanSet4/panmictic_medium_allsampled3-2-2
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+TLS: 24827.586206896547 \pi^: 1.706884664631144
+Geographic Distribution : 2 2 4 3 4 4 4 3 4 4 2 3 4 4 2 2 3 4 4 2 2 2 2 2 4 4 3 4 3 3 4 2 4 1 3 4 3 1 3 3 2 3 2 1 3 3 1 4 3
+testData/PanSet4/panmictic_medium_allsampled2-1-6
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+TLS: 0.0 \pi^: 0.23496503496503499
+Geographic Distribution : 3 3 2 2 2 1 1 0 1 2 1 2 2 2 1 1 1 0 2 1 2 1 2 1 1 2 1 1 1 3 0 0 2 2 2 1 1 1 1 1 2 1 1 0 1 3 0 1 1
+testData/PanSet4/panmictic_medium_allsampled2-2-2
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+TLS: 0.0 \pi^: 1.2333333333333334
+Geographic Distribution : 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 1 1 1 0 0 1 1 0 0 0 2 0 1 0 0 0 1 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 2 0
+testData/PanSet4/panmictic_medium_allsampled1-2-3
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+TLS: 7122.507122507122 \pi^: 1.1923758865248224
+Geographic Distribution : 0 1 2 2 0 1 0 0 2 2 3 1 1 1 0 1 2 0 1 1 0 3 3 2 0 1 0 0 0 0 0 1 1 1 2 0 1 2 0 1 1 0 1 0 1 0 3 1 2
+
+G:1.709035758835662 DoF:1.0 Pval:0.8088894763352158 Clades : testData/PanSet4/panmictic_medium_allsampled1-2-3 testData/PanSet4/panmictic_medium_allsampled3-2-2
+End Group
+
+Begin Clade Group - CRE
+testData/PanSet4/panmictic_medium_allsampled4-1-3
+Contiguous range expansion.
+TLS: 0.0 \pi^: 0.38888888888888884
+Geographic Distribution : 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 1 0 1 0 0 0 0 0 1 0 1 0 1 0 0 0 0 0 1 0 0 0 0
+testData/PanSet4/panmictic_medium_allsampled0-1-2
+Contiguous range expansion.
+TLS: 0.0 \pi^: 0.31153846153846154
+Geographic Distribution : 2 1 1 1 0 0 2 0 1 1 0 0 1 2 2 1 0 1 0 1 0 1 1 0 2 3 1 0 0 2 1 1 2 0 2 0 1 2 0 1 0 2 0 0 1 0 0 0 0
+testData/PanSet4/panmictic_medium_allsampled2-2-1
+Contiguous range expansion.
+TLS: 7142.857142857142 \pi^: 0.4802104781514528
+Geographic Distribution : 1 1 2 1 1 3 3 3 3 1 3 0 1 1 3 2 1 3 2 3 1 0 2 3 1 0 3 0 2 1 3 2 2 2 2 1 3 2 1 3 1 3 3 4 3 1 4 1 2
+testData/PanSet4/panmictic_medium_allsampled3-1-5
+Contiguous range expansion.
+TLS: 0.0 \pi^: 0.4657258064516129
+Geographic Distribution : 1 0 1 0 0 0 2 1 1 1 1 1 0 1 1 0 2 2 1 0 1 0 0 0 1 0 1 1 2 0 0 1 0 0 2 0 1 1 2 0 1 0 0 0 1 1 0 0 0
+
+End Group
+

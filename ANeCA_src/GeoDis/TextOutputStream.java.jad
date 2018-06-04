@@ -1,0 +1,587 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   TextOutputStream.java
+
+import java.io.*;
+
+public class TextOutputStream extends OutputStream
+{
+
+    public TextOutputStream(String s, boolean append)
+    {
+        try
+        {
+            out = new PrintWriter(new FileOutputStream(s, append));
+        }
+        catch(IOException e)
+        {
+            out = null;
+        }
+    }
+
+    public TextOutputStream(PrintStream s)
+    {
+        out = new PrintWriter(s);
+    }
+
+    public TextOutputStream(String s)
+    {
+        try
+        {
+            out = new PrintWriter(new FileOutputStream(s));
+        }
+        catch(IOException e)
+        {
+            out = null;
+        }
+    }
+
+    public boolean fail()
+    {
+        return out == null;
+    }
+
+    public boolean checkError()
+    {
+        return out.checkError();
+    }
+
+    public void flush()
+    {
+        out.flush();
+    }
+
+    public void close()
+    {
+        out.close();
+    }
+
+    public void write(int b)
+    {
+        out.write(b);
+    }
+
+    public void print(String s)
+    {
+        out.print(s);
+        flush();
+    }
+
+    public void print(char c)
+    {
+        out.print(c);
+        flush();
+    }
+
+    public void print(Object o)
+    {
+        out.print(o);
+        flush();
+    }
+
+    public void print(long l)
+    {
+        out.print(l);
+        flush();
+    }
+
+    public void print(double x)
+    {
+        out.print(x);
+        flush();
+    }
+
+    public void println(String s)
+    {
+        out.println(s);
+        flush();
+    }
+
+    public void println(char c)
+    {
+        out.println(c);
+        flush();
+    }
+
+    public void println(Object o)
+    {
+        out.println(o);
+        flush();
+    }
+
+    public void println(long l)
+    {
+        out.println(l);
+        flush();
+    }
+
+    public void println(double x)
+    {
+        out.println(x);
+        flush();
+    }
+
+    public void println()
+    {
+        out.println();
+        flush();
+    }
+
+    private void parseFormat(String s)
+    {
+        width = 0;
+        precision = -1;
+        pre = "";
+        post = "";
+        leading_zeroes = false;
+        show_plus = false;
+        alternate = false;
+        show_space = false;
+        left_align = false;
+        fmt = ' ';
+        int state = 0;
+        int length = s.length();
+        int parse_state = 0;
+        int i;
+        for(i = 0; parse_state == 0; i++)
+        {
+            if(i >= length)
+            {
+                parse_state = 5;
+                continue;
+            }
+            if(s.charAt(i) == '%')
+            {
+                if(i < length - 1)
+                {
+                    if(s.charAt(i + 1) == '%')
+                    {
+                        pre = (new StringBuilder()).append(pre).append('%').toString();
+                        i++;
+                    } else
+                    {
+                        parse_state = 1;
+                    }
+                } else
+                {
+                    throw new IllegalArgumentException();
+                }
+            } else
+            {
+                pre = (new StringBuilder()).append(pre).append(s.charAt(i)).toString();
+            }
+        }
+
+        for(; parse_state == 1; i++)
+        {
+            if(i >= length)
+            {
+                parse_state = 5;
+                continue;
+            }
+            if(s.charAt(i) == ' ')
+            {
+                show_space = true;
+                continue;
+            }
+            if(s.charAt(i) == '-')
+            {
+                left_align = true;
+                continue;
+            }
+            if(s.charAt(i) == '+')
+            {
+                show_plus = true;
+                continue;
+            }
+            if(s.charAt(i) == '0')
+            {
+                leading_zeroes = true;
+                continue;
+            }
+            if(s.charAt(i) == '#')
+            {
+                alternate = true;
+            } else
+            {
+                parse_state = 2;
+                i--;
+            }
+        }
+
+        while(parse_state == 2) 
+        {
+            if(i >= length)
+            {
+                parse_state = 5;
+            } else
+            if('0' <= s.charAt(i) && s.charAt(i) <= '9')
+            {
+                width = (width * 10 + s.charAt(i)) - 48;
+                i++;
+            } else
+            if(s.charAt(i) == '.')
+            {
+                parse_state = 3;
+                precision = 0;
+                i++;
+            } else
+            {
+                parse_state = 4;
+            }
+        }
+        while(parse_state == 3) 
+        {
+            if(i >= length)
+            {
+                parse_state = 5;
+            } else
+            if('0' <= s.charAt(i) && s.charAt(i) <= '9')
+            {
+                precision = (precision * 10 + s.charAt(i)) - 48;
+                i++;
+            } else
+            {
+                parse_state = 4;
+            }
+        }
+        if(parse_state == 4)
+        {
+            if(i >= length)
+            {
+                parse_state = 5;
+            } else
+            {
+                fmt = s.charAt(i);
+            }
+            i++;
+        }
+        if(i < length)
+        {
+            post = s.substring(i, length);
+        }
+    }
+
+    public void printf(String fmt, double x)
+    {
+        parseFormat(fmt);
+        print(form(x));
+    }
+
+    public void printf(String fmt, long x)
+    {
+        parseFormat(fmt);
+        print(form(x));
+    }
+
+    public void printf(String fmt, char x)
+    {
+        parseFormat(fmt);
+        print(form(x));
+    }
+
+    public void printf(String fmt, String x)
+    {
+        parseFormat(fmt);
+        print(form(x));
+    }
+
+    private static String repeat(char c, int n)
+    {
+        if(n <= 0)
+        {
+            return "";
+        }
+        StringBuffer s = new StringBuffer(n);
+        for(int i = 0; i < n; i++)
+        {
+            s.append(c);
+        }
+
+        return s.toString();
+    }
+
+    private static String convert(long x, int n, int m, String d)
+    {
+        if(x == 0L)
+        {
+            return "0";
+        }
+        String r = "";
+        for(; x != 0L; x >>>= n)
+        {
+            r = (new StringBuilder()).append(d.charAt((int)(x & (long)m))).append(r).toString();
+        }
+
+        return r;
+    }
+
+    private String pad(String r)
+    {
+        String p = repeat(' ', width - r.length());
+        if(left_align)
+        {
+            return (new StringBuilder()).append(pre).append(r).append(p).append(post).toString();
+        } else
+        {
+            return (new StringBuilder()).append(pre).append(p).append(r).append(post).toString();
+        }
+    }
+
+    private String sign(int s, String r)
+    {
+        String p = "";
+        if(s < 0)
+        {
+            p = "-";
+        } else
+        if(s > 0)
+        {
+            if(show_plus)
+            {
+                p = "+";
+            } else
+            if(show_space)
+            {
+                p = " ";
+            }
+        } else
+        if(fmt == 'o' && alternate && r.length() > 0 && r.charAt(0) != '0')
+        {
+            p = "0";
+        } else
+        if(fmt == 'x' && alternate)
+        {
+            p = "0x";
+        } else
+        if(fmt == 'X' && alternate)
+        {
+            p = "0X";
+        }
+        int w = 0;
+        if(leading_zeroes)
+        {
+            w = width;
+        } else
+        if((fmt == 'd' || fmt == 'i' || fmt == 'x' || fmt == 'X' || fmt == 'o') && precision > 0)
+        {
+            w = precision;
+        }
+        return (new StringBuilder()).append(p).append(repeat('0', w - p.length() - r.length())).append(r).toString();
+    }
+
+    private String fixed_format(double d)
+    {
+        String f = "";
+        if(d > 9.2233720368547758E+018D)
+        {
+            return exp_format(d);
+        }
+        long l = (long)(precision != 0 ? d : d + 0.5D);
+        f = (new StringBuilder()).append(f).append(l).toString();
+        double fr = d - (double)l;
+        if(fr >= 1.0D || fr < 0.0D)
+        {
+            return exp_format(d);
+        }
+        String fraction = frac_part(fr);
+        if(fraction == "0")
+        {
+            int myInteger = (int)d + 1;
+            String trailing_zeroes = "";
+            for(int i = 1; i <= precision; i++)
+            {
+                trailing_zeroes = (new StringBuilder()).append(trailing_zeroes).append("0").toString();
+            }
+
+            return (new StringBuilder()).append(myInteger).append(".").append(trailing_zeroes).toString();
+        } else
+        {
+            return (new StringBuilder()).append(f).append(fraction).toString();
+        }
+    }
+
+    private String frac_part(double fr)
+    {
+        String z = "";
+        if(precision > 0)
+        {
+            double factor = 1.0D;
+            String leading_zeroes = "";
+            for(int i = 1; i <= precision && factor <= 9.2233720368547758E+018D; i++)
+            {
+                factor *= 10D;
+                leading_zeroes = (new StringBuilder()).append(leading_zeroes).append("0").toString();
+            }
+
+            long l = (long)(factor * fr + 0.5D);
+            if((double)l == factor)
+            {
+                return "0";
+            }
+            z = (new StringBuilder()).append(leading_zeroes).append(l).toString();
+            z = z.substring(z.length() - precision, z.length());
+        }
+        if(precision > 0 || alternate)
+        {
+            z = (new StringBuilder()).append(".").append(z).toString();
+        }
+        if((fmt == 'G' || fmt == 'g') && !alternate)
+        {
+            int t;
+            for(t = z.length() - 1; t >= 0 && z.charAt(t) == '0'; t--) { }
+            if(t >= 0 && z.charAt(t) == '.')
+            {
+                t--;
+            }
+            z = z.substring(0, t + 1);
+        }
+        return z;
+    }
+
+    private String exp_format(double d)
+    {
+        String f = "";
+        int e = 0;
+        double dd = d;
+        double factor = 1.0D;
+        if(d != 0.0D)
+        {
+            for(; dd > 10D; dd /= 10D)
+            {
+                e++;
+                factor /= 10D;
+            }
+
+            for(; dd < 1.0D; dd *= 10D)
+            {
+                e--;
+                factor *= 10D;
+            }
+
+        }
+        if((fmt == 'g' || fmt == 'G') && e >= -4 && e < precision)
+        {
+            return fixed_format(d);
+        }
+        d *= factor;
+        f = (new StringBuilder()).append(f).append(fixed_format(d)).toString();
+        if(fmt == 'e' || fmt == 'g')
+        {
+            f = (new StringBuilder()).append(f).append("e").toString();
+        } else
+        {
+            f = (new StringBuilder()).append(f).append("E").toString();
+        }
+        String p = "000";
+        if(e >= 0)
+        {
+            f = (new StringBuilder()).append(f).append("+").toString();
+            p = (new StringBuilder()).append(p).append(e).toString();
+        } else
+        {
+            f = (new StringBuilder()).append(f).append("-").toString();
+            p = (new StringBuilder()).append(p).append(-e).toString();
+        }
+        return (new StringBuilder()).append(f).append(p.substring(p.length() - 3, p.length())).toString();
+    }
+
+    private String form(double x)
+    {
+        if(precision < 0)
+        {
+            precision = 6;
+        }
+        int s = 1;
+        if(x < 0.0D)
+        {
+            x = -x;
+            s = -1;
+        }
+        String r;
+        if(fmt == 'f')
+        {
+            r = fixed_format(x);
+        } else
+        if(fmt == 'e' || fmt == 'E' || fmt == 'g' || fmt == 'G')
+        {
+            r = exp_format(x);
+        } else
+        {
+            throw new IllegalArgumentException();
+        }
+        return pad(sign(s, r));
+    }
+
+    private String form(long x)
+    {
+        int s = 0;
+        String r;
+        if(fmt == 'd' || fmt == 'i')
+        {
+            if(x < 0L)
+            {
+                r = (new StringBuilder()).append("").append(x).toString().substring(1);
+                s = -1;
+            } else
+            {
+                r = (new StringBuilder()).append("").append(x).toString();
+                s = 1;
+            }
+        } else
+        if(fmt == 'o')
+        {
+            r = convert(x, 3, 7, "01234567");
+        } else
+        if(fmt == 'x')
+        {
+            r = convert(x, 4, 15, "0123456789abcdef");
+        } else
+        if(fmt == 'X')
+        {
+            r = convert(x, 4, 15, "0123456789ABCDEF");
+        } else
+        {
+            throw new IllegalArgumentException();
+        }
+        return pad(sign(s, r));
+    }
+
+    private String form(char c)
+    {
+        if(fmt != 'c')
+        {
+            throw new IllegalArgumentException();
+        } else
+        {
+            String r = (new StringBuilder()).append("").append(c).toString();
+            return pad(r);
+        }
+    }
+
+    private String form(String s)
+    {
+        if(fmt != 's')
+        {
+            throw new IllegalArgumentException();
+        }
+        if(precision >= 0)
+        {
+            s = s.substring(0, precision);
+        }
+        return pad(s);
+    }
+
+    private PrintWriter out;
+    private int width;
+    private int precision;
+    private String pre;
+    private String post;
+    private boolean leading_zeroes;
+    private boolean show_plus;
+    private boolean alternate;
+    private boolean show_space;
+    private boolean left_align;
+    private char fmt;
+}

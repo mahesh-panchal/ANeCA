@@ -1,0 +1,392 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   TextInputStream.java
+
+import java.io.*;
+
+public class TextInputStream
+{
+
+    public TextInputStream()
+    {
+        stdin = new BufferedReader(new InputStreamReader(System.in));
+        missed = '\0';
+        currchar = '\0';
+        EOF = false;
+    }
+
+    public TextInputStream(String s)
+    {
+        try
+        {
+            stdin = new BufferedReader(new InputStreamReader(new FileInputStream(s)));
+        }
+        catch(FileNotFoundException e)
+        {
+            stdin = null;
+        }
+        missed = '\0';
+        currchar = '\0';
+        EOF = false;
+    }
+
+    int readIntString(char s[])
+        throws IOException
+    {
+        int state = 0;
+        for(s[0] = missed; Character.isWhitespace(s[0]) || s[0] == 0;)
+        {
+            s[0] = readChar();
+            if(EOF)
+            {
+                throw new EOFException();
+            }
+        }
+
+        int i;
+        for(i = 1; !Character.isWhitespace(s[i - 1]); i++)
+        {
+            switch(s[i - 1])
+            {
+            case 48: // '0'
+            case 49: // '1'
+            case 50: // '2'
+            case 51: // '3'
+            case 52: // '4'
+            case 53: // '5'
+            case 54: // '6'
+            case 55: // '7'
+            case 56: // '8'
+            case 57: // '9'
+                switch(state)
+                {
+                case 0: // '\0'
+                case 1: // '\001'
+                case 2: // '\002'
+                case 3: // '\003'
+                    state = 3;
+                    break;
+
+                default:
+                    throw new IOException("Integer format:Bad Start");
+                }
+                break;
+
+            case 43: // '+'
+                switch(state)
+                {
+                case 0: // '\0'
+                    i--;
+                    state = 1;
+                    break;
+
+                default:
+                    throw new IOException("Integer format:+ sign wrong");
+                }
+                break;
+
+            case 45: // '-'
+                switch(state)
+                {
+                case 0: // '\0'
+                    state = 2;
+                    break;
+
+                default:
+                    throw new IOException("Integer format:- sign wrong");
+                }
+                break;
+
+            case 44: // ','
+            case 46: // '.'
+            case 47: // '/'
+            default:
+                throw new IOException("Integer format error");
+            }
+            s[i] = readChar();
+        }
+
+        missed = s[i - 1];
+        return i - 1;
+    }
+
+    int readFloatString(char s[])
+        throws IOException
+    {
+        int state = 0;
+        for(s[0] = missed; Character.isWhitespace(s[0]) || s[0] == 0;)
+        {
+            s[0] = readChar();
+            if(EOF)
+            {
+                throw new EOFException();
+            }
+        }
+
+        int i;
+        for(i = 1; !Character.isWhitespace(s[i - 1]); i++)
+        {
+            switch(s[i - 1])
+            {
+            case 48: // '0'
+            case 49: // '1'
+            case 50: // '2'
+            case 51: // '3'
+            case 52: // '4'
+            case 53: // '5'
+            case 54: // '6'
+            case 55: // '7'
+            case 56: // '8'
+            case 57: // '9'
+                switch(state)
+                {
+                case 0: // '\0'
+                case 1: // '\001'
+                case 2: // '\002'
+                case 4: // '\004'
+                    state = 4;
+                    break;
+
+                case 3: // '\003'
+                case 5: // '\005'
+                    state = 5;
+                    break;
+
+                case 6: // '\006'
+                case 7: // '\007'
+                case 8: // '\b'
+                case 9: // '\t'
+                    state = 9;
+                    break;
+
+                default:
+                    throw new IOException("Floating point format error1");
+                }
+                break;
+
+            case 43: // '+'
+                switch(state)
+                {
+                case 0: // '\0'
+                    i--;
+                    state = 1;
+                    break;
+
+                case 6: // '\006'
+                    state = 8;
+                    break;
+
+                default:
+                    throw new IOException("Floating point format error2");
+                }
+                break;
+
+            case 45: // '-'
+                switch(state)
+                {
+                case 0: // '\0'
+                    state = 2;
+                    break;
+
+                case 6: // '\006'
+                    state = 7;
+                    break;
+
+                default:
+                    throw new IOException("Floating point format error3");
+                }
+                break;
+
+            case 46: // '.'
+                switch(state)
+                {
+                case 0: // '\0'
+                case 1: // '\001'
+                case 2: // '\002'
+                case 4: // '\004'
+                    state = 3;
+                    break;
+
+                case 3: // '\003'
+                default:
+                    throw new IOException("Floating point format error4");
+                }
+                break;
+
+            case 101: // 'e'
+                switch(state)
+                {
+                case 4: // '\004'
+                case 5: // '\005'
+                    state = 6;
+                    break;
+
+                default:
+                    throw new IOException("Floating point format error5");
+                }
+                break;
+
+            case 44: // ','
+            case 47: // '/'
+            case 58: // ':'
+            case 59: // ';'
+            case 60: // '<'
+            case 61: // '='
+            case 62: // '>'
+            case 63: // '?'
+            case 64: // '@'
+            case 65: // 'A'
+            case 66: // 'B'
+            case 67: // 'C'
+            case 68: // 'D'
+            case 69: // 'E'
+            case 70: // 'F'
+            case 71: // 'G'
+            case 72: // 'H'
+            case 73: // 'I'
+            case 74: // 'J'
+            case 75: // 'K'
+            case 76: // 'L'
+            case 77: // 'M'
+            case 78: // 'N'
+            case 79: // 'O'
+            case 80: // 'P'
+            case 81: // 'Q'
+            case 82: // 'R'
+            case 83: // 'S'
+            case 84: // 'T'
+            case 85: // 'U'
+            case 86: // 'V'
+            case 87: // 'W'
+            case 88: // 'X'
+            case 89: // 'Y'
+            case 90: // 'Z'
+            case 91: // '['
+            case 92: // '\\'
+            case 93: // ']'
+            case 94: // '^'
+            case 95: // '_'
+            case 96: // '`'
+            case 97: // 'a'
+            case 98: // 'b'
+            case 99: // 'c'
+            case 100: // 'd'
+            default:
+                throw new IOException("Floating point format error6");
+            }
+            s[i] = readChar();
+        }
+
+        missed = s[i - 1];
+        return i - 1;
+    }
+
+    public int readInt()
+    {
+        char s[] = new char[255];
+        int length = readIntString(s);
+        return Integer.valueOf(String.valueOf(s, 0, length)).intValue();
+        IOException e;
+        e;
+        return 0x80000000;
+    }
+
+    public float readFloat()
+    {
+        char s[] = new char[255];
+        int length = readFloatString(s);
+        return Float.valueOf(String.valueOf(s, 0, length)).floatValue();
+        IOException e;
+        e;
+        return (0.0F / 0.0F);
+    }
+
+    public double readDouble()
+    {
+        char s[] = new char[255];
+        int length = readFloatString(s);
+        return Double.valueOf(String.valueOf(s, 0, length)).doubleValue();
+        IOException e;
+        e;
+        return (0.0D / 0.0D);
+    }
+
+    public char readChar()
+    {
+        char s[] = new char[2];
+        if(missed == 0)
+        {
+            try
+            {
+                if(stdin.read(s, 0, 1) == -1)
+                {
+                    EOF = true;
+                }
+            }
+            catch(IOException e) { }
+        } else
+        {
+            s[0] = missed;
+            missed = '\0';
+        }
+        currchar = s[0];
+        return s[0];
+    }
+
+    public String readWord()
+    {
+        char s[] = new char[255];
+        for(s[0] = missed; Character.isWhitespace(s[0]) || s[0] == 0;)
+        {
+            s[0] = readChar();
+            if(EOF)
+            {
+                return null;
+            }
+        }
+
+        int i;
+        for(i = 1; !Character.isWhitespace(s[i - 1]); i++)
+        {
+            s[i] = readChar();
+        }
+
+        missed = s[i - 1];
+        return String.valueOf(s, 0, i - 1);
+    }
+
+    public String readLine()
+    {
+        String s;
+        s = stdin.readLine();
+        missed = '\0';
+        if(s == null)
+        {
+            EOF = true;
+        }
+        return s;
+        IOException e;
+        e;
+        return null;
+    }
+
+    public boolean EOF()
+    {
+        return EOF;
+    }
+
+    public void close()
+    {
+        try
+        {
+            stdin.close();
+        }
+        catch(IOException e) { }
+    }
+
+    private BufferedReader stdin;
+    char missed;
+    char currchar;
+    boolean EOF;
+}

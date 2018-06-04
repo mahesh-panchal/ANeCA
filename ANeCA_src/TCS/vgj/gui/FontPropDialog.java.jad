@@ -1,0 +1,103 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   FontPropDialog.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel, GraphCanvas, MessageDialog
+
+public class FontPropDialog extends Dialog
+{
+
+    public FontPropDialog(Frame frame, GraphCanvas graph_canvas, boolean node)
+    {
+        super(frame, "", true);
+        fontForNode = node;
+        String label;
+        if(node)
+        {
+            label = "Font for Node labels";
+        } else
+        {
+            label = "Font for Edge labels";
+        }
+        super.setTitle(label);
+        graphCanvas_ = graph_canvas;
+        frame_ = frame;
+        LPanel p = new LPanel();
+        p.addLabel("Font Name", 1, 1, 0.0D, 1.0D, 0, 2);
+        name_ = p.addTextField(15, 0, -1, 1.0D, 1.0D, 1, 1);
+        p.addLabel("Font Size", 1, 1, 0.0D, 1.0D, 0, 2);
+        size_ = p.addTextField(15, 0, -1, 1.0D, 1.0D, 1, 1);
+        p.addButtonPanel("Apply Cancel", 0);
+        p.finish();
+        add("Center", p);
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            if("Apply".equals(object))
+            {
+                boolean ok = true;
+                try
+                {
+                    Font font = new Font(name_.getText(), 0, Integer.valueOf(size_.getText()).intValue());
+                    if(fontForNode)
+                    {
+                        graphCanvas_.setFont(font);
+                    } else
+                    {
+                        graphCanvas_.setEdgeFont(font);
+                    }
+                }
+                catch(NumberFormatException _ex)
+                {
+                    new MessageDialog(frame_, "Error", "Bad format for font size.", true);
+                    ok = false;
+                }
+                if(ok)
+                {
+                    hide();
+                }
+            } else
+            if("Cancel".equals(object))
+            {
+                hide();
+            }
+        }
+        return false;
+    }
+
+    public boolean handleEvent(Event event)
+    {
+        if(event.id == 201)
+        {
+            hide();
+            return true;
+        } else
+        {
+            return super.handleEvent(event);
+        }
+    }
+
+    public void showMe()
+    {
+        pack();
+        Font font = graphCanvas_.getFont(fontForNode);
+        name_.setText(font.getName());
+        size_.setText(String.valueOf(font.getSize()));
+        show();
+    }
+
+    private GraphCanvas graphCanvas_;
+    private Frame frame_;
+    private TextField name_;
+    private TextField size_;
+    private boolean fontForNode;
+}

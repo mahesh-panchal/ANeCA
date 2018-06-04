@@ -1,0 +1,361 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Set.java
+
+package EDU.auburn.VGJ.graph;
+
+import java.util.NoSuchElementException;
+
+public class Set
+    implements Cloneable
+{
+
+    public Set()
+    {
+        nextPosition_ = 0;
+        bits_ = new long[1];
+    }
+
+    public Set(int element)
+    {
+        nextPosition_ = 0;
+        bits_ = new long[1];
+        includeElement(element);
+    }
+
+    public Object clone()
+    {
+        Set set = new Set();
+        set.bits_ = new long[bits_.length];
+        System.arraycopy(bits_, 0, set.bits_, 0, bits_.length);
+        return set;
+    }
+
+    public void difference(Set s)
+    {
+        if(s.bits_.length > bits_.length)
+        {
+            grow_(s.bits_.length);
+        }
+        for(int i = 0; i < s.bits_.length; i++)
+        {
+            bits_[i] = (bits_[i] | s.bits_[i]) ^ s.bits_[i];
+        }
+
+    }
+
+    public boolean equals(Set s)
+    {
+        int minsize = Math.min(bits_.length, s.bits_.length);
+        if(minsize < s.bits_.length)
+        {
+            for(int i = minsize; i < s.bits_.length; i++)
+            {
+                if(s.bits_[i] != 0L)
+                {
+                    return false;
+                }
+            }
+
+        }
+        if(minsize < bits_.length)
+        {
+            for(int i = minsize; i < s.bits_.length; i++)
+            {
+                if(bits_[i] != 0L)
+                {
+                    return false;
+                }
+            }
+
+        }
+        for(int i = 0; i < minsize; i++)
+        {
+            if(s.bits_[i] != bits_[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void fill(int n)
+    {
+        int bytepos = --n >> 6;
+        if(bytepos >= bits_.length)
+        {
+            grow_(bytepos + 1);
+        }
+        int i;
+        for(i = 0; i < bits_.length - 1; i++)
+        {
+            bits_[i] = -1L;
+        }
+
+        for(long bit = 1L; bit <= 1L << (n & 0x3f); bit <<= 1)
+        {
+            bits_[i] |= bit;
+        }
+
+    }
+
+    public int first()
+    {
+        nextPosition_ = searchNext(0) + 1;
+        return nextPosition_ - 1;
+    }
+
+    private void grow_(int len)
+    {
+        long newbits[] = new long[len];
+        System.arraycopy(bits_, 0, newbits, 0, bits_.length);
+        bits_ = newbits;
+    }
+
+    public void includeElement(int n)
+    {
+        int bytepos = n >> 6;
+        if(bytepos >= bits_.length)
+        {
+            grow_(bytepos + 1);
+        }
+        bits_[bytepos] |= 1L << (n & 0x3f);
+    }
+
+    public void indexedUnion(Set set_list[], Set index)
+    {
+        for(int i = index.first(); i != -1; i = index.next())
+        {
+            union(set_list[i]);
+        }
+
+    }
+
+    public void intersect(Set s)
+    {
+        int minsize = Math.min(bits_.length, s.bits_.length);
+        for(int i = 0; i < minsize; i++)
+        {
+            bits_[i] &= s.bits_[i];
+        }
+
+        if(bits_.length > s.bits_.length)
+        {
+            for(int i = s.bits_.length; i < bits_.length; i++)
+            {
+                bits_[i] = 0L;
+            }
+
+        }
+    }
+
+    public boolean intersects(Set set)
+    {
+        int len = Math.min(bits_.length, set.bits_.length);
+        for(int i = 0; i < len; i++)
+        {
+            if((bits_[i] & set.bits_[i]) != 0L)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isElement(int n)
+    {
+        int bytepos = n >> 6;
+        if(bytepos >= bits_.length)
+        {
+            return false;
+        } else
+        {
+            return (bits_[bytepos] & 1L << (n & 0x3f)) != 0L;
+        }
+    }
+
+    public boolean isEmpty()
+    {
+        for(int i = 0; i < bits_.length; i++)
+        {
+            if(bits_[i] != 0L)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isSubset(Set s)
+    {
+        int minsize = Math.min(bits_.length, s.bits_.length);
+        if(minsize < s.bits_.length)
+        {
+            for(int i = minsize; i < s.bits_.length; i++)
+            {
+                if(s.bits_[i] != 0L)
+                {
+                    return false;
+                }
+            }
+
+        }
+        for(int i = 0; i < minsize; i++)
+        {
+            if((s.bits_[i] & bits_[i]) != s.bits_[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public int next()
+    {
+        nextPosition_ = searchNext(nextPosition_) + 1;
+        return nextPosition_ - 1;
+    }
+
+    public int numberOfElements()
+    {
+        int num = 0;
+        for(int i = first(); i != -1;)
+        {
+            i = next();
+            num++;
+        }
+
+        return num;
+    }
+
+    public void removeElement(int n)
+        throws NoSuchElementException
+    {
+        int bytepos = n >> 6;
+        if(bytepos >= bits_.length)
+        {
+            return;
+        } else
+        {
+            bits_[bytepos] &= ~(1L << (n & 0x3f));
+            return;
+        }
+    }
+
+    public int searchNext(int n)
+    {
+        int bytepos = n >> 6;
+        int i;
+        for(i = bytepos; i < bits_.length && bits_[i] == 0L; i++) { }
+        if(i == bits_.length)
+        {
+            return -1;
+        }
+        long byteval = bits_[i];
+        int val;
+        long bit;
+        if(i == bytepos)
+        {
+            val = n;
+            for(bit = 1L << (val & 0x3f); (bit & byteval) == 0L && bit != 0x8000000000000000L;)
+            {
+                bit <<= 1;
+                val++;
+            }
+
+            if((bit & byteval) != 0L)
+            {
+                return val;
+            }
+            for(i++; i < bits_.length && bits_[i] == 0L; i++) { }
+            if(i == bits_.length)
+            {
+                return -1;
+            }
+            byteval = bits_[i];
+        }
+        val = i << 6;
+        for(bit = 1L; (bit & byteval) == 0L && bit != 0x8000000000000000L;)
+        {
+            bit <<= 1;
+            val++;
+        }
+
+        if((bit & byteval) == 0L)
+        {
+            return -1;
+        } else
+        {
+            return val;
+        }
+    }
+
+    public String toShortString()
+    {
+        String to_string = "(";
+        boolean first_element = true;
+        for(int i = first(); i != -1; i = next())
+        {
+            if(first_element)
+            {
+                first_element = false;
+            } else
+            {
+                to_string = to_string + ", ";
+            }
+            to_string = to_string + i;
+            if(isElement(i + 1) && isElement(i + 2))
+            {
+                to_string = to_string + "-";
+                for(; isElement(i + 1); i = next()) { }
+                to_string = to_string + i;
+            }
+        }
+
+        to_string = to_string + ")";
+        return to_string;
+    }
+
+    public String toString()
+    {
+        String to_string = "(";
+        boolean first_element = true;
+        for(int i = first(); i != -1; i = next())
+        {
+            if(first_element)
+            {
+                first_element = false;
+            } else
+            {
+                to_string = to_string + ", ";
+            }
+            to_string = to_string + i;
+        }
+
+        to_string = to_string + ")";
+        return to_string;
+    }
+
+    public void union(Set s)
+    {
+        if(s.bits_.length > bits_.length)
+        {
+            grow_(s.bits_.length);
+        }
+        for(int i = 0; i < s.bits_.length; i++)
+        {
+            bits_[i] |= s.bits_[i];
+        }
+
+    }
+
+    static final int BITS = 6;
+    static final int MASK = 63;
+    private long bits_[];
+    private int nextPosition_;
+}

@@ -1,0 +1,28 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   OffsetCanvas.java
+
+package EDU.auburn.VGJ.gui;
+
+import EDU.auburn.VGJ.util.DDimension;
+import EDU.auburn.VGJ.util.DPoint;
+import java.awt.Canvas;
+
+public abstract class OffsetCanvas extends Canvas
+{
+
+    public abstract DDimension contentsSize();
+
+    public abstract DPoint getOffset();
+
+    public abstract void setOffsets(double d, double d1, boolean flag);
+
+    public OffsetCanvas()
+    {
+    }
+
+    public static int RESIZE = 32450;
+    public static int LABEL = 32451;
+
+}

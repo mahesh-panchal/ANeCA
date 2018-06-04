@@ -1,0 +1,214 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Utils.java
+
+package clad;
+
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.Vector;
+
+// Referenced classes of package clad:
+//            TaxaItem, Component, Distance
+
+public class Utils
+{
+
+    protected static double calcPars(int j, int m, int it)
+    {
+        int b = 3;
+        int r = 1;
+        double u = 1.0D;
+        double product = 1.0D;
+        double dq = u / (double)it;
+        double tr = 1.0D / (double)(b * r);
+        double tp = 2D * (double)m + 1.0D;
+        for(double i = 1E-008D; i < (double)j; i++)
+        {
+            double int1 = 0.0D;
+            double int2 = 0.0D;
+            for(double q = 9.9999999999999995E-008D; q < u; q += dq)
+            {
+                double t1 = 1.0D - q * tr;
+                double num2 = Math.pow(q, i) * Math.pow(1.0D - q, tp) * t1 * Math.pow((t1 + 1.0D) - q, i) * (1.0D - 2D * q * t1) * dq;
+                double num1 = num2 * q;
+                int1 += num1;
+                int2 += num2;
+            }
+
+            double pq = 1.0D - int1 / int2;
+            product *= pq;
+        }
+
+        return product;
+    }
+
+    protected static TaxaItem[] getAllResolved(TaxaItem source, TaxaItem dest)
+    {
+        int numNbors = source.nbor.size();
+        TaxaItem resolvedNbors[] = new TaxaItem[numNbors + 1];
+        resolvedNbors[numNbors] = dest;
+        for(int x = 0; x < numNbors; x++)
+        {
+            resolvedNbors[x] = getResolved((TaxaItem)source.nbor.get(x), source);
+        }
+
+        return resolvedNbors;
+    }
+
+    protected static TaxaItem getResolved(TaxaItem source, TaxaItem prev)
+    {
+        if(source.resolved)
+        {
+            return source;
+        }
+        int numNbors = source.nbor.size();
+        if(numNbors > 2)
+        {
+            System.out.println("woops, we are at an unresolved fork!");
+        }
+        if(source.nbor.get(0) == prev)
+        {
+            return getResolved((TaxaItem)source.nbor.get(1), source);
+        } else
+        {
+            return getResolved((TaxaItem)source.nbor.get(0), source);
+        }
+    }
+
+    protected static void updateDistance(Component sourcec, Component destc, Distance newdist)
+    {
+        for(Enumeration srcCompsTaxaEnum = sourcec.taxa.elements(); srcCompsTaxaEnum.hasMoreElements();)
+        {
+            TaxaItem curSrcTaxa = (TaxaItem)srcCompsTaxaEnum.nextElement();
+            Distance curSrcDist = (Distance)curSrcTaxa.compdist.get(newdist.source);
+            for(Enumeration dstCompsTaxaEnum = destc.taxa.elements(); dstCompsTaxaEnum.hasMoreElements();)
+            {
+                TaxaItem curDestTaxa = (TaxaItem)dstCompsTaxaEnum.nextElement();
+                Distance curDestDist = (Distance)curDestTaxa.compdist.get(newdist.destination);
+                if(curSrcDist.distance != 0x3b9aca00 && curDestDist.distance != 0x3b9aca00)
+                {
+                    Distance curDist = (Distance)curSrcTaxa.compdist.get(curDestTaxa.id);
+                    int newDistance = curDestDist.distance + curSrcDist.distance + newdist.distance;
+                    if(newDistance < curDist.distance)
+                    {
+                        curDist.distance = newDistance;
+                        curDist = (Distance)curDestTaxa.compdist.get(curSrcTaxa.id);
+                        curDist.distance = newDistance;
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    static char[] getConsensus(TaxaItem sourcet, TaxaItem destt)
+    {
+        int length = sourcet.characters.length;
+        char consensus[] = new char[length];
+        for(int i = 0; i < length; i++)
+        {
+            char dest = destt.characters[i];
+            char src = sourcet.characters[i];
+            if(dest < 'A' || dest > 'Z' || src < 'A' || src > 'Z')
+            {
+                consensus[i] = '?';
+            } else
+            {
+                consensus[i] = matrix[(dest - 65) * 25 + (src - 65)];
+            }
+        }
+
+        return consensus;
+    }
+
+    public Utils()
+    {
+    }
+
+    static final char A = 65;
+    static final char C = 67;
+    static final char G = 71;
+    static final char T = 84;
+    static final char U = 85;
+    static final char R = 82;
+    static final char Y = 89;
+    static final char K = 75;
+    static final char M = 77;
+    static final char S = 83;
+    static final char W = 87;
+    static final char B = 66;
+    static final char D = 68;
+    static final char H = 72;
+    static final char V = 86;
+    static final char N = 78;
+    static final char Z = 63;
+    static final char matrix[] = {
+        'A', 'N', 'M', 'D', '?', '?', 'R', 'H', '?', '?', 
+        'D', '?', 'M', 'N', '?', '?', '?', 'R', 'V', 'W', 
+        '?', 'V', 'W', '?', 'H', 'N', 'B', 'B', 'N', '?', 
+        '?', 'B', 'N', '?', '?', 'B', '?', 'N', 'N', '?', 
+        '?', '?', 'N', 'B', 'B', '?', 'N', 'N', '?', 'B', 
+        'M', 'B', 'C', 'N', '?', '?', 'S', 'H', '?', '?', 
+        'B', '?', 'M', 'N', '?', '?', '?', 'V', 'S', 'Y', 
+        '?', 'V', 'H', '?', 'Y', 'D', 'N', 'N', 'D', '?', 
+        '?', 'D', 'N', '?', '?', 'D', '?', 'N', 'N', '?', 
+        '?', '?', 'D', 'N', 'D', '?', 'N', 'D', '?', 'N', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        'R', 'B', 'S', 'D', '?', '?', 'G', 'N', '?', '?', 
+        'K', '?', 'V', 'N', '?', '?', '?', 'R', 'S', 'K', 
+        '?', 'V', 'D', '?', 'B', 'H', 'N', 'H', 'N', '?', 
+        '?', 'N', 'H', '?', '?', 'N', '?', 'H', 'N', '?', 
+        '?', '?', 'N', 'N', 'H', '?', 'N', 'H', '?', 'H', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        'D', 'B', 'B', 'D', '?', '?', 'K', 'N', '?', '?', 
+        'K', '?', 'N', 'N', '?', '?', '?', 'D', 'B', 'K', 
+        '?', 'N', 'D', '?', 'B', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        'M', 'N', 'M', 'N', '?', '?', 'V', 'H', '?', '?', 
+        'N', '?', 'M', 'N', '?', '?', '?', 'V', 'V', 'H', 
+        '?', 'V', 'H', '?', 'H', 'N', 'N', 'N', 'N', '?', 
+        '?', 'N', 'N', '?', '?', 'N', '?', 'N', 'N', '?', 
+        '?', '?', 'N', 'N', 'N', '?', 'N', 'N', '?', 'N', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', 'R', 'N', 'V', 'D', '?', 
+        '?', 'R', 'N', '?', '?', 'D', '?', 'V', 'N', '?', 
+        '?', '?', 'R', 'V', 'D', '?', 'V', 'D', '?', 'N', 
+        'V', 'B', 'S', 'N', '?', '?', 'S', 'N', '?', '?', 
+        'B', '?', 'V', 'N', '?', '?', '?', 'V', 'S', 'B', 
+        '?', 'V', 'N', '?', 'B', 'W', 'B', 'Y', 'D', '?', 
+        '?', 'K', 'H', '?', '?', 'K', '?', 'H', 'N', '?', 
+        '?', '?', 'D', 'B', 'T', '?', 'N', 'W', '?', 'Y', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', 'V', 'N', 'V', 'N', '?', 
+        '?', 'V', 'N', '?', '?', 'N', '?', 'V', 'N', '?', 
+        '?', '?', 'V', 'V', 'N', '?', 'V', 'N', '?', 'N', 
+        'W', 'N', 'H', 'D', '?', '?', 'D', 'H', '?', '?', 
+        'D', '?', 'H', 'N', '?', '?', '?', 'D', 'N', 'W', 
+        '?', 'N', 'W', '?', 'H', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 
+        'H', 'B', 'Y', 'N', '?', '?', 'B', 'H', '?', '?', 
+        'B', '?', 'H', 'N', '?', '?', '?', 'N', 'B', 'Y', 
+        '?', 'N', 'H', '?', 'Y'
+    };
+
+}

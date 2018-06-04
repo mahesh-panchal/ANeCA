@@ -1,0 +1,210 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   LPanel.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+import javax.swing.JPanel;
+
+public class LPanel extends JPanel
+{
+
+    public LPanel()
+    {
+        textColor = Color.white;
+        spacing = 8;
+        layout = new GridBagLayout();
+        constraints = new GridBagConstraints();
+        setLayout(layout);
+        constraints.insets = new Insets(spacing, spacing, spacing, spacing);
+        constraints.fill = 0;
+        constraints.ipadx = constraints.ipady = 0;
+        constraints.weightx = constraints.weighty = 1.0D;
+    }
+
+    public Button addButton(String string, int width, int anchor, double weightx, double weighty, 
+            int fill, int shift)
+    {
+        return (Button)addComponent(new Button(string), width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public Button addButton(String string, Font font, int width, int anchor, double weightx, double weighty, int fill, int shift)
+    {
+        Button button = new Button(string);
+        button.setFont(font);
+        return (Button)addComponent(button, width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public Panel addButtonPanel(String labels, int width)
+    {
+        Panel panel = new Panel();
+        GridBagConstraints panel_constraints = new GridBagConstraints();
+        panel_constraints.insets = new Insets(0, 0, 0, 0);
+        panel_constraints.fill = 0;
+        panel_constraints.ipadx = panel_constraints.ipady = 0;
+        panel_constraints.weightx = panel_constraints.weighty = 1.0D;
+        GridBagLayout panel_layout = new GridBagLayout();
+        panel.setLayout(panel_layout);
+        labels.trim();
+        for(; labels.length() > 0; labels.trim())
+        {
+            int end = labels.indexOf(" ");
+            if(end == -1)
+            {
+                end = labels.length();
+            }
+            String label = labels.substring(0, end);
+            Button button = new Button(label);
+            panel_layout.setConstraints(button, panel_constraints);
+            panel.add(button);
+            if(end == labels.length())
+            {
+                break;
+            }
+            labels = labels.substring(end + 1);
+        }
+
+        constraints.weightx = 0.0D;
+        constraints.weighty = 0.0D;
+        constraints.insets.top = spacing * 2;
+        constraints.fill = 2;
+        if(width == 0)
+        {
+            constraints.gridwidth = 0;
+        } else
+        {
+            constraints.gridwidth = width;
+        }
+        layout.setConstraints(panel, constraints);
+        add(panel);
+        constraints.weightx = 1.0D;
+        constraints.weighty = 1.0D;
+        constraints.insets.top = spacing;
+        return panel;
+    }
+
+    public Checkbox addCheckbox(String string, CheckboxGroup group, boolean state, int width, int anchor, double weightx, 
+            double weighty, int fill, int shift)
+    {
+        return (Checkbox)addComponent(new Checkbox(string, group, state), width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public Component addComponent(Component component, int width, int anchor, double weightx, double weighty, 
+            int fill, int shift)
+    {
+        constraints.insets.left = spacing;
+        constraints.insets.right = spacing;
+        if(shift == 1 || shift == 3)
+        {
+            constraints.insets.left = 0;
+        }
+        if(shift == 2 || shift == 3)
+        {
+            constraints.insets.right = 0;
+        }
+        if(anchor < 0)
+        {
+            constraints.anchor = 17;
+        } else
+        if(anchor == 0)
+        {
+            constraints.anchor = 10;
+        } else
+        {
+            constraints.anchor = 13;
+        }
+        if(width == 0)
+        {
+            constraints.gridwidth = 0;
+        } else
+        {
+            constraints.gridwidth = width;
+        }
+        constraints.weightx = weightx;
+        constraints.weighty = weighty;
+        if(fill == 0)
+        {
+            constraints.fill = 0;
+        } else
+        if(fill == 1)
+        {
+            constraints.fill = 2;
+        } else
+        if(fill == 2)
+        {
+            constraints.fill = 3;
+        } else
+        {
+            constraints.fill = 1;
+        }
+        layout.setConstraints(component, constraints);
+        add(component);
+        if(width == 0)
+        {
+            constraints.insets.top = constraints.insets.bottom = spacing;
+        }
+        return component;
+    }
+
+    public Label addLabel(String string, int width, int anchor, double weightx, double weighty, 
+            int fill, int shift)
+    {
+        return (Label)addComponent(new Label(string), width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public Label addLineLabel(String string, int width)
+    {
+        if(width == 0)
+        {
+            constraints.gridwidth = 0;
+            constraints.insets.bottom = 0;
+        } else
+        {
+            constraints.gridwidth = width;
+            constraints.weightx = 0.0D;
+        }
+        constraints.anchor = 17;
+        constraints.insets.top = spacing;
+        constraints.insets.left = spacing;
+        constraints.insets.right = spacing;
+        Label label = new Label(string);
+        layout.setConstraints(label, constraints);
+        add(label);
+        if(width == 0)
+        {
+            constraints.insets.top = 0;
+        }
+        constraints.gridwidth = 1;
+        constraints.insets.bottom = spacing;
+        constraints.weightx = 1.0D;
+        return label;
+    }
+
+    public TextField addTextField(int len, int width, int anchor, double weightx, double weighty, 
+            int fill, int shift)
+    {
+        TextField textfield = new TextField("", len);
+        textfield.setBackground(textColor);
+        return (TextField)addComponent(textfield, width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public TextField addTextField(String text, int len, int width, int anchor, double weightx, double weighty, int fill, int shift)
+    {
+        TextField textfield = new TextField(text, len);
+        textfield.setBackground(textColor);
+        return (TextField)addComponent(textfield, width, anchor, weightx, weighty, fill, shift);
+    }
+
+    public void finish()
+    {
+        constraints = null;
+        layout = null;
+    }
+
+    public Color textColor;
+    public int spacing;
+    public GridBagLayout layout;
+    public GridBagConstraints constraints;
+}

@@ -1,0 +1,83 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GroupControl.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel, GraphCanvas
+
+public class GroupControl extends Dialog
+{
+
+    public GroupControl(Frame frame, GraphCanvas graph_canvas)
+    {
+        super(frame, "Group Control", false);
+        graphCanvas_ = graph_canvas;
+        frame_ = frame;
+        LPanel p = new LPanel();
+        p.addButton("Create Group (selected nodes)  [c]", 0, 0, 1.0D, 1.0D, 1, 0);
+        p.constraints.insets.top = 0;
+        p.addButton("Destroy Groups (selected groups)  [d]", 0, 0, 1.0D, 1.0D, 1, 0);
+        p.constraints.insets.top = 0;
+        p.addButton("Group (selected nodes)  [g]", 0, 0, 1.0D, 1.0D, 1, 0);
+        p.constraints.insets.top = 0;
+        p.addButton("Ungroup (selected groups)  [u]", 0, 0, 1.0D, 1.0D, 1, 0);
+        p.addButtonPanel("Cancel", 0);
+        p.finish();
+        add("Center", p);
+        showMe();
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            if("Cancel".equals(object))
+            {
+                hide();
+            } else
+            if("Create Group (selected nodes)  [c]".equals(object))
+            {
+                graphCanvas_.groupControl(99);
+            } else
+            if("Destroy Groups (selected groups)  [d]".equals(object))
+            {
+                graphCanvas_.groupControl(100);
+            } else
+            if("Group (selected nodes)  [g]".equals(object))
+            {
+                graphCanvas_.groupControl(103);
+            } else
+            if("Ungroup (selected groups)  [u]".equals(object))
+            {
+                graphCanvas_.groupControl(117);
+            }
+        }
+        return false;
+    }
+
+    public boolean handleEvent(Event event)
+    {
+        if(event.id == 201)
+        {
+            hide();
+            return true;
+        } else
+        {
+            return super.handleEvent(event);
+        }
+    }
+
+    public void showMe()
+    {
+        pack();
+        show();
+    }
+
+    private GraphCanvas graphCanvas_;
+    private Frame frame_;
+}

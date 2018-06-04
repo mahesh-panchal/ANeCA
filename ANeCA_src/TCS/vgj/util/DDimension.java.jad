@@ -1,0 +1,43 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   DDimension.java
+
+package EDU.auburn.VGJ.util;
+
+
+public class DDimension
+{
+
+    public DDimension(double width_in, double height_in)
+    {
+        width = width_in;
+        height = height_in;
+    }
+
+    public DDimension(DDimension init)
+    {
+        width = init.width;
+        height = init.height;
+    }
+
+    public boolean equals(DDimension other)
+    {
+        return other.width == width && other.height == height;
+    }
+
+    public void setTo(double w, double h)
+    {
+        width = w;
+        height = h;
+    }
+
+    public void setTo(DDimension from)
+    {
+        width = from.width;
+        height = from.height;
+    }
+
+    public double width;
+    public double height;
+}

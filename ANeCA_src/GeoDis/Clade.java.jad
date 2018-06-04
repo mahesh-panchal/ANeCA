@@ -1,0 +1,76 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GeoDis.java
+
+
+class Clade
+{
+
+    public Clade()
+    {
+    }
+
+    public String cladeName;
+    public int numSubClades;
+    public int numCladeLocations;
+    public int totaNumObs;
+    public int rowTotal[];
+    public int columnTotal[];
+    public int cladeLocIndex[];
+    public double meanLatitude[];
+    public double meanLongitude[];
+    public double randMeanLatitude[];
+    public double randMeanLongitude[];
+    public double Dc[];
+    public double Dn[];
+    public double varDc[];
+    public double varDn[];
+    public double Position[];
+    public double randDc[];
+    public double randDn[];
+    public double subCladeSum[];
+    public double ITcPvalue[];
+    public double ITnPvalue[];
+    public double corrDcWPvalue[];
+    public double corrDnWPvalue[];
+    public String subCladeName[];
+    public String subCladePosition[];
+    public double weight[];
+    public double DcPvalue[][];
+    public double DnPvalue[][];
+    public int obsMatrix[][];
+    public int randMatrix[][];
+    public double expObsMatrix[][];
+    public double relFreq[][];
+    public double absFreq[][];
+    public int RBMatrix[][];
+    public double check;
+    public double obsChi;
+    public double meanLatNest;
+    public double meanLonNest;
+    public double tipDistance;
+    public double tipDisNested;
+    public double intDistance;
+    public double intDisNested;
+    public double tipIntDistance;
+    public double tipIntDisNested;
+    public double meanDc;
+    public double meanDn;
+    public double meanWeight;
+    public double sumDcxWeight;
+    public double sumDnxWeight;
+    public double sumDcSq;
+    public double sumDnSq;
+    public double sumWeightSq;
+    public double corrDcWeights;
+    public double corrDnWeights;
+    public double randCorrDcWeights;
+    public double randCorrDnWeights;
+    public double chiPvalue;
+    public double sumTotal;
+    public int cumColTotal;
+    public int cumRowTotal;
+    public int indTipClades;
+    public int indIntClades;
+}

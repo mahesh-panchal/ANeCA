@@ -1,0 +1,1381 @@
+Differentiating population structure from history - Geodis  2.2
+(c) Copyright, 1999-2004 David Posada
+University of Vigo
+dposada@uvigo.es
+________________________________________________________________________
+
+MardulynGonioctena
+
+Tue Jun 27 14:57:36 BST 2006
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-2
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    15.7143
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.4082
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 1-2         47.9247          7.0427
+        son60.11         47.9800          7.0600
+         gir56.3         47.8000          6.8300
+         orb34.1         47.9258          7.0672
+
+CLADE son60.11 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.0876       1.0000
+      NESTED CLADE        6.2718       0.0665       1.0000
+
+CLADE gir56.3 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       21.0544       0.8981       0.2016
+
+CLADE orb34.1 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.6982       0.6684       0.3569
+      NESTED CLADE       11.6608       0.5839       0.4414
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.6982       0.9199       0.0884
+      NESTED CLADE        0.4616       0.5598       0.4485
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-6
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    25.8333
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0044
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 1-6         47.9248          7.0909
+         gir42.3         47.8417          6.9926
+        wie48.14         47.8100          7.9100
+         arm35.4         48.0321          7.0746
+
+CLADE gir42.3 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.2461       0.0080       0.9930
+      NESTED CLADE       17.4635       0.3691       0.6319
+
+CLADE wie48.14 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       62.3632       1.0000       0.0713
+
+CLADE arm35.4 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       10.3603       0.0181       0.9829
+      NESTED CLADE       15.6316       0.1617       0.8393
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.5200       0.5259       0.4741
+      NESTED CLADE       -7.4444       0.1472       0.8528
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-9
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.4444
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.6961
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 1-9         47.9298          7.0633
+        son38.11         47.9800          7.0600
+         orb37.1         47.9243          7.0637
+
+CLADE son38.11 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        5.5867       0.2048       1.0000
+
+CLADE orb37.1 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.5488       1.0000       0.2048
+      NESTED CLADE       11.5108       1.0000       0.2048
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.5488       1.0000       0.2048
+      NESTED CLADE        5.9241       1.0000       0.2048
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-10
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     2.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-10         47.8000          6.9322
+         gir55.3         47.8000          6.8300
+         bou54.7         47.8000          7.0400
+
+CLADE gir55.3 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        7.6235       0.4973       1.0000
+
+CLADE bou54.7 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        8.0470       1.0000       0.4973
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        0.4235       1.0000       0.4973
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-11
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    10.4103
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.4269
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-11         48.0650          7.2049
+         lin51.9         48.0894          7.0814
+         orb50.1         48.0631          7.2142
+
+CLADE lin51.9 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        4.3211       0.1375       0.8784
+      NESTED CLADE        9.6317       0.0895       0.9264
+
+CLADE orb50.1 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       25.4100       0.9264       0.0895
+      NESTED CLADE       25.2005       0.9264       0.0895
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.0890       0.8867       0.1292
+      NESTED CLADE       15.5687       0.9264       0.0895
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-15
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    34.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-15         48.3402          7.2681
+         odi19.2         48.4010          7.3195
+         orb20.1         48.1100          7.1700
+         gir18.3         48.2554          7.1798
+
+CLADE odi19.2 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        5.5765       0.0254       0.9746
+      NESTED CLADE        9.8772       0.0293       0.9707
+
+CLADE orb20.1 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       26.5823       0.8880       0.1712
+
+CLADE gir18.3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       24.8167       0.9107       0.0893
+      NESTED CLADE       20.8961       0.8673       0.1327
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       19.7049       0.9742       0.0258
+      NESTED CLADE        9.6269       0.8715       0.1285
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-16
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    78.1808
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.1961
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-16         48.0518          7.1105
+          gir8.3         47.8000          6.8300
+          arm3.4         47.8690          7.0361
+          cli5.5         48.2114          7.1931
+          kru9.6         47.9500          6.9600
+          bou4.7         48.0066          7.2475
+          orb1.1         48.0675          7.1080
+
+CLADE gir8.3 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       34.9083       0.8593       0.2412
+
+CLADE arm3.4 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        9.0551       0.0662       0.9339
+      NESTED CLADE       22.2886       0.5832       0.4169
+
+CLADE cli5.5 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       26.9842       0.7943       0.2085
+      NESTED CLADE       34.9589       0.9272       0.0756
+
+CLADE kru9.6 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.0821       1.0000
+      NESTED CLADE       15.9090       0.3675       0.6522
+
+CLADE bou4.7 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       20.5440       0.5268       0.4732
+      NESTED CLADE       16.3225       0.2299       0.7711
+
+CLADE orb1.1 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       20.8587       0.3359       0.6641
+      NESTED CLADE       20.9260       0.3480       0.6520
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        6.1827       0.7261       0.2739
+      NESTED CLADE       -1.4846       0.3533       0.6467
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-17
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     6.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-17         47.9029          7.2641
+        mit10.10         47.9800          7.0200
+        obe11.13         47.9300          7.9800
+          gir7.3         47.8000          6.8300
+
+CLADE mit10.10 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       20.0858       0.3326       1.0000
+
+CLADE obe11.13 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       53.3860       1.0000       0.3332
+
+CLADE gir7.3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       34.3195       0.6620       0.6704
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       -2.4164       0.6620       0.6704
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-18
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-18         47.8820          7.1951
+        wie23.14         47.8100          7.9100
+         gir24.3         47.9052          6.9654
+
+CLADE wie23.14 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       53.8938       1.0000       0.2539
+
+CLADE gir24.3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       17.2879       0.2539       1.0000
+      NESTED CLADE       24.0228       0.2539       1.0000
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       17.2879       0.2539       1.0000
+      NESTED CLADE      -29.8710       0.2539       1.0000
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-19
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     0.6000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-19         47.8283          7.7767
+        wie15.14         47.8100          7.9100
+         bou14.7         47.8320          7.7500
+
+CLADE wie15.14 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       10.1522       0.6680       1.0000
+
+CLADE bou14.7 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.9864       1.0000       0.6680
+      NESTED CLADE       20.8797       1.0000       0.6680
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.9864       1.0000       0.6680
+      NESTED CLADE       10.7276       1.0000       0.6680
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-22
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     6.3000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.3353
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-22         47.9092          7.6542
+         arm32.4         47.8500          7.1500
+         orb26.1         47.9128          7.6848
+
+CLADE arm32.4 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       38.1357       0.8070       0.3353
+
+CLADE orb26.1 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.0664       0.3353       0.8070
+      NESTED CLADE       29.8152       0.3353       0.8070
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.0664       0.3353       0.8070
+      NESTED CLADE       -8.3204       0.3353       0.8070
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-30
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     3.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-30         48.1600          7.0700
+         gir40.3         47.8000          6.8300
+         cli49.5         48.3400          7.1900
+         cli41.5         48.3400          7.1900
+
+CLADE gir40.3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       43.7938       1.0000       0.3308
+
+CLADE cli49.5 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       21.8779       0.6653       1.0000
+
+CLADE cli41.5 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       21.8779       0.6655       1.0000
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-32
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.2509
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-32         47.9731          7.0370
+        son59.11         47.9800          7.0600
+         kru39.6         47.9500          6.9600
+
+CLADE son59.11 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.2509       1.0000
+      NESTED CLADE        1.8721       0.2509       1.0000
+
+CLADE kru39.6 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        6.2787       1.0000       0.2509
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 1-36
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     6.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.6683
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 1-36         48.2139          7.3241
+          odi6.2         48.2632          7.2102
+        obe22.13         47.9300          7.9800
+
+CLADE odi6.2 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.0936       0.1679       1.0000
+      NESTED CLADE       24.1048       0.1679       1.0000
+
+CLADE obe22.13 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       58.0142       1.0000       0.1679
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-1
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     2.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-1         48.0431          7.0454
+             1-1         48.1100          7.0300
+            1-29         47.9800          7.0600
+
+CLADE 1-1 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        7.5150       1.0000       0.5038
+
+CLADE 1-29 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        7.0977       0.5038       1.0000
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       -0.4173       0.5038       1.0000
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-2
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.9500
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.7319
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-2         47.9269          7.0357
+             1-3         47.9500          6.9600
+             1-2         47.9247          7.0427
+
+CLADE 1-3 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        6.1908       0.5420       0.6383
+
+CLADE 1-2 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.4644       0.6383       0.5420
+      NESTED CLADE       11.4318       0.6383       0.5420
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       11.4644       0.6383       0.5420
+      NESTED CLADE        5.2410       0.6383       0.5420
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-3
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    24.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.2144
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-3         47.9508          7.0894
+             1-7         48.1100          7.1700
+             1-8         48.0163          7.0539
+             1-6         47.9248          7.0909
+
+CLADE 1-7 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       18.6775       0.8383       0.2781
+
+CLADE 1-8 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        9.5413       0.2384       0.7644
+      NESTED CLADE       11.6405       0.0730       0.9298
+
+CLADE 1-6 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       19.6574       0.8446       0.1558
+      NESTED CLADE       19.6982       0.8472       0.1532
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       12.5014       0.8061       0.1941
+      NESTED CLADE        6.2985       0.8574       0.1428
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-4
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     2.9333
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-4         47.9340          7.0596
+             1-9         47.9298          7.0633
+            1-25         47.9800          7.0200
+
+CLADE 1-9 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       10.9259       0.8198       0.4595
+      NESTED CLADE       10.8534       0.8198       0.4595
+
+CLADE 1-25 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        5.8956       0.4595       0.8198
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE      -10.9259       0.4595       0.8198
+      NESTED CLADE       -4.9578       0.4595       0.8198
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-5
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     3.8667
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.6430
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-5         47.8388          7.8187
+            1-12         47.8100          7.9100
+            1-13         47.9300          7.9800
+            1-19         47.8283          7.7767
+
+CLADE 1-12 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        7.5181       0.6179       1.0000
+
+CLADE 1-13 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       15.7185       0.8763       0.3686
+
+CLADE 1-19 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       19.0918       0.6430       0.7161
+      NESTED CLADE       17.3399       0.6430       0.7161
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       19.0918       0.6430       0.7161
+      NESTED CLADE        5.7216       0.6430       0.7161
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-6
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    27.3016
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0565
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-6         48.0501          7.1093
+            1-14         47.9800          7.0600
+            1-16         48.0518          7.1105
+
+CLADE 1-14 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.0814       1.0000
+      NESTED CLADE        8.6096       0.1277       0.8758
+
+CLADE 1-16 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.2657       0.8825       0.1210
+      NESTED CLADE       21.2656       0.8825       0.1210
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       21.2657       0.9773       0.0262
+      NESTED CLADE       12.6560       0.8758       0.1277
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-7
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.8190
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.7831
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 2-7         47.9060          7.6783
+            1-20         47.8100          7.9100
+            1-21         47.9300          7.9800
+            1-22         47.9092          7.6542
+
+CLADE 1-20 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       20.2953       0.2186       1.0000
+
+CLADE 1-21 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       22.6192       0.6982       0.7791
+
+CLADE 1-22 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       30.2923       0.9594       0.2600
+      NESTED CLADE       29.8196       0.9594       0.2600
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       30.2923       0.9594       0.2600
+      NESTED CLADE        8.3624       0.9594       0.2600
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-11
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     3.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-11         47.9214          7.0515
+             1-5         47.8941          7.0662
+            1-24         47.9800          7.0200
+
+CLADE 1-5 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        8.8710       1.0000       0.3325
+      NESTED CLADE        9.3539       1.0000       0.3325
+
+CLADE 1-24 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        6.9185       0.3325       1.0000
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-12
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     3.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-12         47.8425          7.2751
+            1-10         47.8000          6.9322
+            1-35         47.9300          7.9800
+
+CLADE 1-10 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        7.8295       0.3281       1.0000
+      NESTED CLADE       26.0556       0.3281       1.0000
+
+CLADE 1-35 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       53.4047       1.0000       0.3281
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-13
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    10.0258
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.4914
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-13         48.0737          7.1925
+            1-11         48.0650          7.2049
+            1-30         48.1600          7.0700
+
+CLADE 1-11 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       24.1148       0.3137       0.6921
+      NESTED CLADE       23.6975       0.1908       0.8150
+
+CLADE 1-30 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.1832       0.7647       0.2411
+      NESTED CLADE       33.2698       0.8220       0.1838
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-14
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    12.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0175
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-14         48.2093          7.4885
+            1-23         47.9300          7.9800
+            1-31         47.9800          7.0200
+            1-38         48.4200          7.3600
+
+CLADE 1-23 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.2704       1.0000
+      NESTED CLADE       47.8931       1.0000       0.0699
+
+CLADE 1-31 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       43.0969       0.6597       0.5049
+
+CLADE 1-38 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       0.0503       1.0000
+      NESTED CLADE       25.2588       0.0503       1.0000
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-15
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    22.9118
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.2022
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-15         48.3171          7.2925
+            1-26         47.8100          7.9100
+            1-37         48.3400          7.1900
+            1-15         48.3402          7.2681
+
+CLADE 1-26 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       72.6305       1.0000       0.0526
+
+CLADE 1-37 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE        7.9849       0.2075       1.0000
+
+CLADE 1-15 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       14.1924       0.0782       0.9455
+      NESTED CLADE       15.4052       0.1479       0.8758
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 2-16
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     4.0000
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     1.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+      Clade 2-16         47.8803          7.4212
+            1-33         47.8100          7.9100
+            1-17         47.9029          7.2641
+
+CLADE 1-33 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       37.2685       0.5020       0.7507
+
+CLADE 1-17 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       35.6187       0.7507       0.5020
+      NESTED CLADE       39.5597       0.7507       0.5020
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 3-1
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    19.8266
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.1291
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 3-1         48.0719          7.1837
+             2-1         48.0431          7.0454
+            2-13         48.0737          7.1925
+
+CLADE 2-1 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        7.3003       0.2326       0.7734
+      NESTED CLADE       12.9753       0.1858       0.8202
+
+CLADE 2-13 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       24.5804       0.8357       0.1703
+      NESTED CLADE       24.4658       0.8202       0.1858
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       17.2801       0.7734       0.2326
+      NESTED CLADE       11.4905       0.8202       0.1858
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 3-2
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =     5.1181
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.1493
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 3-2         47.8398          7.6685
+             2-5         47.8388          7.8187
+            2-12         47.8425          7.2751
+
+CLADE 2-5 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       15.9095       0.0456       0.9939
+      NESTED CLADE       23.6522       0.0456       0.9939
+
+CLADE 2-12 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       35.0062       0.8302       0.2093
+      NESTED CLADE       45.3440       0.9939       0.0456
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       19.0967       1.0000       0.0395
+      NESTED CLADE       21.6918       0.9939       0.0456
+
+
+
+
+PERMUTATION ANALYSIS OF Clade 3-3
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =   329.9049
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0000
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+       Clade 3-3         48.0439          7.2077
+             2-3         47.9508          7.0894
+             2-4         47.9340          7.0596
+             2-9         48.3400          7.1900
+             2-2         47.9269          7.0357
+             2-8         47.9731          7.0370
+            2-11         47.9214          7.0515
+            2-17         47.8820          7.1951
+            2-14         48.2093          7.4885
+            2-16         47.8803          7.4212
+             2-6         48.0501          7.1093
+             2-7         47.9060          7.6783
+            2-19         48.2139          7.3241
+            2-15         48.3171          7.2925
+            2-20         47.9800          7.0200
+            2-18         48.4000          7.3000
+
+CLADE 2-3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       18.3062       0.0259       0.9741
+      NESTED CLADE       21.8927       0.0344       0.9656
+
+CLADE 2-4 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       10.4305       0.0022       0.9978
+      NESTED CLADE       18.8633       0.0192       0.9808
+
+CLADE 2-9 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       32.9167       0.6547       0.4037
+
+CLADE 2-2 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       10.9894       0.0043       0.9957
+      NESTED CLADE       20.2719       0.0448       0.9552
+
+CLADE 2-8 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        2.8844       0.0039       0.9962
+      NESTED CLADE       14.9330       0.0467       0.9534
+
+CLADE 2-11 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        8.5801       0.1146       0.8877
+      NESTED CLADE       19.7199       0.1940       0.8083
+
+CLADE 2-17 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       31.2887       0.7508       0.2494
+      NESTED CLADE       35.3602       0.8066       0.1936
+
+CLADE 2-14 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       34.6085       0.8591       0.1409
+      NESTED CLADE       43.5487       0.9888       0.0112
+
+CLADE 2-16 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       39.0024       0.9658       0.0346
+      NESTED CLADE       42.5488       0.9572       0.0432
+
+CLADE 2-6 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       20.9675       0.0000       1.0000
+      NESTED CLADE       23.6099       0.0002       0.9998
+
+CLADE 2-7 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.1254       0.6116       0.3884
+      NESTED CLADE       45.0829       1.0000       0.0000
+
+CLADE 2-19 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.1194       0.6217       0.3784
+      NESTED CLADE       34.5617       0.8279       0.1722
+
+CLADE 2-15 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       17.5556       0.0169       0.9831
+      NESTED CLADE       38.2158       0.9968       0.0032
+
+CLADE 2-20 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       15.6537       0.3730       0.7169
+
+CLADE 2-18 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        0.0000       1.0000       1.0000
+      NESTED CLADE       40.1415       0.7870       0.2667
+
+
+NO INTERIOR/TIP CLADES EXIST IN THIS GROUP
+
+
+
+
+PERMUTATION ANALYSIS OF Total Cladogram
+   BASED ON 10000 RESAMPLES
+
+
+PART I.  PERMUTATIONAL CONTINGENCY TEST:
+
+
+  OBSERVED CHI-SQUARE STATISTIC =    58.4693
+
+  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN
+    OR EQUAL TO THE OBSERVED CHI-SQUARE =     0.0001
+
+
+PART II.  GEOGRAPHIC DISTANCE ANALYSIS:
+
+GEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE
+ Total Cladogram         48.0393          7.2236
+             3-1         48.0719          7.1837
+             3-2         47.8398          7.6685
+             3-3         48.0439          7.2077
+
+CLADE 3-1 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       23.7817       0.0772       0.9228
+      NESTED CLADE       25.4197       0.0679       0.9321
+
+CLADE 3-2 (Tip)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       29.6474       0.5951       0.4049
+      NESTED CLADE       50.6202       1.0000       0.0000
+
+CLADE 3-3 (Interior)
+ TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE       28.3405       0.1015       0.8985
+      NESTED CLADE       28.7192       0.1650       0.8350
+
+
+PART III.  TEST OF INTERIOR VS. TIP CLADES:
+
+ TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=
+      WITHIN CLADE        3.0923       0.7609       0.2391
+      NESTED CLADE       -3.0006       0.1259       0.8741
+
+
+** ANALYSIS FINISHED **
+It took 39.7500 seconds.

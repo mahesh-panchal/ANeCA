@@ -1,0 +1,40 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   MessageDialog.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel
+
+public class MessageDialog extends Dialog
+{
+
+    public MessageDialog(Frame frame, String title, String message, boolean modal)
+    {
+        super(frame, title, modal);
+        LPanel p = new LPanel();
+        p.addLabel(message, 0, 0, 1.0D, 1.0D, 0, 0);
+        p.addButtonPanel("OK", 0);
+        p.finish();
+        add("Center", p);
+        pack();
+        show();
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if((event.target instanceof Button) && "OK".equals(object))
+        {
+            hide();
+            dispose();
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+}

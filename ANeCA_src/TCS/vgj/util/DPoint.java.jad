@@ -1,0 +1,53 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   DPoint.java
+
+package EDU.auburn.VGJ.util;
+
+
+public class DPoint
+{
+
+    public DPoint()
+    {
+    }
+
+    public DPoint(double x_in, double y_in)
+    {
+        x = x_in;
+        y = y_in;
+    }
+
+    public DPoint(DPoint init)
+    {
+        x = init.x;
+        y = init.y;
+    }
+
+    public boolean equals(DPoint other)
+    {
+        return other.x == x && other.y == y;
+    }
+
+    public void move(double new_x, double new_y)
+    {
+        x = new_x;
+        y = new_y;
+    }
+
+    public void move(DPoint to)
+    {
+        x = to.x;
+        y = to.y;
+    }
+
+    public void translate(double x_shift, double y_shift)
+    {
+        x += x_shift;
+        y += y_shift;
+    }
+
+    public double x;
+    public double y;
+}

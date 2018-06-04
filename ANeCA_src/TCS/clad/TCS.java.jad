@@ -1,0 +1,1019 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   TCS.java
+
+package clad;
+
+import EDU.auburn.VGJ.graph.GMLobject;
+import EDU.auburn.VGJ.gui.GraphWindow;
+import java.awt.*;
+import java.io.PrintStream;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
+// Referenced classes of package clad:
+//            TaxaItem, Logger, FileReader, TCSIO, 
+//            Mapper, Distance, Component, LWEdge, 
+//            Utils
+
+public class TCS
+{
+
+    public TCS(GraphWindow f)
+    {
+        frame = f;
+        commandLineMax = false;
+    }
+
+    public TCS()
+    {
+        commandLineMax = false;
+    }
+
+    public void setMaxDistance(int distance)
+    {
+        maxParsimonyDistance = distance;
+        commandLineMax = true;
+    }
+
+    public String getHaplotypeList(int hapNum)
+    {
+        String hapList = "";
+        TaxaItem taxon = getTaxaItem(new Integer(hapNum));
+        Enumeration enumDuplicateNames = taxon.dupnames.elements();
+        String str;
+        for(hapList = hapList + (taxon.dupnames.size() + 1) + "\n" + taxon.name; enumDuplicateNames.hasMoreElements(); hapList = hapList + "\n" + str)
+        {
+            str = (String)enumDuplicateNames.nextElement();
+        }
+
+        return hapList;
+    }
+
+    public boolean runTCS(String infile, String outfile, boolean gapmode, boolean distances, String logFileName)
+    {
+        graphExists = false;
+        long startTime;
+        startTime = startTime = System.currentTimeMillis();
+        internalNodeNumber = 0;
+        numHapHap = 0;
+        numHapInt = 0;
+        edges = new ArrayList();
+        Log = new Logger();
+        Log.setLogFile(logFileName);
+        boolean useGui = false;
+        if(frame != null)
+        {
+            useGui = true;
+            frame.progressBar.setValue(0);
+            frame.progressBar.update(frame.progressBar.getGraphics());
+            frame.statustextField.setText("STATUS: Reading file and collapsing");
+            frame.statustextField.setForeground(Color.red);
+            frame.statustextField.update(frame.statustextField.getGraphics());
+        }
+        Log.dprintln("TCS v1.21");
+        Date time = new Date();
+        Log.dprintln(time.toString());
+        Log.dprintln("Datafile = " + infile);
+        Log.dprintln("Current OS = " + currentOS);
+        fileReader = new FileReader(frame, Log);
+        if(useGui)
+        {
+            frame.progressBar.setValue(1);
+            frame.progressBar.update(frame.progressBar.getGraphics());
+        }
+        if(distances)
+        {
+            fileReader.ReadDistanceFile(infile);
+        } else
+        {
+            fileReader.ReadInputFile(infile, gapmode);
+        }
+        if(useGui || !commandLineMax)
+        {
+            calculateConnectionLimit();
+        } else
+        {
+            Log.dprintln("\nRUN SETTINGS");
+            Log.dprintln("User specified maximum connection steps = " + maxParsimonyDistance);
+        }
+        boolean warnMissing = fileReader.warnMissing;
+        int maxNameLen = fileReader.maxNameLen;
+        components = fileReader.components;
+        alltaxa = fileReader.alltaxa;
+        realtaxa = fileReader.realtaxa;
+        if(gapmode)
+        {
+            Log.dprintln("Gaps treated as fifth state");
+        } else
+        {
+            Log.dprintln("Gaps treated as missing data");
+        }
+        if(warnMissing)
+        {
+            Log.dprintln("\n\nWARNING: POSSIBLE MISSING DATA AMBIGUITIES");
+            Log.dprintln(fileReader.missingString);
+        }
+        Log.dprintln("\n\nHAPLOTYPES");
+        Log.dprintln("Number of haplotypes = " + components.size());
+        if(components.size() == 1)
+        {
+            JOptionPane.showMessageDialog(frame, "There is only one haplotype\nA graph cannot be built.", "TCS warning", 0);
+            System.out.println("Only one Haplotype!");
+            if(warnMissing)
+            {
+                JOptionPane.showMessageDialog(frame, "Warning : potential missing data ambiguities\nwhen collapsing sequences to haplotypes\nCheck the logfile.\n", "TCS warning", 0);
+            }
+            return false;
+        }
+        if(!distances)
+        {
+            TCSIO.printHaplotypeList(components, Log);
+            if(useGui)
+            {
+                frame.statustextField.setText("STATUS: Calculating distances");
+                frame.statustextField.update(frame.statustextField.getGraphics());
+            }
+            buildMatrix(gapmode);
+        }
+        Log.dprintln("\n\nCONNECTIONS");
+        float quantum = 0.0F;
+        int graphNumber = 0;
+        int val = 0;
+        if(useGui)
+        {
+            quantum = 50F / (float)realtaxa.size();
+            frame.statustextField.setText("STATUS: Estimating subnetworks");
+            frame.statustextField.update(frame.statustextField.getGraphics());
+            val = frame.progressBar.getValue();
+        }
+        Enumeration enumRealTaxa = realtaxa.elements();
+        int currentIteration = 0;
+        int progress = 0;
+        while(enumRealTaxa.hasMoreElements()) 
+        {
+            if(useGui)
+            {
+                currentIteration++;
+                progress = val + (int)((float)currentIteration * quantum);
+                frame.progressBar.setValue(progress);
+                frame.progressBar.update(frame.progressBar.getGraphics());
+            }
+            TaxaItem sourceTaxaItem = (TaxaItem)enumRealTaxa.nextElement();
+            boolean addedConnection = connectTaxa(sourceTaxaItem);
+            graphNumber++;
+        }
+        if(useGui)
+        {
+            quantum = 50F / (float)realtaxa.size();
+            currentIteration = 0;
+            frame.statustextField.setText("STATUS: Connecting subnetworks");
+            frame.statustextField.update(frame.statustextField.getGraphics());
+        }
+        while(components.size() > 1) 
+        {
+            if(useGui)
+            {
+                currentIteration++;
+                progress = 50 + (int)((float)currentIteration * quantum);
+                frame.progressBar.setValue(progress);
+                frame.progressBar.update(frame.progressBar.getGraphics());
+            }
+            graphNumber++;
+            if(!connectComponents())
+            {
+                break;
+            }
+        }
+        TCSIO.printMatrix(realtaxa, Log);
+        if(graphExists)
+        {
+            calculateOutgroupWeights();
+            Mapper.map(edges, maxParsimonyDistance, gapmode);
+            TCSIO.printGraph(outfile, components, distances, Log, maxWtaxa, maxNameLen, edges);
+            Log.dprintln("\n\n\nCalculations are finished.\n");
+        } else
+        {
+            JOptionPane.showMessageDialog(frame, "No connection below limit.\nA graph cannot be built.", "TCS warning", 0);
+            return false;
+        }
+        Log.dprintln("\n\n_________________________________________________________");
+        Log.dprintln("TCS v1.21");
+        Date date = new Date();
+        Log.dprintln(date.toString());
+        Log.dprintln("Datafile = " + infile);
+        long endTime = System.currentTimeMillis();
+        Log.dprintln("\nIt took " + (double)(endTime - startTime) / 60000D + " minutes.");
+        if(useGui)
+        {
+            frame.progressBar.setValue(100);
+            frame.progressBar.update(frame.progressBar.getGraphics());
+            frame.statustextField.setText("STATUS: program finished");
+            frame.statustextField.update(frame.statustextField.getGraphics());
+        }
+        Log.close();
+        if(warnMissing)
+        {
+            JOptionPane.showMessageDialog(frame, "Warning : potential missing data ambiguities\nwhen collapsing sequences to haplotypes\nCheck the logfile.\n", "TCS warning", 0);
+        }
+        return graphExists;
+    }
+
+    public void fillTaxaInfo(GMLobject GMLo)
+    {
+        alltaxa = new Vector();
+        GMLobject gml = GMLo;
+        GMLobject GMLtmp = gml.getGMLSubObject("graph", 3, false);
+        if(GMLtmp != null)
+        {
+            gml = GMLtmp;
+        }
+        for(GMLobject nodegml = gml.getGMLSubObject("node", 3, false); nodegml != null; nodegml = gml.getNextGMLSubObject())
+        {
+            boolean intermediate = false;
+            String name = null;
+            int length = 0;
+            int id = -1;
+            Integer tmpint = null;
+            String tmp = null;
+            if((tmp = (String)nodegml.getValue("label", 2)) != null)
+            {
+                name = tmp;
+            }
+            if((tmpint = (Integer)nodegml.getValue("id", 0)) != null)
+            {
+                id = tmpint.intValue();
+            }
+            int freq = 1;
+            GMLobject data;
+            if((data = nodegml.getGMLSubObject("data", 3, false)) != null)
+            {
+                if((tmp = (String)data.getValue("Frequency", 2)) != null)
+                {
+                    int first = tmp.indexOf("=");
+                    int second = tmp.indexOf("\n");
+                    if(second < 0)
+                    {
+                        second = tmp.indexOf("\r");
+                    }
+                    String number = tmp.substring(first + 1, second).trim();
+                    freq = Integer.parseInt(number);
+                }
+            } else
+            {
+                intermediate = true;
+                freq = 1;
+            }
+            if(name.length() != 0)
+            {
+                TaxaItem taxa = new TaxaItem(name, length, id);
+                taxa.numduplicates = freq - 1;
+                taxa.isIntermediate = intermediate;
+                taxa.resolved = true;
+                alltaxa.add(taxa);
+            }
+        }
+
+        for(GMLobject edgegml = gml.getGMLSubObject("edge", 3, false); edgegml != null; edgegml = gml.getNextGMLSubObject())
+        {
+            Integer source = (Integer)edgegml.getValue("source", 0);
+            Integer target = (Integer)edgegml.getValue("target", 0);
+            if(source != null && target != null)
+            {
+                TaxaItem tSource = getTaxaItem(source);
+                TaxaItem tTarget = getTaxaItem(target);
+                tSource.nbor.add(tTarget);
+                tTarget.nbor.add(tSource);
+            }
+        }
+
+    }
+
+    private TaxaItem getTaxaItem(Integer id)
+    {
+        int index = id.intValue();
+        int size = alltaxa.size();
+        for(int x = 0; x < size; x++)
+        {
+            TaxaItem taxon = (TaxaItem)alltaxa.get(x);
+            if(taxon.id == index)
+            {
+                return taxon;
+            }
+        }
+
+        return null;
+    }
+
+    private void addIntermediate(TaxaItem newtaxa, TaxaItem before, TaxaItem after, int after_distance)
+    {
+        for(Enumeration enumAllTaxa = alltaxa.elements(); enumAllTaxa.hasMoreElements();)
+        {
+            TaxaItem curtaxa = (TaxaItem)enumAllTaxa.nextElement();
+            if(curtaxa == newtaxa)
+            {
+                Distance fromnewdistance = new Distance(newtaxa.id, curtaxa.id, 0);
+                newtaxa.compdist.add(fromnewdistance);
+                Distance dummy = new Distance(newtaxa.id, curtaxa.id, 0);
+                newtaxa.metricdist.add(dummy);
+            } else
+            {
+                Distance beforetaxa = (Distance)curtaxa.compdist.get(before.id);
+                Distance aftertaxa = (Distance)curtaxa.compdist.get(after.id);
+                Distance newdistance;
+                Distance fromnewdistance;
+                if(beforetaxa.distance != 0x3b9aca00 && beforetaxa.distance < aftertaxa.distance)
+                {
+                    newdistance = new Distance(curtaxa.id, newtaxa.id, beforetaxa.distance + 1);
+                    fromnewdistance = new Distance(newtaxa.id, curtaxa.id, beforetaxa.distance + 1);
+                } else
+                if(aftertaxa.distance != 0x3b9aca00)
+                {
+                    newdistance = new Distance(curtaxa.id, newtaxa.id, aftertaxa.distance + after_distance);
+                    fromnewdistance = new Distance(newtaxa.id, curtaxa.id, aftertaxa.distance + after_distance);
+                } else
+                {
+                    newdistance = new Distance(curtaxa.id, newtaxa.id, 0x3b9aca00);
+                    fromnewdistance = new Distance(newtaxa.id, curtaxa.id, 0x3b9aca00);
+                }
+                curtaxa.compdist.add(newdistance);
+                newtaxa.compdist.add(fromnewdistance);
+                Distance dummy = new Distance(curtaxa.id, newtaxa.id, 0x3b9aca00);
+                curtaxa.metricdist.add(dummy);
+                dummy = new Distance(newtaxa.id, curtaxa.id, 0x3b9aca00);
+                newtaxa.metricdist.add(dummy);
+            }
+        }
+
+    }
+
+    private void buildMatrix(boolean gapmode)
+    {
+        Enumeration enumComponentsOne = components.elements();
+        Distance minDist = new Distance();
+        while(enumComponentsOne.hasMoreElements()) 
+        {
+            clad.Component componentOne = (clad.Component)enumComponentsOne.nextElement();
+            TaxaItem taxaItemOne = (TaxaItem)componentOne.taxa.get(0);
+            componentOne.mindist.distance = 0x3b9aca00;
+            Enumeration enumComponentsTwo = components.elements();
+            minDist.distance = 0x3b9aca00;
+            Distance metricdist;
+            for(; enumComponentsTwo.hasMoreElements(); taxaItemOne.metricdist.add(metricdist))
+            {
+                clad.Component componentTwo = (clad.Component)enumComponentsTwo.nextElement();
+                TaxaItem taxaItemTwo = (TaxaItem)componentTwo.taxa.get(0);
+                Distance realdist = new Distance(componentOne.id, componentTwo.id, 0, componentOne, componentTwo);
+                Distance tmpcdist = new Distance(componentOne.id, componentTwo.id, 0, componentOne, componentOne);
+                Distance tmptdist = new Distance(taxaItemOne.id, taxaItemTwo.id, 0, componentOne, componentOne);
+                metricdist = new Distance(taxaItemOne.id, taxaItemTwo.id, 0, componentOne, componentOne);
+                if(componentOne.id != componentTwo.id)
+                {
+                    for(int k = 0; k < taxaItemOne.characters.length; k++)
+                    {
+                        char char1 = taxaItemOne.characters[k];
+                        char char2 = taxaItemTwo.characters[k];
+                        if((gapmode || char1 != '-' && char2 != '-') && char1 != '?' && char2 != '?' && char1 != char2)
+                        {
+                            realdist.distance++;
+                        }
+                    }
+
+                    tmpcdist.distance = realdist.distance;
+                    tmptdist.distance = 0x3b9aca00;
+                    metricdist.distance = 0x3b9aca00;
+                    if(realdist.distance < minDist.distance)
+                    {
+                        minDist.clone(realdist);
+                    }
+                }
+                componentOne.compdist.add(tmpcdist);
+                taxaItemOne.compdist.add(tmptdist);
+                taxaItemOne.realdist.add(realdist);
+            }
+
+            componentOne.mindist.clone(minDist);
+            taxaItemOne.minRealDist = minDist.distance;
+        }
+    }
+
+    private boolean combineComponents(clad.Component componentOne, clad.Component componentTwo)
+    {
+        if(componentOne == componentTwo)
+        {
+            return false;
+        }
+        for(Enumeration enum1 = componentTwo.taxa.elements(); enum1.hasMoreElements();)
+        {
+            TaxaItem tempt1 = (TaxaItem)enum1.nextElement();
+            componentOne.taxa.add(tempt1);
+            tempt1.parentComponent = componentOne;
+        }
+
+        components.remove(componentTwo);
+        recalcMinDistance(componentOne, componentTwo.id);
+        return true;
+    }
+
+    private boolean connectComponents()
+    {
+        Distance mindist = new Distance();
+        mindist.distance = 0x3b9aca00;
+        clad.Component tempc1;
+        for(Enumeration enum1 = components.elements(); enum1.hasMoreElements();)
+        {
+            tempc1 = (clad.Component)enum1.nextElement();
+            if(tempc1.mindist.distance < mindist.distance)
+            {
+                mindist.clone(tempc1.mindist);
+            }
+        }
+
+        if(mindist.distance > maxParsimonyDistance)
+        {
+            return false;
+        }
+        tempc1 = mindist.sc;
+        clad.Component tempc2 = mindist.dc;
+        Vector destCandidates = new Vector(mindist.dc.taxa);
+        for(Enumeration enum1 = tempc1.taxa.elements(); enum1.hasMoreElements();)
+        {
+            TaxaItem tempt1 = (TaxaItem)enum1.nextElement();
+            if(!tempt1.isIntermediate)
+            {
+                for(Enumeration enum2 = tempc2.taxa.elements(); enum2.hasMoreElements();)
+                {
+                    TaxaItem tempt2 = (TaxaItem)enum2.nextElement();
+                    if(!tempt2.isIntermediate)
+                    {
+                        Distance thisdist = (Distance)tempt1.realdist.get(tempt2.id);
+                        if(thisdist.distance == mindist.distance)
+                        {
+                            Log.dprintln("adding two min taxa " + thisdist.source + "[" + tempt1.name + "] , " + thisdist.destination + "[" + tempt2.name + "]", 32768);
+                            Log.dprintln("In clusters " + tempc1.id + " , " + tempc2.id + " distance " + mindist.distance, 32768);
+                            Distance curdist = (Distance)tempt1.compdist.get(tempt2.id);
+                            if(curdist.distance > mindist.distance)
+                            {
+                                bestMetric(tempc1, tempc2, tempt1, tempt2, mindist.distance, destCandidates);
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        combineComponents(tempc1, tempc2);
+        return true;
+    }
+
+    private void connectComponents(clad.Component sourcec, clad.Component destc, Distance newdist, Vector candidates)
+    {
+        TaxaItem sourcet = (TaxaItem)alltaxa.get(newdist.source);
+        TaxaItem destt = (TaxaItem)alltaxa.get(newdist.destination);
+        graphExists = true;
+        if(newdist.distance == 1)
+        {
+            sourcet.nbor.add(destt);
+            destt.nbor.add(sourcet);
+            addLWEdge(sourcet, destt);
+        } else
+        {
+            TaxaItem nextt = sourcet;
+            int intermediates = newdist.distance;
+            char consensus[] = null;
+            while(intermediates > 1) 
+            {
+                intermediates--;
+                TaxaItem newt = new TaxaItem("In" + internalNodeNumber, 0, consensus);
+                newt.isIntermediate = true;
+                internalNodeNumber++;
+                alltaxa.add(newt);
+                candidates.add(newt);
+                newt.id = alltaxa.indexOf(newt);
+                sourcec.taxa.add(newt);
+                nextt.nbor.add(newt);
+                newt.nbor.add(nextt);
+                addLWEdge(nextt, newt);
+                addIntermediate(newt, nextt, destt, intermediates);
+                nextt = newt;
+                if(intermediates == 1)
+                {
+                    destt.nbor.add(newt);
+                    newt.nbor.add(destt);
+                    addLWEdge(newt, destt);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void addLWEdge(TaxaItem sourcet, TaxaItem destt)
+    {
+        if(destt.isIntermediate ^ sourcet.isIntermediate)
+        {
+            edges.add(new LWEdge(destt, sourcet, 1, edges.size()));
+            numHapInt++;
+        } else
+        if(!destt.isIntermediate && !sourcet.isIntermediate)
+        {
+            edges.add(new LWEdge(destt, sourcet, 2, edges.size()));
+            numHapHap++;
+        } else
+        {
+            edges.add(new LWEdge(destt, sourcet, 0, edges.size()));
+        }
+    }
+
+    private void resolveSeq(TaxaItem mySourcet, TaxaItem myDestt)
+    {
+        TaxaItem resolvedNbors[] = Utils.getAllResolved(mySourcet, myDestt);
+        for(int charNum = 0; charNum < resolvedNbors[0].characters.length; charNum++)
+        {
+            char consChar = myDestt.characters[charNum];
+            boolean moreThan2 = false;
+            int whichBranch = 0;
+            char type1;
+            char type2 = type1 = resolvedNbors[0].characters[charNum];
+            int numt1 = 1;
+            int numt2 = 0;
+            consChar = type1;
+            for(int nborNum = 1; nborNum < resolvedNbors.length; nborNum++)
+            {
+                if(resolvedNbors[nborNum].characters[charNum] != type1)
+                {
+                    if(type1 != type2 && resolvedNbors[nborNum].characters[charNum] != type2)
+                    {
+                        moreThan2 = true;
+                    } else
+                    {
+                        type2 = resolvedNbors[nborNum].characters[charNum];
+                        numt2++;
+                        whichBranch = nborNum;
+                    }
+                } else
+                {
+                    numt1++;
+                }
+                if(resolvedNbors[nborNum].characters[charNum] < 'A' || resolvedNbors[nborNum].characters[charNum] > 'Z' || consChar < 'A' || consChar > 'Z')
+                {
+                    consChar = '?';
+                } else
+                {
+                    consChar = Utils.matrix[(resolvedNbors[nborNum].characters[charNum] - 65) * 25 + (consChar - 65)];
+                }
+            }
+
+            if(moreThan2)
+            {
+                mySourcet.characters[charNum] = consChar;
+            } else
+            if(numt1 == 1)
+            {
+                mySourcet.characters[charNum] = resolvedNbors[1].characters[charNum];
+            } else
+            if(numt2 == 1)
+            {
+                mySourcet.characters[charNum] = resolvedNbors[whichBranch].characters[charNum];
+            } else
+            {
+                mySourcet.characters[charNum] = consChar;
+            }
+        }
+
+        mySourcet.resolved = true;
+    }
+
+    private boolean connectTaxa(TaxaItem source)
+    {
+        boolean madeNewConnection = false;
+        Distance minDist = new Distance();
+        minDist.distance = 0x3b9aca00;
+        for(Enumeration enumRealDistFromSourceToOthers = source.realdist.elements(); enumRealDistFromSourceToOthers.hasMoreElements();)
+        {
+            Distance dist = (Distance)enumRealDistFromSourceToOthers.nextElement();
+            if(dist.distance < minDist.distance && dist.destination != source.id)
+            {
+                minDist.clone(dist);
+            }
+        }
+
+        if(minDist.distance > maxParsimonyDistance)
+        {
+            return madeNewConnection;
+        }
+        Enumeration enumComponents = components.elements();
+        boolean combineComponents = false;
+        while(enumComponents.hasMoreElements()) 
+        {
+            clad.Component curComponent = (clad.Component)enumComponents.nextElement();
+            for(Enumeration enumCurComponentsTaxa = curComponent.taxa.elements(); enumCurComponentsTaxa.hasMoreElements();)
+            {
+                TaxaItem curTaxaItem = (TaxaItem)enumCurComponentsTaxa.nextElement();
+                if(!curTaxaItem.isIntermediate)
+                {
+                    Distance dist = (Distance)source.realdist.get(curTaxaItem.id);
+                    if(minDist.distance == dist.distance)
+                    {
+                        combineComponents = true;
+                        Distance already = (Distance)source.compdist.get(dist.destination);
+                        if(already.distance > minDist.distance)
+                        {
+                            int limit = source.minRealDist;
+                            if(limit < curTaxaItem.minRealDist)
+                            {
+                                limit = curTaxaItem.minRealDist;
+                            }
+                            clad.Component sourceParentComp = source.parentComponent;
+                            clad.Component curTaxaItemParentComp = curTaxaItem.parentComponent;
+                            Vector destCandidates = new Vector(curTaxaItemParentComp.taxa);
+                            madeNewConnection |= bestMetric(sourceParentComp, curTaxaItemParentComp, source, curTaxaItem, limit, destCandidates);
+                        }
+                    }
+                }
+            }
+
+            if(combineComponents)
+            {
+                combineComponents(source.parentComponent, curComponent);
+                combineComponents = false;
+            }
+        }
+        return madeNewConnection;
+    }
+
+    private int evaluateMetric(Vector allvect, int TOO_SMALL_SCORE, int numIntermediates, int limit)
+    {
+        int score = 0;
+        score = -(numIntermediates - 1);
+        for(Enumeration enumsourcet = allvect.elements(); enumsourcet.hasMoreElements();)
+        {
+            TaxaItem sourceitem = (TaxaItem)enumsourcet.nextElement();
+            if(!sourceitem.isIntermediate)
+            {
+                for(Enumeration enumdestt = allvect.elements(); enumdestt.hasMoreElements();)
+                {
+                    TaxaItem destitem = (TaxaItem)enumdestt.nextElement();
+                    if(!destitem.isIntermediate && sourceitem.id != destitem.id)
+                    {
+                        Distance realdist = (Distance)sourceitem.realdist.get(destitem.id);
+                        Distance metricdist = (Distance)sourceitem.metricdist.get(destitem.id);
+                        if(realdist.distance <= 2 * maxParsimonyDistance || metricdist.distance <= 2 * maxParsimonyDistance)
+                        {
+                            if(realdist.distance == metricdist.distance)
+                            {
+                                score += 20;
+                            } else
+                            if(realdist.distance > metricdist.distance)
+                            {
+                                if(sourceitem.parentComponent != destitem.parentComponent && metricdist.distance <= limit)
+                                {
+                                    score = 0xc4653600;
+                                    return score;
+                                }
+                                double exp_factor = realdist.distance - metricdist.distance;
+                                score = (int)((double)score - (double)TOO_SMALL_SCORE * exp_factor);
+                            } else
+                            {
+                                score -= 10;
+                            }
+                            if(metricdist.distance < sourceitem.minRealDist)
+                            {
+                                score = 0xc4653600;
+                                return score;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return score;
+    }
+
+    private void calculateOutgroupWeights()
+    {
+        int numNetworks = components.size() + 1;
+        double total_weight[] = new double[numNetworks];
+        int networkNum = 0;
+        int ntaxa = 0;
+        Log.dprint("\n\nOUTGROUP WEIGHTS");
+        for(Enumeration enumc = components.elements(); enumc.hasMoreElements();)
+        {
+            clad.Component tempc = (clad.Component)enumc.nextElement();
+            Enumeration enumt = tempc.taxa.elements();
+            networkNum++;
+            while(enumt.hasMoreElements()) 
+            {
+                TaxaItem tempt = (TaxaItem)enumt.nextElement();
+                if(!tempt.isIntermediate)
+                {
+                    ntaxa++;
+                    Enumeration enumn = tempt.nbor.elements();
+                    int sum_nbor_dup = 0;
+                    int anynbor;
+                    for(anynbor = 0; enumn.hasMoreElements(); anynbor++)
+                    {
+                        TaxaItem tempn = (TaxaItem)enumn.nextElement();
+                        if(!tempn.isIntermediate)
+                        {
+                            sum_nbor_dup += tempn.numduplicates + 1;
+                        }
+                    }
+
+                    if(anynbor == 1)
+                    {
+                        tempt.isTip = true;
+                    } else
+                    {
+                        tempt.isTip = false;
+                    }
+                    if(tempt.isTip)
+                    {
+                        tempt.weight = (double)(tempt.numduplicates + 1) / 2D;
+                    } else
+                    {
+                        tempt.weight = tempt.numduplicates + 1 + sum_nbor_dup;
+                    }
+                    total_weight[networkNum] += tempt.weight;
+                }
+            }
+        }
+
+        Enumeration enumcomp = components.elements();
+        maxWtaxa = new String[numNetworks];
+        double maxW[] = new double[numNetworks];
+        networkNum = 0;
+        maxW[networkNum] = 0.0D;
+        for(; enumcomp.hasMoreElements(); Log.dprintln("Biggest outgroup probability is " + maxWtaxa[networkNum] + " (" + maxW[networkNum] + ")"))
+        {
+            clad.Component tempcomp = (clad.Component)enumcomp.nextElement();
+            Enumeration enumtaxa = tempcomp.taxa.elements();
+            networkNum++;
+            Log.dprintln("\n*** Network " + networkNum);
+            maxW[networkNum] = 0.0D;
+            while(enumtaxa.hasMoreElements()) 
+            {
+                TaxaItem temptaxa = (TaxaItem)enumtaxa.nextElement();
+                if(!temptaxa.isIntermediate)
+                {
+                    temptaxa.oweight = temptaxa.weight / total_weight[networkNum];
+                    Log.dprintln(temptaxa.name + " weigth = " + temptaxa.oweight);
+                    if(temptaxa.oweight > maxW[networkNum])
+                    {
+                        maxW[networkNum] = temptaxa.oweight;
+                        maxWtaxa[networkNum] = temptaxa.name;
+                    }
+                }
+            }
+            Log.dprintln("Total weight = " + total_weight[networkNum]);
+        }
+
+    }
+
+    private void recalcDist(Vector allvect, TaxaItem sourcebordert, TaxaItem destbordert, int length)
+    {
+        Distance metricDist = (Distance)sourcebordert.metricdist.get(destbordert.id);
+        metricDist.distance = length;
+        for(Enumeration enumsourcet = allvect.elements(); enumsourcet.hasMoreElements();)
+        {
+            TaxaItem sourceitem = (TaxaItem)enumsourcet.nextElement();
+            for(Enumeration enumdestt = allvect.elements(); enumdestt.hasMoreElements();)
+            {
+                TaxaItem destitem = (TaxaItem)enumdestt.nextElement();
+                Distance dist = (Distance)sourceitem.metricdist.get(destitem.id);
+                Distance compdist = (Distance)sourceitem.compdist.get(destitem.id);
+                int newdistance = ((Distance)sourceitem.compdist.get(sourcebordert.id)).distance;
+                newdistance += length;
+                newdistance += ((Distance)destbordert.compdist.get(destitem.id)).distance;
+                if(newdistance < compdist.distance)
+                {
+                    dist.distance = newdistance;
+                } else
+                {
+                    dist.distance = compdist.distance;
+                }
+            }
+
+        }
+
+    }
+
+    private boolean bestMetric(clad.Component sourcec, clad.Component destc, TaxaItem sourcet, TaxaItem destt, int limit, Vector destCandidates)
+    {
+        boolean addedConnection = false;
+        Enumeration enumSrcCompsTaxa = sourcec.taxa.elements();
+        Distance bestDist = new Distance(0, 0, 0);
+        int metric = 0xc4653600;
+        boolean firstTime = true;
+        while(enumSrcCompsTaxa.hasMoreElements()) 
+        {
+            TaxaItem curTaxaFromSrcsComp = (TaxaItem)enumSrcCompsTaxa.nextElement();
+            if(curTaxaFromSrcsComp == sourcet || curTaxaFromSrcsComp.isIntermediate)
+            {
+                for(Enumeration enumDstCandidates = destCandidates.elements(); enumDstCandidates.hasMoreElements();)
+                {
+                    TaxaItem curDestCandTaxa = (TaxaItem)enumDstCandidates.nextElement();
+                    if(curDestCandTaxa == destt || curDestCandTaxa.isIntermediate)
+                    {
+                        int total = ((Distance)sourcet.realdist.get(destt.id)).distance;
+                        Distance nearest = (Distance)sourcet.compdist.get(curTaxaFromSrcsComp.id);
+                        Distance other = (Distance)destt.compdist.get(curDestCandTaxa.id);
+                        total -= nearest.distance + other.distance;
+                        if(total >= 1)
+                        {
+                            Vector allvect = new Vector(sourcec.taxa);
+                            int srcCnt = sourcec.taxa.size();
+                            int dstCnt = 0;
+                            if(sourcec.id != destc.id)
+                            {
+                                allvect.addAll(destc.taxa);
+                                dstCnt = destc.taxa.size();
+                            }
+                            if(srcCnt > dstCnt)
+                            {
+                                srcCnt *= 10;
+                            } else
+                            {
+                                srcCnt = dstCnt * 10;
+                            }
+                            recalcDist(allvect, curTaxaFromSrcsComp, curDestCandTaxa, total);
+                            int score = evaluateMetric(allvect, srcCnt, total, limit);
+                            if(firstTime || score > metric)
+                            {
+                                firstTime = false;
+                                bestDist.source = curTaxaFromSrcsComp.id;
+                                bestDist.destination = curDestCandTaxa.id;
+                                bestDist.distance = total;
+                                metric = score;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        TaxaItem bestDistSrcTaxa = (TaxaItem)alltaxa.get(bestDist.source);
+        TaxaItem bestDistDstTaxa = (TaxaItem)alltaxa.get(bestDist.destination);
+        Distance already = (Distance)bestDistSrcTaxa.compdist.get(bestDistDstTaxa.id);
+        if(already.distance > bestDist.distance)
+        {
+            addedConnection = true;
+            connectComponents(sourcec, destc, bestDist, destCandidates);
+            Utils.updateDistance(sourcec, destc, bestDist);
+        }
+        return addedConnection;
+    }
+
+    private int buildParseTable(int MaxNucleotides, int conLimit)
+    {
+        int index = 0;
+        double parsval = 1.0D;
+        if(frame != null)
+        {
+            frame.statustextField.setText("STATUS: Calculating " + conLimit + "% connection limit");
+            frame.statustextField.update(frame.statustextField.getGraphics());
+        }
+        Log.dprintln("\n\n_________________________________________________________");
+        Log.dprintln("\n\nPARSIMONY PROBABILITY");
+        for(double percentValue = (double)conLimit * 0.01D; parsval > percentValue;)
+        {
+            parsval = Utils.calcPars(++index, MaxNucleotides - index, 2000);
+            Log.dprintln("For " + index + " step(s),\tP(" + conLimit + "%) = " + parsval);
+        }
+
+        Log.dprintln("");
+        return index - 1;
+    }
+
+    private void calculateConnectionLimit()
+    {
+        String steps = "";
+        int conLimit = 95;
+        if(frame != null)
+        {
+            if(frame.manualBox.getState())
+            {
+                steps = frame.manualConnections.getText();
+            } else
+            {
+                String conL = frame.conLimit.getSelectedItem();
+                conL = conL.substring(0, 2);
+                conLimit = Integer.parseInt(conL);
+            }
+        }
+        if(steps.equals(""))
+        {
+            if(fileReader.doingHaps)
+            {
+                maxParsimonyDistance = fileReader.len;
+                Log.dprintln("\rRUN SETTINGS");
+                Log.dprintln("Maximum connection steps equal number of SNPs = " + maxParsimonyDistance);
+            }
+            maxParsimonyDistance = buildParseTable(fileReader.len, conLimit);
+            Log.dprintln("\nRUN SETTINGS");
+            Log.dprintln("Calculated maximum connection steps at " + conLimit + "% = " + maxParsimonyDistance);
+            if(frame != null)
+            {
+                frame.calcLimitLabel.setText("Connection Limit = " + maxParsimonyDistance);
+                frame.calcLimitLabel.update(frame.calcLimitLabel.getGraphics());
+            }
+        } else
+        {
+            try
+            {
+                maxParsimonyDistance = Integer.parseInt(steps);
+                if(maxParsimonyDistance <= 0)
+                {
+                    throw new Exception();
+                }
+                Log.dprintln("\nRUN SETTINGS");
+                Log.dprintln("User specified maximum connection steps = " + maxParsimonyDistance);
+            }
+            catch(Exception _ex)
+            {
+                JOptionPane.showMessageDialog(frame, "Error : You must use a positive integer for the Connection limit!\n\tUsing a default value of 40 for the Connection Limit", "TCS warning", 0);
+                maxParsimonyDistance = 40;
+                Log.dprintln("\nRUN SETTINGS");
+                Log.dprintln("Invalid user specified maximum connection steps.  Default = 40" + maxParsimonyDistance);
+            }
+        }
+    }
+
+    private void recalcMinDistance(clad.Component collapse, int removeid)
+    {
+        for(Enumeration enumall = components.elements(); enumall.hasMoreElements();)
+        {
+            clad.Component tempc1 = (clad.Component)enumall.nextElement();
+            if(tempc1.mindist.dc.id == removeid)
+            {
+                tempc1.mindist.dc = collapse;
+            }
+        }
+
+        Distance mindist = new Distance();
+        mindist.distance = 0x3b9aca00;
+        for(Enumeration enumall = components.elements(); enumall.hasMoreElements();)
+        {
+            clad.Component tempc1 = (clad.Component)enumall.nextElement();
+            if(tempc1 != collapse)
+            {
+                for(Enumeration enumtaxa = tempc1.taxa.elements(); enumtaxa.hasMoreElements();)
+                {
+                    TaxaItem tempt1 = (TaxaItem)enumtaxa.nextElement();
+                    if(!tempt1.isIntermediate)
+                    {
+                        for(Enumeration enumcollapse = collapse.taxa.elements(); enumcollapse.hasMoreElements();)
+                        {
+                            TaxaItem tempt2 = (TaxaItem)enumcollapse.nextElement();
+                            if(!tempt2.isIntermediate)
+                            {
+                                Distance nextdist = (Distance)tempt2.realdist.get(tempt1.id);
+                                if(nextdist.distance < mindist.distance)
+                                {
+                                    mindist.clone(nextdist);
+                                    mindist.sc = collapse;
+                                    mindist.dc = tempc1;
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+        collapse.mindist = mindist;
+    }
+
+    private Vector alltaxa;
+    private boolean graphExists;
+    private GraphWindow frame;
+    private int internalNodeNumber;
+    private Vector components;
+    private Vector realtaxa;
+    private Logger Log;
+    private FileReader fileReader;
+    private String maxWtaxa[];
+    private int maxParsimonyDistance;
+    private boolean commandLineMax;
+    private ArrayList edges;
+    private int numHapHap;
+    private int numHapInt;
+    public static String currentOS;
+    public static final boolean printIntermediateLabels = false;
+    public static final String VERSION = "v1.21";
+    public static final int INFINITY = 0x3b9aca00;
+    public static final boolean log = true;
+    public static final int debug = 34816;
+    private static final int TOO_BIG_SCORE = 10;
+    private static final int NUM_INTERMEDIATE_SCORE = 1;
+    private static final int CORRECT_SCORE = 20;
+    public static String urlTCS = "http://darwin.uvigo.es/software/tcs.html";
+    public static String docTCS = "/docs/TCS1.21.html";
+
+}

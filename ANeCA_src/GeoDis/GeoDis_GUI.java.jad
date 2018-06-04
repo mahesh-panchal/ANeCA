@@ -1,0 +1,817 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GeoDis.java
+
+import edu.stanford.ejalbert.BrowserLauncher;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.Date;
+import java.util.Properties;
+import javax.swing.*;
+import javax.swing.text.Document;
+
+class GeoDis_GUI extends JFrame
+{
+    class Quit_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            frame.dispose();
+            System.exit(0);
+        }
+
+        Frame frame;
+        final GeoDis_GUI this$0;
+
+        public Quit_listener(Frame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            frame = theframe;
+        }
+    }
+
+    class WWW_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            try
+            {
+                BrowserLauncher.openURL(GeoDis.url);
+            }
+            catch(IOException exc)
+            {
+                exc.printStackTrace();
+            }
+        }
+
+        JFrame www_frame;
+        final GeoDis_GUI this$0;
+
+        public WWW_listener(JFrame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            www_frame = new JFrame();
+            www_frame = theframe;
+        }
+    }
+
+    class Citation_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            JOptionPane.showMessageDialog(citation_frame, "Posada D, Crandall KA, Templeton AR. 2000. GeoDis: A program\n  for the cladistic nested analysis of the geographical distribution    \n  of genetic haplotypes. Molecular Ecology 9: 487-488", "GeoDis Citation", -1);
+        }
+
+        JFrame citation_frame;
+        final GeoDis_GUI this$0;
+
+        public Citation_listener(JFrame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            citation_frame = new JFrame();
+            citation_frame = theframe;
+        }
+    }
+
+    class About_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            JOptionPane.showMessageDialog(about_frame, "* GeoDis is based in a method and code in BASIC by Alan Templeton      \n* Java code by David Posada\n* (c)1999-2006\n                   Correspondence to dposada@uvigo.es\n                   http://darwin.uvigo.es", "About GeoDis", -1);
+        }
+
+        JFrame about_frame;
+        final GeoDis_GUI this$0;
+
+        public About_listener(JFrame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            about_frame = new JFrame();
+            about_frame = theframe;
+        }
+    }
+
+    class Help_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            help_frame.setTitle("Help for Geodis 2.5");
+            area.setMargin(new Insets(5, 10, 10, 5));
+            area.setFont(new Font("Monaco", 0, 9));
+            help_frame.reshape(300, 50, 600, 500);
+            help_frame.setResizable(false);
+            contentPane.add(area);
+            contentPane.add(new JScrollPane(area), "Center");
+            printHelp();
+            help_frame.setVisible(true);
+        }
+
+        public void printHelp()
+        {
+            java.awt.event.WindowListener l = new WindowAdapter() {
+
+                public void windowClosing(WindowEvent e)
+                {
+                    System.exit(0);
+                }
+
+                final Help_listener this$1;
+
+                
+                {
+                    this$1 = Help_listener.this;
+                    super();
+                }
+            }
+;
+            helpfile.println("GEODIS 2.5 Help File\n\n");
+            helpfile.println("GeoDis implements the nested clade analysis (Templeton et al 1995) \nTo use GeoDis you must have a cladogram in which a nested structure has been defined\nThe input for GeoDis is the description of this nested cladogram. Building this is file\nis tedious and requires attention. This format is described below line by line\nComments are indicated after double slash (//) and should not appear in the\nfinal input file. Explore the example files provided.\nIt is highly recommended that you read the documentation.\n\n");
+            helpfile.println("\nHallucigenia  mtDNA         // locationName of the data set ");
+            helpfile.println("\n3                           // Number of populations ");
+            helpfile.println("\n1 Green Mountain            // Number and name of the population ");
+            helpfile.println("\n7  25 30 30 N  60 25 34 E   // Sample size, latitude and longitude");
+            helpfile.println("\n2 Blue Mountain");
+            helpfile.println("\n6  22 01 45 N  60 35 22 E");
+            helpfile.println("\n Red Mountain");
+            helpfile.println("\n7  28 44 56 N  60 21 34 E");
+            helpfile.println("\n5                    // Total number of clades in the input file");
+            helpfile.println("\nClade 1-1            // name of the nesting clade");
+            helpfile.println("\n6                    // Number of clades nested in the nesting clade");
+            helpfile.println("\nI II III IV V        // name of these clades");
+            helpfile.println("\n0  1   1  1 1        // cladogram location for each clade : tip(1), interior (0)");
+            helpfile.println("\n3                    // Number of populations where the nesting clade (Clade 1-1) occurs");
+            helpfile.println("\n1 2 3                // Identifier for of each of these populations");
+            helpfile.println("\n5 2 4                // Here starts the observation matrix. Columns are populations and rows");
+            helpfile.println("\n0 2 0                //  are clades. The first row corresponds to the first subclade (I),");
+            helpfile.println("\n0 1 0                //  and so on. So, in clade I there are 5 individuals at");
+            helpfile.println("\n0 1 3                //  population number 1 (Green Mountain), 2 at population 2, and 4 at population 3. ");
+            helpfile.println("\nClade 1-2            // Next clade at step-1 level");
+            helpfile.println("\n...                  // And so on...");
+            helpfile.println("\nEND                  // It is safe to include an END the end of the file");
+            helpfile.println("\n\nReading the references included in the doc file will help to understand ");
+            helpfile.println("\nthe input format, and more importantly, the conclusions of this analysis");
+            helpfile.println("\n\n\nDavid Posada");
+            helpfile.println("\nJune 2005");
+        }
+
+        JFrame help_frame;
+        private JTextArea area;
+        private GridBagLayout gridbag;
+        private Container contentPane;
+        Document doc;
+        PrintStream helpdoc;
+        TextOutputStream helpfile;
+        final GeoDis_GUI this$0;
+
+        Help_listener()
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            help_frame = new JFrame();
+            area = new JTextArea(40, 50);
+            gridbag = new GridBagLayout();
+            contentPane = help_frame.getContentPane();
+            doc = area.getDocument();
+            helpdoc = new PrintStream(new DocumentOutputStream(doc));
+            helpfile = new TextOutputStream(helpdoc);
+        }
+    }
+
+    class DD_listener
+        implements ItemListener
+    {
+
+        public void itemStateChanged(ItemEvent event)
+        {
+            if((double)count % 2D == 0.0D)
+            {
+                GeoDis.usingDecimalDegrees = true;
+                matrix_checkbox.setEnabled(false);
+            } else
+            {
+                GeoDis.usingDecimalDegrees = false;
+                matrix_checkbox.setEnabled(true);
+            }
+            count++;
+        }
+
+        float count;
+        final GeoDis_GUI this$0;
+
+        public DD_listener()
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            count = 0.0F;
+        }
+    }
+
+    class Weights_listener
+        implements ItemListener
+    {
+
+        public void itemStateChanged(ItemEvent event)
+        {
+            if((double)count % 2D == 0.0D)
+            {
+                GeoDis.weights = true;
+            } else
+            {
+                GeoDis.weights = false;
+            }
+            count++;
+        }
+
+        float count;
+        final GeoDis_GUI this$0;
+
+        public Weights_listener()
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            count = 0.0F;
+        }
+    }
+
+    class Matrix_listener
+        implements ItemListener
+    {
+
+        public void itemStateChanged(ItemEvent event)
+        {
+            if((double)count % 2D == 0.0D)
+            {
+                GeoDis.doingDistances = true;
+                dd_checkbox.setEnabled(false);
+            } else
+            {
+                GeoDis.doingDistances = false;
+                dd_checkbox.setEnabled(true);
+            }
+            count++;
+        }
+
+        float count;
+        final GeoDis_GUI this$0;
+
+        public Matrix_listener()
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            count = 0.0F;
+        }
+    }
+
+    class Common_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+            throws SecurityException
+        {
+            JMenuItem source = (JMenuItem)(JMenuItem)e.getSource();
+            string = source.getActionCommand();
+            if(string.equalsIgnoreCase("save"))
+            {
+                try
+                {
+                    dialog = new FileDialog(frame, "Open file to save NCPA results", 1);
+                    dialog.setVisible(true);
+                }
+                catch(Throwable f)
+                {
+                    JOptionPane.showMessageDialog(frame, "It appears your VM does not allow file saving", "GeoDis error", 0);
+                    return;
+                }
+                if(dialog.getFile() != null)
+                {
+                    String sname = dialog.getFile();
+                    File sfile = new File((new StringBuilder()).append(dialog.getDirectory()).append(sname).toString());
+                    GeoDis.outfilename = (new StringBuilder()).append(dialog.getDirectory()).append(sname).toString();
+                    GeoDis.printToFile = true;
+                    GeoDis.printOut();
+                }
+            }
+            if(string.equalsIgnoreCase("print"))
+            {
+                Toolkit toolkit = GeoDis_GUI.f.getToolkit();
+                Properties printprefs = new Properties();
+                PrintJob job = toolkit.getPrintJob(GeoDis_GUI.f, "GeoDis 2.5", printprefs);
+                if(job == null)
+                {
+                    return;
+                }
+                Dimension size = area.getSize();
+                Dimension pagesize = job.getPageDimension();
+                double dpages = (double)size.height / (double)pagesize.height;
+                long pages = Math.round(dpages + 0.5D);
+                int y = 0;
+                for(int i = 0; (long)i < pages; i++)
+                {
+                    Graphics page = job.getGraphics();
+                    page.translate((pagesize.width - size.width) / 2, y);
+                    y -= pagesize.height;
+                    page.setClip(0, 0, size.width, size.height);
+                    area.print(page);
+                    page.dispose();
+                }
+
+                job.end();
+            }
+            if(!string.equalsIgnoreCase("page"));
+            if(string.equalsIgnoreCase("copy"))
+            {
+                GeoDis_GUI.textArea.copy();
+            }
+            if(string.equalsIgnoreCase("cut"))
+            {
+                GeoDis_GUI.textArea.cut();
+            }
+            if(string.equalsIgnoreCase("selectall"))
+            {
+                GeoDis_GUI.textArea.selectAll();
+            }
+        }
+
+        JTextArea area;
+        String string;
+        JFrame frame;
+        FileDialog dialog;
+        final GeoDis_GUI this$0;
+
+        public Common_listener(JTextArea thearea, JFrame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            area = thearea;
+            frame = theframe;
+        }
+    }
+
+    class Outfile_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+            throws SecurityException
+        {
+            try
+            {
+                dialog = new FileDialog(frame, "Open file to print NCPA results", 1);
+                dialog.setVisible(true);
+            }
+            catch(Throwable f)
+            {
+                JOptionPane.showMessageDialog(frame, "It appears your VM does not allow file saving", "GeoDis error", 0);
+                return;
+            }
+            if(dialog.getFile() != null)
+            {
+                oname = dialog.getFile();
+                File ofile = new File((new StringBuilder()).append(dialog.getDirectory()).append(oname).toString());
+                GeoDis.outfilename = (new StringBuilder()).append(dialog.getDirectory()).append(oname).toString();
+                if(oname.length() < 20)
+                {
+                    oname = oname.concat("                         ");
+                    oname = oname.substring(0, 19);
+                } else
+                {
+                    oname = oname.substring(0, 16);
+                    oname = oname.concat("...");
+                }
+                label.setText(oname);
+                GeoDis.printToFile = true;
+            }
+        }
+
+        JFrame frame;
+        FileDialog dialog;
+        int returnVal;
+        JLabel label;
+        String oname;
+        final GeoDis_GUI this$0;
+
+        public Outfile_listener(JFrame theframe, JLabel thelabel)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            frame = theframe;
+            label = thelabel;
+        }
+    }
+
+    class Infile_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+            throws SecurityException
+        {
+            try
+            {
+                dialog = new FileDialog(frame, "Open file with nested clade description", 0);
+                dialog.setVisible(true);
+            }
+            catch(Throwable f)
+            {
+                JOptionPane.showMessageDialog(frame, "It appears your VM does not allow file loading", "GeoDis error", 0);
+                return;
+            }
+            if(dialog.getFile() != null)
+            {
+                iname = dialog.getFile();
+                File ifile = new File((new StringBuilder()).append(dialog.getDirectory()).append(iname).toString());
+                GeoDis.infilename = (new StringBuilder()).append(dialog.getDirectory()).append(iname).toString();
+                if(iname.length() < 20)
+                {
+                    iname = iname.concat("                         ");
+                    iname = iname.substring(0, 19);
+                } else
+                {
+                    iname = iname.substring(0, 16);
+                    iname = iname.concat("...");
+                }
+                label.setText(iname);
+                GeoDis.logfilename = (new StringBuilder()).append(dialog.getDirectory()).append(GeoDis.logfilename).toString();
+            }
+        }
+
+        JFrame frame;
+        FileDialog dialog;
+        int returnVal;
+        JLabel label;
+        String iname;
+        final GeoDis_GUI this$0;
+
+        public Infile_listener(JFrame theframe, JLabel thelabel)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            frame = theframe;
+            label = thelabel;
+        }
+    }
+
+    class Run_listener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            if(GeoDis.infilename.equalsIgnoreCase("none selected"))
+            {
+                JOptionPane.showMessageDialog(frame, "No input file was selected", "GeoDis warning", 2);
+            } else
+            {
+                GeoDis.numPermutations = Integer.parseInt(GeoDis_GUI.permutations_field.getText());
+                SwingWorker worker = new SwingWorker() {
+
+                    public Object construct()
+                    {
+                        GeoDis.logfile = new TextOutputStream(GeoDis.logfilename);
+                        GeoDis.logfile.print("Differentiating population structure from history - Geodis");
+                        GeoDis.logfile.print("  2.5");
+                        GeoDis.logfile.print("\n(c) Copyright, 1999-2006 David Posada and Alan Templeton");
+                        GeoDis.logfile.print("\nContact: David Posada, University of Vigo, Spain (dposada@uvigo.es)");
+                        GeoDis.logfile.print("\n________________________________________________________________________\n\n");
+                        GeoDis.logfile.print((new StringBuilder()).append("Input file: ").append(GeoDis.infilename).toString());
+                        GeoDis.logfile.println((new StringBuilder()).append("\n\n").append((new Date()).toString()).toString());
+                        if(GeoDis.doingDistances)
+                        {
+                            GeoDis.readMatrix();
+                        } else
+                        {
+                            GeoDis.readLocations();
+                        }
+                        try
+                        {
+                            GeoDis.readClade();
+                        }
+                        catch(Exception excep)
+                        {
+                            JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("Error in clade").append(GeoDis.currentCladeName).toString(), "GeoDis error", 0);
+                        }
+                        bar = new ProgressMonitor(frame, "Estimating P-values by permutation...", "", 0, GeoDis.numClades * GeoDis.numPermutations);
+                        bar.setProgress(0);
+                        bar.setMillisToDecideToPopup(1000);
+                        timer.start();
+                        GeoDis.statistics();
+                        GeoDis.done = true;
+                        timer.stop();
+                        bar.close();
+                        JOptionPane.showMessageDialog(frame, "The analysis is finished.      ", "GeoDis information", 1);
+                        if(!GeoDis.doingDistances)
+                        {
+                            GeoDis.pairwiseKm();
+                        }
+                        GeoDis.printOut();
+                        if(GeoDis.printToFile)
+                        {
+                            System.exit(0);
+                        }
+                        return someValue;
+                    }
+
+                    final Run_listener this$1;
+
+                
+                {
+                    this$1 = Run_listener.this;
+                    super();
+                }
+                }
+;
+            }
+        }
+
+        int k;
+        String someValue;
+        JFrame frame;
+        final GeoDis_GUI this$0;
+
+        public Run_listener(JFrame theframe)
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+            frame = theframe;
+        }
+    }
+
+    class TimerListener
+        implements ActionListener
+    {
+
+        public void actionPerformed(ActionEvent evt)
+        {
+            if(bar.isCanceled() || GeoDis.done)
+            {
+                bar.close();
+                GeoDis.done = true;
+                Toolkit.getDefaultToolkit().beep();
+                timer.stop();
+            } else
+            {
+                bar.setNote((new StringBuilder()).append("                     ").append((int)GeoDis.percentage).append("%").toString());
+                bar.setProgress(GeoDis.progress);
+            }
+        }
+
+        final GeoDis_GUI this$0;
+
+        TimerListener()
+        {
+            this$0 = GeoDis_GUI.this;
+            super();
+        }
+    }
+
+
+    public GeoDis_GUI()
+    {
+        permutations_label = new JLabel("  Permutations");
+        title = new JLabel("Cladistic Nested Analysis");
+        run_button = new JButton("RUN");
+        infile_button = new JButton("Input file");
+        outfile_button = new JButton("Output file");
+        quit_button = new JButton("Quit");
+        help_button = new JButton("Help");
+        weights_checkbox = new JCheckBox(" Outgroup weights", false);
+        matrix_checkbox = new JCheckBox(" User-defined distances", false);
+        dd_checkbox = new JCheckBox(" Decimal degrees", false);
+        gridbag = new GridBagLayout();
+        contentPane = getContentPane();
+        menuA = new JMenu("GeoDis");
+        about_Item = new JMenuItem("Info");
+        citation_Item = new JMenuItem("Citation");
+        help_Item = new JMenuItem("Help");
+        www_Item = new JMenuItem("WWW");
+        try
+        {
+            UIManager.getSystemLookAndFeelClassName();
+        }
+        catch(Exception e) { }
+        contentPane.setLayout(gridbag);
+        menuBar.add(menuA);
+        menuA.add(about_Item);
+        menuA.add(citation_Item);
+        menuA.add(help_Item);
+        menuA.add(www_Item);
+        run_button.addActionListener(new Run_listener(this));
+        infile_button.addActionListener(new Infile_listener(this, infile_label));
+        outfile_button.addActionListener(new Outfile_listener(this, outfile_label));
+        weights_checkbox.addItemListener(new Weights_listener());
+        matrix_checkbox.addItemListener(new Matrix_listener());
+        dd_checkbox.addItemListener(new DD_listener());
+        quit_button.addActionListener(new Quit_listener(this));
+        help_Item.addActionListener(new Help_listener());
+        about_Item.addActionListener(new About_listener(this));
+        citation_Item.addActionListener(new Citation_listener(this));
+        www_Item.addActionListener(new WWW_listener(this));
+        save_Item.addActionListener(new Common_listener(textArea, this));
+        print_Item.addActionListener(new Common_listener(textArea, this));
+        page_Item.addActionListener(new Common_listener(textArea, this));
+        copy_Item.addActionListener(new Common_listener(textArea, this));
+        cut_Item.addActionListener(new Common_listener(textArea, this));
+        selectall_Item.addActionListener(new Common_listener(textArea, this));
+        save_Item.setActionCommand("save");
+        print_Item.setActionCommand("print");
+        page_Item.setActionCommand("page");
+        copy_Item.setActionCommand("copy");
+        cut_Item.setActionCommand("cut");
+        selectall_Item.setActionCommand("selectall");
+        timer = new Timer(1000, new TimerListener());
+        second_row(infile_button, infile_label, weights_checkbox);
+        blank_row(new JLabel(" "));
+        third_row(outfile_button, outfile_label, matrix_checkbox);
+        blank_row(new JLabel(" "));
+        fourth_row(run_button, dd_checkbox);
+        blank_row(new JLabel(" "));
+        fifth_row(permutations_field, permutations_label);
+    }
+
+    private void first_row(JLabel label)
+    {
+        contentPane.add(new JLabel("   "));
+        label.setFont(new Font("Times", 2, 13));
+        label.setForeground(Color.blue);
+        contentPane.add(label);
+    }
+
+    private void second_row(JButton button, JLabel label, JCheckBox check)
+    {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.ipadx = 30;
+        constraints.ipady = 10;
+        constraints.anchor = 17;
+        gridbag.setConstraints(button, constraints);
+        button.setMnemonic('i');
+        contentPane.add(button);
+        contentPane.add(new JLabel("     "));
+        constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        gridbag.setConstraints(label, constraints);
+        label.setFont(new Font("Monaco", 0, 9));
+        contentPane.add(label);
+        constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        constraints.gridwidth = 0;
+        gridbag.setConstraints(check, constraints);
+        contentPane.add(check);
+    }
+
+    private void third_row(JButton button, JLabel label, JCheckBox check)
+    {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.ipadx = 20;
+        constraints.ipady = 10;
+        constraints.anchor = 17;
+        gridbag.setConstraints(button, constraints);
+        contentPane.add(button);
+        button.setMnemonic('o');
+        contentPane.add(new JLabel(""));
+        constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        gridbag.setConstraints(label, constraints);
+        label.setFont(new Font("Monaco", 0, 9));
+        contentPane.add(label);
+        constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        constraints.gridwidth = 0;
+        gridbag.setConstraints(check, constraints);
+        contentPane.add(check);
+    }
+
+    private void fourth_row(JButton button, JCheckBox check)
+    {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.ipadx = 40;
+        constraints.ipady = 30;
+        constraints.anchor = 17;
+        gridbag.setConstraints(button, constraints);
+        button.setForeground(new Color(25, 85, 215));
+        button.setMnemonic('r');
+        contentPane.add(button);
+        contentPane.add(new JLabel(""));
+        contentPane.add(new JLabel(""));
+        constraints = new GridBagConstraints();
+        constraints.gridwidth = 0;
+        constraints.anchor = 17;
+        gridbag.setConstraints(check, constraints);
+        contentPane.add(check);
+    }
+
+    private void blank_row(JLabel blank)
+    {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridwidth = 0;
+        gridbag.setConstraints(blank, constraints);
+        contentPane.add(blank);
+    }
+
+    private void fifth_row(JTextField field, JLabel label)
+    {
+        contentPane.add(new JLabel(""));
+        contentPane.add(new JLabel(""));
+        contentPane.add(new JLabel(""));
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        field.setBackground(Color.white);
+        gridbag.setConstraints(field, constraints);
+        contentPane.add(field);
+        constraints = new GridBagConstraints();
+        constraints.anchor = 17;
+        constraints.gridwidth = 0;
+        label.setForeground(Color.black);
+        gridbag.setConstraints(label, constraints);
+        contentPane.add(label);
+    }
+
+    public static void outWindow()
+    {
+        Document doc = textArea.getDocument();
+        outdoc = new PrintStream(new DocumentOutputStream(doc));
+        java.awt.event.WindowListener l = new WindowAdapter() {
+
+            public void windowClosing(WindowEvent e)
+            {
+                System.exit(0);
+            }
+
+        }
+;
+        f = new JFrame("GeoDis Output");
+        f.addWindowListener(l);
+        f.getContentPane().add(new JScrollPane(textArea), "Center");
+        f.setSize(500, 500);
+        menuBar2.add(menu1);
+        menuBar2.add(menu2);
+        menu1.add(save_Item);
+        menu1.add(print_Item);
+        menu2.add(copy_Item);
+        menu2.add(cut_Item);
+        menu2.add(selectall_Item);
+        textArea.setFont(new Font("Monaco", 0, 9));
+        textArea.setMargin(new Insets(5, 10, 10, 5));
+        f.getContentPane().add(menuBar2, "North");
+        f.setVisible(true);
+    }
+
+    private JLabel permutations_label;
+    private JLabel title;
+    private JButton run_button;
+    private JButton infile_button;
+    private JButton outfile_button;
+    private JButton quit_button;
+    private JButton help_button;
+    private JCheckBox weights_checkbox;
+    private JCheckBox matrix_checkbox;
+    private JCheckBox dd_checkbox;
+    public static JLabel infile_label = new JLabel("none selected       ");
+    public static JLabel outfile_label = new JLabel("none selected       ");
+    public static JTextField permutations_field = new JTextField("1000", 5);
+    private GridBagLayout gridbag;
+    private Container contentPane;
+    public static JMenuBar menuBar = new JMenuBar();
+    private JMenu menuA;
+    private JMenuItem about_Item;
+    private JMenuItem citation_Item;
+    private JMenuItem help_Item;
+    private JMenuItem www_Item;
+    public static JMenuBar menuBar2 = new JMenuBar();
+    public static JMenu menu1 = new JMenu("File");
+    public static JMenu menu2 = new JMenu("Edit");
+    public static JMenuItem save_Item = new JMenuItem("Save As");
+    public static JMenuItem print_Item = new JMenuItem("Print");
+    public static JMenuItem page_Item = new JMenuItem("Page Setup");
+    public static JMenuItem copy_Item = new JMenuItem("Copy");
+    public static JMenuItem cut_Item = new JMenuItem("Cut");
+    public static JMenuItem selectall_Item = new JMenuItem("Select All");
+    private ProgressMonitor bar;
+    private Timer timer;
+    public static final int ONE_SECOND = 1000;
+    public static PrintStream outdoc;
+    public static JTextArea textArea = new JTextArea();
+    public static JFrame f;
+
+
+
+
+
+
+}

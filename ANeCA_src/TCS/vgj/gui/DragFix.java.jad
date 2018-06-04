@@ -1,0 +1,129 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   DragFix.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.Component;
+import java.awt.Event;
+
+public class DragFix
+    implements Runnable
+{
+
+    public DragFix(Component user)
+    {
+        eventQueue_ = null;
+        eventQueueHead_ = 0;
+        eventQueueTail_ = 0;
+        eventQueueSize_ = 20;
+        lock_ = new Object();
+        user_ = user;
+        eventQueue_ = new Event[eventQueueSize_ + 1];
+        thread_ = new Thread(this);
+        thread_.start();
+    }
+
+    protected void finalize()
+    {
+        killThread();
+    }
+
+    public void killThread()
+    {
+        thread_.stop();
+    }
+
+    private Event Queue(Event e)
+    {
+        synchronized(lock_)
+        {
+            Event $return;
+            if(e == null)
+            {
+                if(eventQueueHead_ != eventQueueTail_)
+                {
+                    eventQueueTail_ = (eventQueueTail_ + 1) % eventQueueSize_;
+                    $return = eventQueue_[eventQueueTail_];
+                    return $return;
+                }
+                $return = null;
+                return $return;
+            }
+            if(eventQueueHead_ != eventQueueTail_ && e.target == eventQueue_[eventQueueHead_].target)
+            {
+                int newid = eventQueue_[eventQueueHead_].id;
+                if(e.id == 506 && newid == 506 || (e.id == 605 || e.id == 602 || e.id == 601 || e.id == 604 || e.id == 603) && (newid == 605 || newid == 602 || newid == 601 || newid == 604 || newid == 603))
+                {
+                    eventQueue_[eventQueueHead_] = e;
+                    $return = null;
+                    return $return;
+                }
+            }
+            eventQueue_[(eventQueueHead_ + 1) % eventQueueSize_] = e;
+            eventQueueHead_ = (eventQueueHead_ + 1) % eventQueueSize_;
+            lock_.notify();
+            if((eventQueueHead_ + 1) % eventQueueSize_ == eventQueueTail_)
+            {
+                int new_size = eventQueueSize_ * 2;
+                if(new_size > 20000)
+                {
+                    throw new Error("DragFix event queue size limit exceeded.");
+                }
+                Event new_queue[] = new Event[new_size + 1];
+                int i = 0;
+                int j;
+                for(j = eventQueueTail_; j != eventQueueHead_;)
+                {
+                    new_queue[i] = eventQueue_[j];
+                    j = (j + 1) % eventQueueSize_;
+                    i++;
+                }
+
+                new_queue[i] = eventQueue_[j];
+                eventQueue_ = new_queue;
+                eventQueueHead_ = i;
+                eventQueueTail_ = 0;
+                eventQueueSize_ = new_size;
+            }
+            $return = null;
+            return $return;
+        }
+    }
+
+    public void queueEvent(Event e)
+    {
+        Queue(e);
+    }
+
+    public synchronized void run()
+    {
+        do
+        {
+            Event e;
+            while((e = Queue(null)) != null) 
+            {
+                user_.postEvent(new Event(e, 0x2bd7f, e));
+            }
+            synchronized(lock_)
+            {
+                try
+                {
+                    lock_.wait();
+                }
+                catch(InterruptedException _ex) { }
+            }
+        } while(true);
+    }
+
+    private static final int eventQueueLimit_ = 20000;
+    public static final int QUEUED = 0x2bd7f;
+    private Component user_;
+    private Thread thread_;
+    private Event eventQueue_[];
+    private int eventQueueHead_;
+    private int eventQueueTail_;
+    private int eventQueueSize_;
+    private Object lock_;
+}

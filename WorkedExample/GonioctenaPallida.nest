@@ -1,0 +1,403 @@
+Haplotype Network Properties:
+Total Number of Edges: 77
+Number of Ambiguous Edges: 0
+
+Nesting Level: 0
+Clade: id=46 label=val53.12
+ frequency=1 val53.12
+ outgroup weight=   0.00
+ Connected to: 68
+Clade: id=68 label=" "
+ Connected to: 69 46
+Clade: id=69 label=" "
+ Connected to: 7 68
+Clade: id=45 label=son60.11
+ frequency=2 son60.11 son60.11
+ outgroup weight=   0.00
+ Connected to: 3
+Clade: id=30 label=kru47.6
+ frequency=1 kru47.6
+ outgroup weight=   0.00
+ Connected to: 66
+Clade: id=66 label=" "
+ Connected to: 3 30
+Clade: id=26 label=cli44.5
+ frequency=1 cli44.5
+ outgroup weight=   0.00
+ Connected to: 65
+Clade: id=65 label=" "
+ Connected to: 21 26
+Clade: id=22 label=arm43.4
+ frequency=2 arm43.4 kru43.6
+ outgroup weight=   0.00
+ Connected to: 64
+Clade: id=64 label=" "
+ Connected to: 21 22
+Clade: id=16 label=gir42.3
+ frequency=7 gir42.3 gir42.3 bou42.7 bou42.7 bou42.7 bou42.7 lin42.9
+ outgroup weight=   0.00
+ Connected to: 21
+Clade: id=15 label=gir40.3
+ frequency=1 gir40.3
+ outgroup weight=   0.01
+ Connected to: 21
+Clade: id=6 label=orb46.1
+ frequency=1 orb46.1
+ outgroup weight=   0.00
+ Connected to: 62
+Clade: id=62 label=" "
+ Connected to: 21 6
+Clade: id=5 label=orb45.1
+ frequency=3 orb45.1 kru45.6 mit45.10
+ outgroup weight=   0.00
+ Connected to: 61
+Clade: id=61 label=" "
+ Connected to: 21 5
+Clade: id=21 label=arm35.4
+ frequency=6 arm35.4 lin35.9 son35.11 val35.12 val35.12 val35.12
+ outgroup weight=   0.03
+ Connected to: 76 3 61 62 15 16 38 29 59 64 65
+Clade: id=25 label=cli41.5
+ frequency=1 cli41.5
+ outgroup weight=   0.00
+ Connected to: 27
+Clade: id=4 label=orb37.1
+ frequency=9 orb37.1 gir37.3 arm37.4 arm37.4 arm37.4 kru37.6 mit37.10 mit37.10 son37.11
+ outgroup weight=   0.01
+ Connected to: 38 42
+Clade: id=38 label=mit36.10
+ frequency=1 mit36.10
+ outgroup weight=   0.02
+ Connected to: 21 4
+Clade: id=42 label=son38.11
+ frequency=1 son38.11
+ outgroup weight=   0.00
+ Connected to: 4
+Clade: id=17 label=gir55.3
+ frequency=1 gir55.3
+ outgroup weight=   0.00
+ Connected to: 33
+Clade: id=3 label=orb34.1
+ frequency=7 orb34.1 arm34.4 kru34.6 bou34.7 bou34.7 mit34.10 son34.11
+ outgroup weight=   0.06
+ Connected to: 77 7 18 33 39 44 60 21 66 40 45
+Clade: id=7 label=orb50.1
+ frequency=26 orb50.1 orb50.1 orb50.1 orb50.1 orb50.1 orb50.1 gir50.3 arm50.4 arm50.4 arm50.4 cli50.5 cli50.5 cli50.5 cli50.5 kru50.6 bou50.7 bou50.7 how50.8 how50.8 lin50.9 mit50.10 val50.12 val50.12 wie50.14 wie50.14 wie50.14
+ outgroup weight=   0.04
+ Connected to: 3 27 35 43 69
+Clade: id=18 label=gir56.3
+ frequency=1 gir56.3
+ outgroup weight=   0.00
+ Connected to: 3
+Clade: id=33 label=bou54.7
+ frequency=1 bou54.7
+ outgroup weight=   0.01
+ Connected to: 3 17
+Clade: id=39 label=mit57.10
+ frequency=1 mit57.10
+ outgroup weight=   0.01
+ Connected to: 3
+Clade: id=44 label=son59.11
+ frequency=3 son59.11 son59.11 son59.11
+ outgroup weight=   0.01
+ Connected to: 3
+Clade: id=60 label=wie61.14
+ frequency=1 wie61.14
+ outgroup weight=   0.01
+ Connected to: 3
+Clade: id=27 label=cli49.5
+ frequency=1 cli49.5
+ outgroup weight=   0.04
+ Connected to: 7 25
+Clade: id=35 label=lin51.9
+ frequency=2 lin51.9 val51.12
+ outgroup weight=   0.00
+ Connected to: 7
+Clade: id=43 label=son52.11
+ frequency=1 son52.11
+ outgroup weight=   0.03
+ Connected to: 7
+Clade: id=29 label=kru39.6
+ frequency=1 kru39.6
+ outgroup weight=   0.01
+ Connected to: 21
+Clade: id=59 label=wie48.14
+ frequency=1 wie48.14
+ outgroup weight=   0.00
+ Connected to: 21
+Clade: id=40 label=mit58.10
+ frequency=1 mit58.10
+ outgroup weight=   0.01
+ Connected to: 3
+Clade: id=76 label=" "
+ Connected to: 21 80
+Clade: id=77 label=" "
+ Connected to: 0 3
+Clade: id=56 label=wie17.14
+ frequency=1 wie17.14
+ outgroup weight=   0.00
+ Connected to: 73
+Clade: id=73 label=" "
+ Connected to: 32 56
+Clade: id=49 label=obe16.13
+ frequency=1 obe16.13
+ outgroup weight=   0.00
+ Connected to: 70
+Clade: id=70 label=" "
+ Connected to: 32 49
+Clade: id=41 label=son2.11
+ frequency=2 son2.11 son2.11
+ outgroup weight=   0.00
+ Connected to: 67
+Clade: id=67 label=" "
+ Connected to: 0 41
+Clade: id=32 label=bou14.7
+ frequency=5 bou14.7 obe14.13 wie14.14 wie14.14 wie14.14
+ outgroup weight=   0.01
+ Connected to: 48 55 73 70
+Clade: id=9 label=odi19.2
+ frequency=11 odi19.2 odi19.2 odi19.2 odi19.2 odi19.2 odi19.2 odi20.2 odi20.2 cli19.5 cli20.5 cli20.5
+ outgroup weight=   0.01
+ Connected to: 13
+Clade: id=1 label=orb20.1
+ frequency=1 orb20.1
+ outgroup weight=   0.00
+ Connected to: 13
+Clade: id=13 label=gir18.3
+ frequency=5 gir18.3 how18.8 how18.8 how18.8 val18.12
+ outgroup weight=   0.02
+ Connected to: 14 1 9
+Clade: id=12 label=gir8.3
+ frequency=1 gir8.3
+ outgroup weight=   0.00
+ Connected to: 0
+Clade: id=0 label=orb1.1
+ frequency=67 orb1.1 orb1.1 orb1.1 orb1.1 odi1.2 odi1.2 gir1.3 gir1.3 gir1.3 gir1.3 gir1.3 gir1.3 gir1.3 arm1.4 arm1.4 cli1.5 cli1.5 cli1.5 cli1.5 cli1.5 kru1.6 kru1.6 kru1.6 kru1.6 kru1.6 kru1.6 kru1.6 kru1.6 bou1.7 bou1.7 bou1.7 how1.8 how1.8 how1.8 how1.8 how1.8 how1.8 lin1.9 lin1.9 lin1.9 lin1.9 lin1.9 lin1.9 lin1.9 lin1.9 lin1.9 mit1.10 mit1.10 mit1.10 mit1.10 mit1.10 mit1.10 mit1.10 son1.11 son1.11 son1.11 son1.11 val1.12 val1.12 val1.12 val1.12 val1.12 val1.12 val1.12 val1.12 wie1.14 wie1.14
+ outgroup weight=   0.11
+ Connected to: 8 11 14 19 23 28 31 48 54 12 67 77
+Clade: id=8 label=odi6.2
+ frequency=5 odi6.2 odi6.2 cli6.5 son6.11 val6.12
+ outgroup weight=   0.08
+ Connected to: 0 50
+Clade: id=11 label=gir7.3
+ frequency=1 gir7.3
+ outgroup weight=   0.08
+ Connected to: 0 36 47
+Clade: id=14 label=gir24.3
+ frequency=3 gir24.3 bou24.7 val24.12
+ outgroup weight=   0.09
+ Connected to: 0 13 37 57
+Clade: id=19 label=arm3.4
+ frequency=5 arm3.4 kru3.6 kru3.6 bou3.7 bou3.7
+ outgroup weight=   0.00
+ Connected to: 0
+Clade: id=23 label=cli5.5
+ frequency=3 cli5.5 bou5.7 how5.8
+ outgroup weight=   0.00
+ Connected to: 0
+Clade: id=28 label=kru9.6
+ frequency=2 kru9.6 kru9.6
+ outgroup weight=   0.00
+ Connected to: 0
+Clade: id=31 label=bou4.7
+ frequency=6 bou4.7 lin4.9 lin4.9 lin4.9 lin4.9 obe4.13
+ outgroup weight=   0.00
+ Connected to: 0
+Clade: id=48 label=obe12.13
+ frequency=1 obe12.13
+ outgroup weight=   0.08
+ Connected to: 0 32
+Clade: id=54 label=wie13.14
+ frequency=1 wie13.14
+ outgroup weight=   0.08
+ Connected to: 0
+Clade: id=50 label=obe22.13
+ frequency=1 obe22.13
+ outgroup weight=   0.01
+ Connected to: 8
+Clade: id=36 label=mit10.10
+ frequency=1 mit10.10
+ outgroup weight=   0.00
+ Connected to: 11
+Clade: id=47 label=obe11.13
+ frequency=1 obe11.13
+ outgroup weight=   0.00
+ Connected to: 11
+Clade: id=37 label=mit21.10
+ frequency=1 mit21.10
+ outgroup weight=   0.01
+ Connected to: 14
+Clade: id=57 label=wie23.14
+ frequency=1 wie23.14
+ outgroup weight=   0.00
+ Connected to: 14
+Clade: id=55 label=wie15.14
+ frequency=1 wie15.14
+ outgroup weight=   0.00
+ Connected to: 32
+Clade: id=80 label=" "
+ Connected to: 76 2
+Clade: id=58 label=wie27.14
+ frequency=1 wie27.14
+ outgroup weight=   0.00
+ Connected to: 74
+Clade: id=74 label=" "
+ Connected to: 75 58
+Clade: id=75 label=" "
+ Connected to: 2 74
+Clade: id=51 label=obe28.13
+ frequency=1 obe28.13
+ outgroup weight=   0.00
+ Connected to: 72
+Clade: id=72 label=" "
+ Connected to: 2 51
+Clade: id=10 label=odi29.2
+ frequency=3 odi29.2 odi29.2 odi29.2
+ outgroup weight=   0.00
+ Connected to: 63
+Clade: id=63 label=" "
+ Connected to: 2 10 52 53
+Clade: id=2 label=orb26.1
+ frequency=20 orb26.1 orb26.1 arm26.4 arm26.4 bou26.7 mit26.10 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 obe26.13 wie26.14 wie26.14 wie26.14 wie26.14
+ outgroup weight=   0.03
+ Connected to: 80 20 24 34 63 72 75
+Clade: id=20 label=arm32.4
+ frequency=1 arm32.4
+ outgroup weight=   0.00
+ Connected to: 2
+Clade: id=24 label=cli25.5
+ frequency=1 cli25.5
+ outgroup weight=   0.02
+ Connected to: 2
+Clade: id=34 label=how33.8
+ frequency=1 how33.8
+ outgroup weight=   0.02
+ Connected to: 2
+Clade: id=52 label=obe30.13
+ frequency=1 obe30.13
+ outgroup weight=   0.00
+ Connected to: 63
+Clade: id=53 label=obe31.13
+ frequency=1 obe31.13
+ outgroup weight=   0.00
+ Connected to: 63
+
+Nesting Level: 1
+Clade: id=78 label=Clade 1-1
+ Connected to: 89
+ SubClades : 46 68 69
+Clade: id=79 label=Clade 1-2
+ Connected to: 80 83 88 89 94
+ SubClades : 45 18 39 44 60 40 3 77
+Clade: id=80 label=Clade 1-3
+ Connected to: 79
+ SubClades : 30 66
+Clade: id=81 label=Clade 1-4
+ Connected to: 83
+ SubClades : 26 65
+Clade: id=82 label=Clade 1-5
+ Connected to: 83
+ SubClades : 22 64
+Clade: id=83 label=Clade 1-6
+ Connected to: 79 81 82 84 85 87 103
+ SubClades : 16 15 29 59 21
+Clade: id=84 label=Clade 1-7
+ Connected to: 83
+ SubClades : 6 62
+Clade: id=85 label=Clade 1-8
+ Connected to: 83
+ SubClades : 5 61
+Clade: id=86 label=Clade 1-9
+ Connected to: 89
+ SubClades : 25 27
+Clade: id=87 label=Clade 1-10
+ Connected to: 83
+ SubClades : 42 4 38
+Clade: id=88 label=Clade 1-11
+ Connected to: 79
+ SubClades : 17 33
+Clade: id=89 label=Clade 1-12
+ Connected to: 78 79 86
+ SubClades : 35 43 7
+Clade: id=90 label=Clade 1-13
+ Connected to: 98
+ SubClades : 56 73
+Clade: id=91 label=Clade 1-14
+ Connected to: 98
+ SubClades : 49 70
+Clade: id=92 label=Clade 1-15
+ Connected to: 94
+ SubClades : 41 67
+Clade: id=93 label=Clade 1-16
+ Connected to: 97
+ SubClades : 9 1 13
+Clade: id=94 label=Clade 1-17
+ Connected to: 79 92 95 96 97 98
+ SubClades : 12 19 23 28 31 54 0
+Clade: id=95 label=Clade 1-18
+ Connected to: 94
+ SubClades : 50 8
+Clade: id=96 label=Clade 1-19
+ Connected to: 94
+ SubClades : 36 47 11
+Clade: id=97 label=Clade 1-20
+ Connected to: 93 94
+ SubClades : 37 57 14
+Clade: id=98 label=Clade 1-21
+ Connected to: 90 91 94
+ SubClades : 55 32 48
+Clade: id=99 label=Clade 1-22
+ Connected to: 102
+ SubClades : 58 74 75
+Clade: id=100 label=Clade 1-23
+ Connected to: 102
+ SubClades : 51 72
+Clade: id=101 label=Clade 1-24
+ Connected to: 102
+ SubClades : 10 52 53 63
+Clade: id=102 label=Clade 1-25
+ Connected to: 99 100 101 103
+ SubClades : 20 24 34 2
+Clade: id=103 label=Clade 1-26
+ Connected to: 83 102
+ SubClades : 76 80
+
+Nesting Level: 2
+Clade: id=104 label=Clade 2-1
+ Connected to: 105
+ SubClades : 78 86 89
+Clade: id=105 label=Clade 2-2
+ Connected to: 104 106 108
+ SubClades : 80 88 79
+Clade: id=106 label=Clade 2-3
+ Connected to: 105 110
+ SubClades : 81 82 84 85 87 83
+Clade: id=107 label=Clade 2-4
+ Connected to: 108
+ SubClades : 90 91 98
+Clade: id=108 label=Clade 2-5
+ Connected to: 105 107 109
+ SubClades : 92 95 96 94
+Clade: id=109 label=Clade 2-6
+ Connected to: 108
+ SubClades : 93 97
+Clade: id=110 label=Clade 2-7
+ Connected to: 106
+ SubClades : 99 100 101 102 103
+
+Nesting Level: 3
+Clade: id=111 label=Clade 3-1
+ Connected to: 112 113
+ SubClades : 104 105
+Clade: id=112 label=Clade 3-2
+ Connected to: 111
+ SubClades : 107 109 108
+Clade: id=113 label=Clade 3-3
+ Connected to: 111
+ SubClades : 110 106
+
+Nesting Level: 4
+Clade: id=114 label=Total Cladogram
+ Connected to:
+ SubClades : 112 113 111
+

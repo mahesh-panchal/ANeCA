@@ -1,0 +1,734 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Edge.java
+
+package EDU.auburn.VGJ.graph;
+
+import EDU.auburn.VGJ.gui.GraphCanvas;
+import EDU.auburn.VGJ.util.*;
+import java.awt.*;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+// Referenced classes of package EDU.auburn.VGJ.graph:
+//            GMLobject, Node
+
+public class Edge
+{
+
+    public Edge(Node tail, Node head, DPoint3 points[], boolean dummy, Edge edge)
+    {
+        oldpoints_ = null;
+        dummy_ = false;
+        selected = false;
+        head_ = head;
+        tail_ = tail;
+        points_ = points;
+        if(points == null)
+        {
+            points = new DPoint3[0];
+        }
+        dummy_ = dummy;
+        label_ = edge.label_;
+        lineStyle_ = edge.lineStyle_;
+        data_ = edge.data_;
+    }
+
+    public Edge(Node tail, Node head, DPoint3 points[], boolean dummy)
+    {
+        oldpoints_ = null;
+        dummy_ = false;
+        selected = false;
+        head_ = head;
+        tail_ = tail;
+        points_ = points;
+        if(points == null)
+        {
+            points = new DPoint3[0];
+        }
+        dummy_ = dummy;
+        label_ = new String("");
+        lineStyle_ = 0;
+        data_ = new Hashtable((int)((double)(defaultDataTypes_.length + 1) * 1.5D));
+        for(int i = 0; i < defaultDataTypes_.length; i++)
+        {
+            data_.put(defaultDataTypes_[i], "");
+        }
+
+    }
+
+    public Edge(Node tail, Node head, Edge from)
+    {
+        oldpoints_ = null;
+        dummy_ = false;
+        selected = false;
+        head_ = head;
+        tail_ = tail;
+        dummy_ = from.dummy_;
+        label_ = from.label_;
+        lineStyle_ = from.lineStyle_;
+        DPoint3 frompoints[] = from.points();
+        points_ = new DPoint3[frompoints.length];
+        System.arraycopy(frompoints, 0, points_, 0, frompoints.length);
+        data_ = new Hashtable((int)((double)(defaultDataTypes_.length + 1) * 1.5D));
+        for(int i = 0; i < defaultDataTypes_.length; i++)
+        {
+            data_.put(defaultDataTypes_[i], "");
+        }
+
+    }
+
+    public Edge(Node tail, Node head, GMLobject gml)
+    {
+        oldpoints_ = null;
+        dummy_ = false;
+        selected = false;
+        head_ = head;
+        tail_ = tail;
+        GMLobject edgegraphics = gml.getGMLSubObject("graphics", 3, false);
+        if(edgegraphics != null)
+        {
+            int points_size = 10;
+            DPoint3 points[] = new DPoint3[points_size];
+            int pointnum = 0;
+            for(GMLobject point = edgegraphics.getGMLSubObject("Point", 3, false); point != null; point = edgegraphics.getNextGMLSubObject())
+            {
+                Double x = (Double)point.getValue("x", 1);
+                Double y = (Double)point.getValue("y", 1);
+                Double z = (Double)point.getValue("z", 1);
+                if(x != null && y != null)
+                {
+                    if(pointnum >= points_size)
+                    {
+                        points_size = pointnum * 2;
+                        DPoint3 tmppoints[] = new DPoint3[points_size];
+                        System.arraycopy(points, 0, tmppoints, 0, pointnum);
+                        points = tmppoints;
+                    }
+                    points[pointnum] = new DPoint3(x.doubleValue(), y.doubleValue(), 0.0D);
+                    if(z != null)
+                    {
+                        points[pointnum].z = z.doubleValue();
+                    } else
+                    {
+                        points[pointnum].z = 0.0D;
+                    }
+                    pointnum++;
+                }
+            }
+
+            points_ = new DPoint3[pointnum];
+            System.arraycopy(points, 0, points_, 0, pointnum);
+        } else
+        {
+            points_ = new DPoint3[0];
+        }
+        String label;
+        if((label = (String)gml.getValue("label", 2)) != null)
+        {
+            label_ = label;
+        } else
+        {
+            label = new String();
+        }
+        lineStyle_ = 0;
+        String style;
+        if((style = (String)gml.getValue("linestyle", 2)) != null)
+        {
+            for(int i = 0; i < styleNames.length; i++)
+            {
+                if(!styleNames[i].equals(style))
+                {
+                    continue;
+                }
+                lineStyle_ = i;
+                break;
+            }
+
+        }
+        data_ = new Hashtable((int)((double)(defaultDataTypes_.length + 1) * 1.5D));
+        for(int i = 0; i < defaultDataTypes_.length; i++)
+        {
+            data_.put(defaultDataTypes_[i], "");
+        }
+
+        gml.setHashFromGML("data", 2, data_);
+    }
+
+    private String arrowPS_(DPoint3 p1, DPoint3 p2)
+    {
+        double dx = p1.x - p2.x;
+        double dy = p1.y - p2.y;
+        double length = Math.sqrt(dx * dx + dy * dy);
+        dx /= length;
+        dy /= length;
+        return PSnum_(p2.x) + PSnum_(p2.y) + PSnum_(dx) + PSnum_(dy) + "arrow\n";
+    }
+
+    public void draw(Graphics graphics, Matrix44 transform, boolean inplane, boolean directed, boolean arrow_only, int quality, GraphCanvas canvas, 
+            int which_gr)
+    {
+        double scale = transform.scale;
+        int npoints = points_.length;
+        graphics.setColor(styleColors[lineStyle_]);
+        DPoint3 p1to;
+        DPoint3 p2to;
+        if(npoints == 0)
+        {
+            p1to = head_.getPosition3();
+            p2to = tail_.getPosition3();
+        } else
+        {
+            p1to = points_[0];
+            p2to = points_[npoints - 1];
+        }
+        DPoint3 p1 = tail_.intersectWithLineTo(p1to, inplane, quality);
+        DPoint3 p2 = head_.intersectWithLineTo(p2to, inplane, quality);
+        p1.transform(transform);
+        p2.transform(transform);
+        if(head_ == tail_ && npoints == 0)
+        {
+            p2.x = p1.x + 1.0D;
+            p2.y = p1.y;
+        }
+        if(!arrow_only)
+        {
+            if(npoints == 0)
+            {
+                graphics.drawLine((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y);
+            } else
+            {
+                DPoint3 point = new DPoint3(points_[0]);
+                point.transform(transform);
+                graphics.drawLine((int)p1.x, (int)p1.y, (int)point.x, (int)point.y);
+                DPoint3 oldpoint = new DPoint3();
+                for(int i = 1; i < npoints; i++)
+                {
+                    oldpoint.move(point);
+                    point.move(points_[i]);
+                    point.transform(transform);
+                    graphics.drawLine((int)oldpoint.x, (int)oldpoint.y, (int)point.x, (int)point.y);
+                }
+
+                graphics.drawLine((int)point.x, (int)point.y, (int)p2.x, (int)p2.y);
+            }
+        }
+        if(directed)
+        {
+            DPoint3 from = new DPoint3(p2to);
+            from.transform(transform);
+            if((int)from.x == (int)p2.x && (int)from.y == (int)p2.y)
+            {
+                from.x -= 10D;
+            }
+            drawArrow_(graphics, from, p2);
+        }
+        if(!arrow_only && selected)
+        {
+            graphics.setColor(Color.red);
+            graphics.drawRect((int)p1.x - 2, (int)p1.y - 2, 4, 4);
+            if(head_ != tail_)
+            {
+                graphics.drawRect((int)p2.x - 2, (int)p2.y - 2, 4, 4);
+            }
+            for(int pointindex = 0; pointindex < npoints; pointindex++)
+            {
+                p2.move(points_[pointindex]);
+                p2.transform(transform);
+                graphics.drawRect((int)p2.x - 2, (int)p2.y - 2, 4, 4);
+            }
+
+            graphics.setColor(Color.white);
+            graphics.drawRect((int)p1.x - 1, (int)p1.y - 1, 2, 2);
+            if(head_ != tail_)
+            {
+                graphics.drawRect((int)p2.x - 1, (int)p2.y - 1, 2, 2);
+            }
+            for(int pointindex = 0; pointindex < npoints; pointindex++)
+            {
+                p2.move(points_[pointindex]);
+                p2.transform(transform);
+                graphics.drawRect((int)p2.x - 1, (int)p2.y - 1, 2, 2);
+            }
+
+            graphics.setColor(Color.black);
+        }
+        if(quality > 0 && label_ != null && label_.length() > 0)
+        {
+            DPoint3 to;
+            if(npoints == 0)
+            {
+                to = new DPoint3(p2);
+            } else
+            {
+                to = new DPoint3(p1to);
+                to.transform(transform);
+            }
+            if(p1.x == to.x && p1.y == to.y)
+            {
+                to.x++;
+            }
+            double center_x = (p1.x + to.x) / 2D;
+            double center_y = (p1.y + to.y) / 2D;
+            double theta = Math.atan2(-(to.y - p1.y), to.x - p1.x);
+            int x = (int)center_x;
+            int y = (int)center_y;
+            int tid = tail_.getId();
+            int hid = head_.getId();
+            double tx = p1.x;
+            double hx = p2.x;
+            String changes = (String)data_.get("Changes");
+            char lowerChar = ' ';
+            char upperChar = ' ';
+            String myLabel = "";
+            if(displayEdgeLabels)
+            {
+                myLabel = label_;
+            }
+            if(changes.length() != 0 && displayEdgeLabels)
+            {
+                lowerChar = changes.charAt(0);
+                upperChar = changes.charAt(2);
+                if(tid < hid)
+                {
+                    myLabel = (tx > hx ? upperChar : lowerChar) + "-" + label_ + "-" + (tx > hx ? lowerChar : upperChar);
+                } else
+                {
+                    myLabel = (tx > hx ? lowerChar : upperChar) + "-" + label_ + "-" + (tx > hx ? upperChar : lowerChar);
+                }
+            }
+            graphics.setFont(canvas.getFont(false));
+            int label_w = graphics.getFontMetrics().stringWidth(myLabel);
+            double cos_theta = Math.cos(theta);
+            double sin_theta = Math.sin(theta);
+            double cy = y;
+            double cx = (double)x - (double)label_w / 2D;
+            if(cos_theta < 0.0D)
+            {
+                theta += 3.1415926535897931D;
+            }
+            Graphics2D g = (Graphics2D)graphics;
+            g.rotate(-theta, x, y);
+            g.drawString(myLabel, (int)cx, (int)cy);
+        }
+    }
+
+    private void drawArrow_(Graphics graphics, DPoint3 p1, DPoint3 p2)
+    {
+        double dx = p1.x - p2.x;
+        double dy = p1.y - p2.y;
+        double length = Math.sqrt(dx * dx + dy * dy);
+        DPoint p3 = new DPoint(p2.x, p2.y);
+        double arrow_size = 6D;
+        p3.x += (arrow_size / length) * dx;
+        p3.y += (arrow_size / length) * dy;
+        DPoint p4 = new DPoint(p3.x, p3.y);
+        p4.x += ((arrow_size * 0.69999999999999996D) / length) * dy;
+        p4.y -= ((arrow_size * 0.69999999999999996D) / length) * dx;
+        p3.x -= ((arrow_size * 0.69999999999999996D) / length) * dy;
+        p3.y += ((arrow_size * 0.69999999999999996D) / length) * dx;
+        graphics.drawLine((int)p2.x, (int)p2.y, (int)p4.x, (int)p4.y);
+        graphics.drawLine((int)p2.x, (int)p2.y, (int)p3.x, (int)p3.y);
+    }
+
+    public String getLabel()
+    {
+        return label_;
+    }
+
+    public int getLineStyle()
+    {
+        return lineStyle_;
+    }
+
+    public Node head()
+    {
+        return head_;
+    }
+
+    public boolean isDummy()
+    {
+        return dummy_;
+    }
+
+    public DPoint3[] points()
+    {
+        return points_;
+    }
+
+    private String PSnum_(double num)
+    {
+        if(num > 0.0D)
+        {
+            return String.valueOf(num) + " ";
+        }
+        if(num < 0.0D)
+        {
+            return String.valueOf(-num) + " neg ";
+        } else
+        {
+            return "0 ";
+        }
+    }
+
+    private StringBuffer psString_(String source)
+    {
+        int len = source.length();
+        StringBuffer result = new StringBuffer(len * 2);
+        for(int i = 0; i < len; i++)
+        {
+            char chr = source.charAt(i);
+            if(chr == '(' || chr == ')' || chr == '\\')
+            {
+                result.append('\\');
+            }
+            if(chr >= ' ' && chr < '\200')
+            {
+                result.append(chr);
+            } else
+            {
+                result.append("\\" + (chr >> 6 & 7) + (chr >> 3 & 7) + (chr & 7));
+            }
+        }
+
+        return result;
+    }
+
+    public void saveState()
+    {
+        oldpoints_ = new DPoint3[points_.length];
+        for(int i = 0; i < points_.length; i++)
+        {
+            oldpoints_[i] = new DPoint3(points_[i]);
+        }
+
+    }
+
+    public static void setDefaultLabel(boolean state)
+    {
+        displayEdgeLabels = state;
+    }
+
+    public void setGMLvalues(GMLobject gml)
+    {
+        gml.setValue("target", 0, new Integer(head_.getIdObject().intValue()));
+        gml.setValue("source", 0, new Integer(tail_.getIdObject().intValue()));
+        gml.setValue("data", 3, null);
+        for(Enumeration keys = data_.keys(); keys.hasMoreElements();)
+        {
+            String key = (String)keys.nextElement();
+            String value = (String)data_.get(key);
+            if(value != null && value.length() != 0)
+            {
+                String datakey = "data." + key;
+                gml.setValue(datakey, 2, value);
+            }
+        }
+
+        if(points_.length > 0)
+        {
+            GMLobject edgegraphics = new GMLobject("graphics", 3);
+            gml.addObjectToEnd(edgegraphics);
+            int length = points_.length;
+            for(int pt = 0; pt < length; pt++)
+            {
+                GMLobject point = new GMLobject("Point", 3);
+                edgegraphics.addObjectToEnd(point);
+                point.setValue("z", 1, new Double(points_[pt].z));
+                point.setValue("y", 1, new Double(points_[pt].y));
+                point.setValue("x", 1, new Double(points_[pt].x));
+            }
+
+        }
+        gml.setValue("label", 2, label_);
+        gml.setValue("linestyle", 2, styleNames[lineStyle_]);
+    }
+
+    public void setLabel(String label)
+    {
+        label_ = label;
+    }
+
+    public void setLineStyle(int line_style)
+    {
+        lineStyle_ = line_style;
+    }
+
+    public void slide(Matrix44 moveTransform, Matrix44 viewTransform, int xoffs, int yoffs)
+    {
+        if(oldpoints_ == null)
+        {
+            return;
+        }
+        for(int i = 0; i < points_.length; i++)
+        {
+            points_[i].move(oldpoints_[i]);
+            points_[i].transform(viewTransform);
+            points_[i].x += xoffs;
+            points_[i].y += yoffs;
+            points_[i].transform(moveTransform);
+        }
+
+    }
+
+    public Node tail()
+    {
+        return tail_;
+    }
+
+    public String toPS(Matrix44 transform, boolean inplane, boolean directed)
+    {
+        double scale = transform.scale;
+        String result = new String();
+        int npoints = points_.length;
+        DPoint3 p1to;
+        DPoint3 p2to;
+        if(npoints == 0)
+        {
+            p1to = head_.getPosition3();
+            p2to = tail_.getPosition3();
+        } else
+        {
+            p1to = points_[0];
+            p2to = points_[npoints - 1];
+        }
+        DPoint3 p1 = tail_.intersectWithLineTo(p1to, inplane, 2);
+        DPoint3 p2 = head_.intersectWithLineTo(p2to, inplane, 2);
+        p1.transform(transform);
+        p2.transform(transform);
+        if(head_ == tail_ && npoints == 0)
+        {
+            p2.x = p1.x + 1.0D;
+            p2.y = p1.y;
+        }
+        result = result + PSnum_(p1.x) + PSnum_(p1.y) + "moveto\n";
+        DPoint3 point = new DPoint3();
+        for(int i = 0; i < npoints; i++)
+        {
+            point.move(points_[i]);
+            point.transform(transform);
+            result = result + PSnum_(point.x) + PSnum_(point.y) + "lineto\n";
+        }
+
+        result = result + PSnum_(p2.x) + PSnum_(p2.y) + "lineto\n";
+        result = result + stylePatterns[lineStyle_] + " setdash\n";
+        result = result + "stroke\n";
+        result = result + "[1 0 0 0] 0 setdash\n";
+        if(label_ != null && label_.length() > 0)
+        {
+            DPoint3 to;
+            if(npoints == 0)
+            {
+                to = new DPoint3(p2);
+            } else
+            {
+                to = new DPoint3(p1to);
+                to.transform(transform);
+            }
+            if(p1.x == to.x && p1.y == to.y)
+            {
+                to.x++;
+            }
+            double center_x = (p1.x + to.x) / 2D;
+            double center_y = (p1.y + to.y) / 2D;
+            double dx = to.x - p1.x;
+            double dy = to.y - p1.y;
+            double angle = Math.atan2(dx, dy);
+            angle = (angle * 180D) / 3.1415926535897931D - 90D;
+            if(Math.abs(angle) > 90D)
+            {
+                angle += 180D;
+            }
+            result = result + "(" + psString_(label_) + ") " + center_x + " " + center_y + " " + angle + " slantlabel\n";
+        }
+        if(directed)
+        {
+            DPoint3 from = new DPoint3(p2to);
+            from.transform(transform);
+            if((int)from.x == (int)p2.x && (int)from.y == (int)p2.y)
+            {
+                from.x -= 10D;
+            }
+            result = result + arrowPS_(from, p2);
+        }
+        result = result + "\n";
+        return result;
+    }
+
+    public void toPict(Matrix44 transform, boolean inplane, boolean directed, RandomAccessFile out_, double minx, double miny)
+    {
+        double scale = transform.scale;
+        double x = 0.0D;
+        double y = 0.0D;
+        double x2 = 0.0D;
+        double y2 = 0.0D;
+        int npoints = points_.length;
+        DPoint3 p1to;
+        DPoint3 p2to;
+        if(npoints == 0)
+        {
+            p1to = head_.getPosition3();
+            p2to = tail_.getPosition3();
+        } else
+        {
+            p1to = points_[0];
+            p2to = points_[npoints - 1];
+        }
+        DPoint3 p1 = tail_.intersectWithLineTo(p1to, inplane, 2);
+        DPoint3 p2 = head_.intersectWithLineTo(p2to, inplane, 2);
+        if(head_ == tail_ && npoints == 0)
+        {
+            p2.x = p1.x + 1.0D;
+            p2.y = p1.y;
+        }
+        x = p1.x + minx;
+        x2 = p2.x + minx;
+        p2.x += minx;
+        y = p1.y + miny;
+        y2 = p2.y + miny;
+        p2.y += miny;
+        drawline((short)(int)x, (short)(int)y, (short)(int)x2, (short)(int)y2, out_);
+        if(label_ != null && label_.length() > 0)
+        {
+            double tx = (x + x2) / 2D;
+            double ty = (y + y2) / 2D;
+            double len = label_.length();
+            double len2 = (len * 5D) / 2D;
+            tx += len2;
+            ty += 2D;
+            if(label_.length() > 0 && label_ != "null")
+            {
+                drawtext((int)tx, (int)ty, (int)len, out_);
+            }
+        }
+        if(directed)
+        {
+            DPoint3 from = new DPoint3(p2to);
+            if((int)from.x == (int)p2.x && (int)from.y == (int)p2.y)
+            {
+                from.x -= 10D;
+            }
+            from.x += minx;
+            from.y += miny;
+            short len = 0;
+            int lab = label_.length();
+            len = (short)lab;
+            if(len > 0)
+            {
+                drawtext((int)from.x, (int)from.y, len, out_);
+            }
+            arrowPict(from, p2, out_);
+        }
+    }
+
+    private void arrowPict(DPoint3 p1, DPoint3 p2, RandomAccessFile out_)
+    {
+        double dx = p1.x - p2.x;
+        double dy = p1.y - p2.y;
+        double length = Math.sqrt(dx * dx + dy * dy);
+        dx /= length;
+        dy /= length;
+        drawline((int)p2.x, (int)p2.y, (int)dx, (int)dy, out_);
+    }
+
+    public void drawline(int xa, int ya, int xb, int yb, RandomAccessFile out_)
+    {
+        short x1 = (short)xa;
+        short x2 = (short)xb;
+        short y1 = (short)ya;
+        short y2 = (short)yb;
+        try
+        {
+            out_.writeShort(32);
+            out_.writeShort(y1);
+            out_.writeShort(x1);
+            out_.writeShort(y2);
+            out_.writeShort(x2);
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+    }
+
+    public void drawtext(int x1, int y1, int len1, RandomAccessFile out_)
+    {
+        String label = label_;
+        short x = (short)x1;
+        short y = (short)y1;
+        short len = (short)len1;
+        short first = 0;
+        short middle = 0;
+        short letter = 0;
+        int place = 0;
+        int temp1 = 0;
+        try
+        {
+            out_.writeShort(13);
+            out_.writeShort(8);
+            out_.writeShort(40);
+            out_.writeShort(y);
+            out_.writeShort(x);
+            first = len;
+            first <<= 8;
+            char let = label.charAt(place);
+            place++;
+            letter = (short)let;
+            first += let;
+            out_.writeShort(first);
+            while(place < len) 
+            {
+                let = label.charAt(place);
+                place++;
+                middle = (short)let;
+                middle <<= 8;
+                if(place != len)
+                {
+                    let = label.charAt(place);
+                    place++;
+                    middle += (short)let;
+                }
+                out_.writeShort(middle);
+            }
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+    }
+
+    public static String styleNames[] = {
+        "solid", "dashed", "dotted", "dashdot"
+    };
+    public static Color styleColors[];
+    public static String styleLabels[] = {
+        "solid (black)", "dashed (blue)", "dotted (green)", "dashdot (orange)"
+    };
+    public static String stylePatterns[] = {
+        "[1 0 0 0] 0", "[2 1 2 1] 0", "[1 1 1 1] 0", "[2 1 1 1] 0"
+    };
+    public static String defaultDataTypes_[] = {
+        "Changes", "Confidence"
+    };
+    protected Node head_;
+    protected Node tail_;
+    protected DPoint3 points_[];
+    private DPoint3 oldpoints_[];
+    private boolean dummy_;
+    private static boolean displayEdgeLabels = false;
+    public boolean selected;
+    private String label_;
+    private int lineStyle_;
+    public Hashtable data_;
+    public Object data;
+
+    static 
+    {
+        styleColors = (new Color[] {
+            Color.black, Color.blue, Color.green, Color.orange
+        });
+    }
+}

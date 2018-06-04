@@ -1,0 +1,34 @@
+Clade 1-1
+Chain of Inference : 1-2-3-5-6*-7-8 YES
+Restricted gene flow/dispersal but with some long-distance dispersal over intermediate areas not occupied by the species; or past gene flow followed by extinction of intermediate populations.
+Too few Clades: Insufficient genetic resolution to discriminate between range expansion/colonization and restricted dispersal/gene flow.
+Question 7 and 8 try to distinguish between long vs. short distance movement
+
+Clade 1-3
+Chain of Inference : 1-2-11-12 NO
+Contiguous range expansion.
+
+Clade 1-4
+Chain of Inference : Null hypothesis cannot be rejected.
+Moving on to next clade
+
+Clade 1-9
+Chain of Inference : Null hypothesis cannot be rejected.
+Moving on to next clade
+
+Clade 2-1
+Chain of Inference : 1-2-3-4 NO
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+
+Clade 2-2
+Chain of Inference : Null hypothesis cannot be rejected.
+Moving on to next clade
+
+Clade 3-1
+Chain of Inference : 1-2-3-4 NO
+Restricted gene flow with isolation by distance (restricted dispersal by distance in non-sexual species).
+
+Total Cladogram
+Chain of Inference : 1-2 IO
+I-T Status Undetermined: Inconclusive outcome.
+

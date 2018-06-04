@@ -1,0 +1,48 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   DocumentOuputStream.java
+
+import java.io.IOException;
+import java.io.OutputStream;
+import javax.swing.text.*;
+
+class DocumentOutputStream extends OutputStream
+{
+
+    public DocumentOutputStream(Document doc, AttributeSet a)
+    {
+        one = new byte[1];
+        this.doc = doc;
+        this.a = a;
+    }
+
+    public DocumentOutputStream(Document doc)
+    {
+        this(doc, null);
+    }
+
+    public void write(int b)
+        throws IOException
+    {
+        one[0] = (byte)b;
+        write(one, 0, 1);
+    }
+
+    public void write(byte b[], int off, int len)
+        throws IOException
+    {
+        try
+        {
+            doc.insertString(doc.getLength(), new String(b, off, len), a);
+        }
+        catch(BadLocationException ble)
+        {
+            throw new IOException(ble.getMessage());
+        }
+    }
+
+    private byte one[];
+    private Document doc;
+    private AttributeSet a;
+}

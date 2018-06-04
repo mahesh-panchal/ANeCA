@@ -1,0 +1,103 @@
+RGF_LDD_Small_All_sampled
+1  Lat: 0.0                  Lon: 0.0                  Rad: 70.0
+2  Lat: 1.53                 Lon: 0.0                  Rad: 70.0
+3  Lat: 3.06                 Lon: 0.0                  Rad: 70.0
+4  Lat: 0.0                  Lon: 1.53                 Rad: 70.0
+5  Lat: 1.53                 Lon: 1.53                 Rad: 70.0
+6  Lat: 3.06                 Lon: 1.53                 Rad: 70.0
+7  Lat: 0.0                  Lon: 3.06                 Rad: 70.0
+8  Lat: 1.53                 Lon: 3.06                 Rad: 70.0
+9  Lat: 3.06                 Lon: 3.06                 Rad: 70.0
+
+Clade 1-1
+Observed Chi-Square statistic = 110.4903*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+51.2 T    52.5638*s      185.0517              0   7   0   0   0   1   0   0   0
+123.3 T   120.1349       158.1729              0   0   1   0   1   0   0   0   0
+143.3 T   96.3429*s      204.1956              0   0   1   0   0  11   0   4   0
+1.1 I     181.0301*s     183.0164             20  10   7  13  14  12  38   8   2
+I-T       96.3275*l      -11.7486
+
+Clade 1-2
+Observed Chi-Square statistic = 0.8185
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+294.6 T   0.0            122.5515              0   0   0   0   0   1   0   0   0
+9.1 I     166.6138       165.4583              5   3   0   1   0  13   0   2   0
+I-T       166.6138       42.9069
+
+Clade 1-3
+Observed Chi-Square statistic = 168.661*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+122.3 T   0.0            189.4291              0   0   1   0   0   0   0   0   0
+17.1 T    80.7694*s      211.7134*l            1   0   1   0   0   0   0   1  17
+72.2 T    102.4222*s     108.6567*s            0   1   1   0   3   5   0   0   0
+282.6 T   0.0            105.5624              0   0   0   0   0   2   0   0   0
+359.8 T   0.0            193.2231              0   0   0   0   0   0   0   2   0
+30.1 I    158.3836*s     164.2266              2  27  25   0  21   2   2  22   5
+I-T       82.9662*l      -10.283
+
+Clade 1-4
+Observed Chi-Square statistic = 1.7234
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+431.9 T   0.0            201.5085              0   0   0   0   0   0   0   0   1
+0.1 I     214.5388       214.0862             20   0   4   0   1   3   0  11  22
+I-T       214.5388       12.5777
+
+Clade 1-5
+Observed Chi-Square statistic = 2.0769
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+133.3 T   0.0            166.1372              0   0   1   0   0   0   0   0   0
+3.1 I     149.8573       150.7178              2   2   8   3   9   0   0   0   2
+I-T       149.8573       -15.4194
+
+Clade 1-7
+Observed Chi-Square statistic = 41.0*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+151.4 T   29.3448*s      44.53*s               0   0   0  33   1   0   0   0   1
+317.7 T   0.0            141.4958*l            0   0   0   0   0   0   6   0   0
+
+Clade 2-1
+Observed Chi-Square statistic = 27.7145*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+1-2 T     163.742*s      194.9298              5   3   0   1   0  14   0   2   0
+1-1 I     185.0528       184.8166             20  17   9  13  15  24  38  12   2
+I-T       21.3108        -10.1132
+
+Clade 2-2
+Observed Chi-Square statistic = 115.2518*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+1-4 T     213.8833*l     220.1756*l           20   0   4   0   1   3   0  11  23
+1-5 T     151.2889*s     157.6053*s            2   2   9   3   9   0   0   0   2
+1-3 I     166.7791*s     166.0514*s            3  28  28   0  24   9   2  25  22
+I-T       -28.1149*s     -35.1422*s
+
+Clade 2-3
+Observed Chi-Square statistic = 15.3659*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+1-6 T     0.0            128.9184              0   0   0   0   0   0   4   0   0
+1-7 I     58.7201*s      66.1322               0   0   0  33   1   0   6   0   1
+I-T       58.7201        -62.7862
+
+Clade 3-2
+Observed Chi-Square statistic = 228.4759*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+2-3 T     71.7132*s      198.9893*l            0   0   0  33   1   0  10   0   1
+2-2 I     179.6499       179.0271*s           25  30  41   3  34  12   2  36  47
+I-T       107.9367*l     -19.9622*s
+
+Total Cladogram
+Observed Chi-Square statistic = 102.0156*
+Geographic Distance Analysis
+Clade     Dc             Dn             Pop:   1   2   3   4   5   6   7   8   9
+3-1 T     186.2613       185.1455             25  20   9  14  15  38  38  14   2
+3-2 T     182.2937       180.5433             25  30  41  36  35  12  12  36  48

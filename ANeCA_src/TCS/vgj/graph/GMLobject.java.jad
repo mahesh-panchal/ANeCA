@@ -1,0 +1,429 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GMLobject.java
+
+package EDU.auburn.VGJ.graph;
+
+import java.io.IOException;
+import java.util.Hashtable;
+
+// Referenced classes of package EDU.auburn.VGJ.graph:
+//            GMLlexer, ParseError
+
+public class GMLobject
+{
+
+    public GMLobject()
+    {
+        searchkey_ = null;
+        searchobj_ = null;
+        key_ = "undefined";
+        value_ = null;
+        next_ = null;
+        type_ = 4;
+    }
+
+    public GMLobject(String key, int type)
+    {
+        searchkey_ = null;
+        searchobj_ = null;
+        key_ = key;
+        type_ = type;
+        value_ = null;
+        next_ = null;
+    }
+
+    public GMLobject(GMLlexer lexer, String key)
+        throws IOException, ParseError
+    {
+        searchkey_ = null;
+        searchobj_ = null;
+        next_ = null;
+        key_ = key;
+        if(key != null)
+        {
+            int token = lexer.nextToken();
+            if(token == GMLlexer.GMLinteger)
+            {
+                type_ = 0;
+                value_ = new Integer((int)lexer.getDoubleval());
+            } else
+            if(token == GMLlexer.GMLreal)
+            {
+                type_ = 1;
+                value_ = new Double(lexer.getDoubleval());
+            } else
+            if(token == GMLlexer.GMLstring)
+            {
+                type_ = 2;
+                value_ = lexer.getStringval();
+            } else
+            if(token == 91)
+            {
+                type_ = 3;
+                value_ = parseGMLlist_(lexer);
+                if(lexer.getTokenType() != 93)
+                {
+                    throw new ParseError("Expecting GML key or ']'");
+                }
+            } else
+            {
+                throw new ParseError("Expecting GML value (number, string, or list)");
+            }
+        } else
+        {
+            type_ = 5;
+            value_ = parseGMLlist_(lexer);
+            if(lexer.getTokenType() != GMLlexer.GMLeof)
+            {
+                throw new ParseError("Expecting GML key or end-of-file");
+            }
+        }
+    }
+
+    public GMLobject getGMLSubObject(String path, int type, boolean create)
+    {
+        searchobj_ = null;
+        GMLobject currentobj = this;
+        int start = 0;
+        if(currentobj.type_ != 3 && currentobj.type_ != 5)
+        {
+            return null;
+        }
+        String key;
+        do
+        {
+            int end = path.indexOf('.', start);
+            if(end >= 0)
+            {
+                key = path.substring(start, end);
+            } else
+            {
+                key = path.substring(start);
+            }
+            GMLobject obj;
+            for(obj = (GMLobject)currentobj.value_; obj != null; obj = obj.next_)
+            {
+                if(obj.key_.equals(key) && (end >= 0 && (obj.type_ == 3 || obj.type_ == 5) || end == -1 && (obj.type_ == type || obj.type_ == 0 && type == 1)))
+                {
+                    break;
+                }
+            }
+
+            if(obj == null)
+            {
+                if(!create)
+                {
+                    return null;
+                }
+                obj = new GMLobject(key, 3);
+                if(end == -1)
+                {
+                    obj.type_ = type;
+                }
+                obj.next_ = (GMLobject)currentobj.value_;
+                currentobj.value_ = obj;
+            } else
+            if(end == -1 && type != obj.type_)
+            {
+                obj.type_ = 1;
+                obj.value_ = new Double(((Integer)obj.value_).intValue());
+            }
+            currentobj = obj;
+            start = end + 1;
+        } while(start != 0);
+        searchobj_ = currentobj.next_;
+        searchkey_ = key;
+        searchtype_ = type;
+        return currentobj;
+    }
+
+    public void setHashFromGML(String path, int type, Hashtable hash)
+    {
+        if(type_ != 3 && type_ != 5)
+        {
+            return;
+        }
+        GMLobject list = getGMLSubObject(path, 3, false);
+        if(list == null)
+        {
+            return;
+        }
+        for(GMLobject tmp = (GMLobject)list.value_; tmp != null; tmp = tmp.next_)
+        {
+            if(type == tmp.type_ || type == 1 && tmp.type_ == 0)
+            {
+                hash.put(tmp.key_, tmp.value_);
+            }
+        }
+
+    }
+
+    public GMLobject getNextGMLSubObject()
+    {
+        for(; searchobj_ != null && searchobj_.key_ != null && (!searchobj_.key_.equals(searchkey_) || searchobj_.type_ != searchtype_ && (searchobj_.type_ != 0 || searchtype_ != 1)); searchobj_ = searchobj_.next_) { }
+        if(searchobj_ != null && searchobj_.type_ != searchtype_)
+        {
+            searchobj_.type_ = 1;
+            searchobj_.value_ = new Double(((Integer)searchobj_.value_).intValue());
+        }
+        GMLobject retval = searchobj_;
+        if(searchobj_ != null)
+        {
+            searchobj_ = searchobj_.next_;
+        }
+        return retval;
+    }
+
+    public void setValue(String path, int type, Object value)
+    {
+        GMLobject obj = getGMLSubObject(path, type, true);
+        obj.value_ = value;
+    }
+
+    public Object getValue(String path, int type)
+    {
+        GMLobject obj = getGMLSubObject(path, type, false);
+        if(obj == null)
+        {
+            return null;
+        } else
+        {
+            return obj.value_;
+        }
+    }
+
+    public void addObject(GMLobject object)
+    {
+        if(type_ != 3)
+        {
+            return;
+        } else
+        {
+            object.next_ = (GMLobject)value_;
+            value_ = object;
+            return;
+        }
+    }
+
+    public void addObjectToEnd(GMLobject object)
+    {
+        if(type_ != 3 && type_ != 5)
+        {
+            return;
+        }
+        GMLobject obj;
+        for(obj = (GMLobject)value_; obj != null && obj.next_ != null; obj = obj.next_) { }
+        if(obj == null)
+        {
+            value_ = object;
+        } else
+        {
+            obj.next_ = object;
+        }
+    }
+
+    public void deleteAll(String key, int type)
+    {
+        GMLobject object = (GMLobject)value_;
+        GMLobject prevobject = null;
+        while(object != null) 
+        {
+            if(object.key_.equals(key) && object.type_ == type)
+            {
+                object = object.next_;
+                if(prevobject != null)
+                {
+                    prevobject.next_ = object;
+                } else
+                {
+                    value_ = object;
+                }
+            } else
+            {
+                prevobject = object;
+                object = object.next_;
+            }
+        }
+    }
+
+    public void deleteUnsafe()
+    {
+        if(type_ != 3 && type_ != 5)
+        {
+            return;
+        }
+        GMLobject object = (GMLobject)value_;
+        GMLobject prevobject = null;
+        int chr;
+        while(object != null) 
+        {
+            if(!object.key_.equals("vgj") && (chr = object.key_.charAt(0)) >= 'A' && chr <= 90)
+            {
+                object = object.next_;
+                if(prevobject != null)
+                {
+                    prevobject.next_ = object;
+                } else
+                {
+                    value_ = object;
+                }
+            } else
+            {
+                object.deleteUnsafe();
+                prevobject = object;
+                object = object.next_;
+            }
+        }
+    }
+
+    public void prune()
+    {
+        if(type_ != 3)
+        {
+            return;
+        }
+        for(GMLobject obj = (GMLobject)value_; obj != null; obj = obj.next_)
+        {
+            obj.prune();
+        }
+
+        GMLobject prevobj = null;
+        for(GMLobject obj = (GMLobject)value_; obj != null; obj = obj.next_)
+        {
+            if(obj.value_ == null)
+            {
+                if(prevobj != null)
+                {
+                    prevobj.next_ = obj.next_;
+                } else
+                {
+                    value_ = obj.next_;
+                }
+            } else
+            {
+                prevobj = obj;
+            }
+        }
+
+    }
+
+    public String toString(int numtabs)
+    {
+        if(value_ == null)
+        {
+            return "";
+        }
+        String retval = "";
+        for(int i = 0; i < numtabs; i++)
+        {
+            retval = retval + "   ";
+        }
+
+        if(key_ != null)
+        {
+            retval = retval + key_;
+        }
+        if(type_ == 0)
+        {
+            retval = retval + " " + ((Integer)value_).toString() + "\n";
+        } else
+        if(type_ == 1)
+        {
+            double val = ((Double)value_).doubleValue();
+            if(val == (1.0D / 0.0D) || val == (0.0D / 0.0D))
+            {
+                val = 1.7976931348623157E+308D;
+            }
+            if(val == (-1.0D / 0.0D))
+            {
+                val = Double.MIN_VALUE;
+            }
+            String doublestring = Double.toString(val);
+            if(doublestring.indexOf('.') == -1)
+            {
+                String expstring = "";
+                int expstart;
+                if((expstart = doublestring.indexOf('e')) != -1)
+                {
+                    expstring = doublestring.substring(expstart);
+                    doublestring = doublestring.substring(0, expstart);
+                }
+                doublestring = doublestring + ".0" + expstring;
+            }
+            retval = retval + " " + doublestring + "\n";
+        } else
+        if(type_ == 2)
+        {
+            if(value_ == null)
+            {
+                retval = retval + " \"\"\n";
+            } else
+            {
+                retval = retval + " \"" + (String)value_ + "\"\n";
+            }
+        } else
+        if(type_ == 3)
+        {
+            retval = retval + " [\n";
+            for(GMLobject obj = (GMLobject)value_; obj != null; obj = obj.next_)
+            {
+                if(obj.value_ != null)
+                {
+                    retval = retval + obj.toString(numtabs + 1);
+                }
+            }
+
+            for(int i = 0; i < numtabs; i++)
+            {
+                retval = retval + "   ";
+            }
+
+            retval = retval + "]\n";
+        } else
+        {
+            for(GMLobject obj = (GMLobject)value_; obj != null; obj = obj.next_)
+            {
+                retval = retval + obj.toString(numtabs);
+            }
+
+        }
+        return retval;
+    }
+
+    private GMLobject parseGMLlist_(GMLlexer lexer)
+        throws IOException, ParseError
+    {
+        GMLobject retval = null;
+        int token;
+        GMLobject newobj;
+        for(GMLobject prevobj = null; (token = lexer.nextToken()) == GMLlexer.GMLkey; prevobj = newobj)
+        {
+            newobj = new GMLobject(lexer, lexer.getStringval());
+            if(prevobj == null)
+            {
+                retval = newobj;
+            } else
+            {
+                prevobj.next_ = newobj;
+            }
+        }
+
+        return retval;
+    }
+
+    public static final int GMLfile = 5;
+    public static final int GMLinteger = 0;
+    public static final int GMLlist = 3;
+    public static final int GMLreal = 1;
+    public static final int GMLstring = 2;
+    public static final int GMLundefined = 4;
+    protected String key_;
+    protected GMLobject next_;
+    protected int type_;
+    protected Object value_;
+    private String searchkey_;
+    private GMLobject searchobj_;
+    private int searchtype_;
+}

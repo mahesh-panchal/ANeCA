@@ -1,0 +1,78 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   TextOutDialog.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel
+
+public class TextOutDialog extends Dialog
+{
+
+    public TextOutDialog(Frame frame, String title, String text_in, int rows, int columns, boolean modal)
+    {
+        super(frame, title, modal);
+        Construct_(frame, title, text_in, rows, columns, modal);
+    }
+
+    public TextOutDialog(Frame frame, String title, String text_in, boolean modal)
+    {
+        super(frame, title, modal);
+        int oldpos = -1;
+        int rows = 0;
+        int columns = 0;
+        int pos;
+        while((pos = text_in.indexOf('\n', oldpos + 1)) != -1) 
+        {
+            if(pos - oldpos > columns)
+            {
+                columns = pos - oldpos;
+            }
+            rows++;
+            oldpos = pos;
+        }
+        columns += 2;
+        if((rows += 2) > 35)
+        {
+            rows = 35;
+        }
+        if(columns > 80)
+        {
+            columns = 80;
+        }
+        Construct_(frame, title, text_in, rows, columns, modal);
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            hide();
+            dispose();
+            return true;
+        } else
+        {
+            return false;
+        }
+    }
+
+    private void Construct_(Frame frame, String title, String text_in, int rows, int columns, boolean modal)
+    {
+        LPanel p = new LPanel();
+        text = new TextArea(text_in, rows, columns);
+        text.setEditable(false);
+        text.setBackground(Color.white);
+        p.addComponent(text, 0, 0, 1.0D, 1.0D, 3, 0);
+        p.addButtonPanel("OK", 0);
+        p.finish();
+        add("Center", p);
+        pack();
+        show();
+    }
+
+    private TextArea text;
+}

@@ -1,0 +1,1988 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GraphCanvas.java
+
+package EDU.auburn.VGJ.gui;
+
+import EDU.auburn.VGJ.algorithm.GraphUpdate;
+import EDU.auburn.VGJ.graph.*;
+import EDU.auburn.VGJ.util.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Enumeration;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            OffsetCanvas, DragFix, GroupWarningDialog
+
+public class GraphCanvas extends OffsetCanvas
+    implements GraphUpdate
+{
+
+    public GraphCanvas(Graph graph_in, Frame frame_in)
+    {
+        windowSize_ = new Dimension(-1, -1);
+        offsetx_ = 0.0D;
+        offsety_ = 0.0D;
+        scale_ = 1.0D;
+        offset_ = new DPoint(0.0D, 0.0D);
+        selected_ = 0;
+        mouseMode_ = 4;
+        scaleBounds_ = true;
+        xyPlane_ = true;
+        _3d_ = false;
+        backImage_ = null;
+        currentMouseAction_ = 0;
+        lastEdgePoint_ = null;
+        hSpacing = 30D;
+        vSpacing = 40D;
+        qualityCB_ = 1;
+        quality_ = 1;
+        graph_ = graph_in;
+        frame_ = frame_in;
+        setBackground(Color.white);
+        font_ = new Font("Helvetica", 0, 12);
+        edgeFont_ = new Font("Helvetica", 0, 10);
+        computeBounds_();
+        scaleMatrix_ = new Matrix44();
+        scaleMatrix_.matrix[0][0] = scaleMatrix_.matrix[1][1] = scaleMatrix_.matrix[2][2] = scaleMatrix_.matrix[3][3] = 1.0D;
+        shiftMatrix_ = new Matrix44(scaleMatrix_);
+        rotxMatrix_ = new Matrix44(scaleMatrix_);
+        rotxMatrix_.matrix[1][1] = rotxMatrix_.matrix[2][2] = -1D;
+        rotxMatrix_.matrix[2][1] = -(rotxMatrix_.matrix[1][2] = 0.0D);
+        rotzMatrix_ = new Matrix44(scaleMatrix_);
+        updateViewTransform_();
+        dragFix_ = new DragFix(this);
+    }
+
+    public void center()
+    {
+        computeBounds_();
+        setOffsets_(0.5D * ((double)windowSize_.width - (minx_ + maxx_) * scale_), 0.5D * ((double)windowSize_.height - (miny_ + maxy_) * scale_));
+        getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+        paintOver();
+    }
+
+    private void computeBounds_()
+    {
+        double oldminx = minx_;
+        double oldminy = miny_;
+        minx_ = miny_ = maxx_ = maxy_ = 0.0D;
+        Node tmpnode = graph_.firstNode();
+        if(tmpnode != null)
+        {
+            DPoint tmppoint = tmpnode.getPosition();
+            DDimension tmpdim = tmpnode.getBoundingBox();
+            minx_ = tmppoint.x - tmpdim.width / 2D;
+            maxx_ = tmppoint.x + tmpdim.width / 2D;
+            miny_ = tmppoint.y - tmpdim.height / 2D;
+            maxy_ = tmppoint.y + tmpdim.height / 2D;
+            for(tmpnode = graph_.nextNode(tmpnode); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+            {
+                tmppoint = tmpnode.getPosition();
+                tmpdim = tmpnode.getBoundingBox();
+                double w = tmpdim.width / 2D;
+                double h = tmpdim.height / 2D;
+                if(tmppoint.x - w < minx_)
+                {
+                    minx_ = tmppoint.x - w;
+                }
+                if(tmppoint.x + w > maxx_)
+                {
+                    maxx_ = tmppoint.x + w;
+                }
+                if(tmppoint.y - h < miny_)
+                {
+                    miny_ = tmppoint.y - h;
+                }
+                if(tmppoint.y + h > maxy_)
+                {
+                    maxy_ = tmppoint.y + h;
+                }
+            }
+
+        }
+        double maxdim = Math.abs(maxy_);
+        if(Math.abs(miny_) > maxdim)
+        {
+            maxdim = Math.abs(miny_);
+        }
+        if(Math.abs(minx_) > maxdim)
+        {
+            maxdim = Math.abs(minx_);
+        }
+        if(Math.abs(maxx_) > maxdim)
+        {
+            maxdim = Math.abs(maxx_);
+        }
+        maxx_ = maxy_ = maxdim;
+        minx_ = miny_ = -maxdim;
+        width_ = height_ = 2D * maxdim;
+    }
+
+    private void computeDrawOffset_()
+    {
+        setOffsets_((-offsetx_ - minx_) * scale_ + (double)windowSize_.width, (-offsety_ - miny_) * scale_ + (double)windowSize_.height);
+    }
+
+    public DDimension contentsSize()
+    {
+        double w = width_ * scale_ + (double)windowSize_.width * 2D;
+        double h = height_ * scale_ + (double)windowSize_.height * 2D;
+        return new DDimension(w, h);
+    }
+
+    public void deleteSelected(boolean group_warning)
+    {
+        if(selectedNode_ != null || selectedEdge_ != null)
+        {
+            if(selectedNode_ != null)
+            {
+                if(group_warning)
+                {
+                    boolean group = false;
+                    for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                    {
+                        if(!tmpnode.getSelected() || !tmpnode.isGroup())
+                        {
+                            continue;
+                        }
+                        group = true;
+                        break;
+                    }
+
+                    if(group)
+                    {
+                        new GroupWarningDialog(frame_, this);
+                        return;
+                    }
+                }
+                for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                {
+                    if(tmpnode.getSelected())
+                    {
+                        graph_.removeNode(tmpnode);
+                    }
+                }
+
+                selectedNode_ = null;
+                computeBounds_();
+                getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+            }
+            if(selectedEdge_ != null)
+            {
+                for(Enumeration edges = graph_.getEdges(); edges.hasMoreElements();)
+                {
+                    Edge edge = (Edge)edges.nextElement();
+                    if(edge.selected)
+                    {
+                        graph_.removeEdge(edge);
+                    }
+                }
+
+            }
+            paintOver();
+        } else
+        if(currentMouseAction_ == 2)
+        {
+            currentMouseAction_ = 0;
+            paintOver();
+        }
+    }
+
+    private synchronized void drawAxes_(Graphics graphics)
+    {
+        FontMetrics fm = graphics.getFontMetrics();
+        graphics.setColor(Color.black);
+        DPoint3 p2 = new DPoint3();
+        p2.move(25D, 0.0D, 0.0D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        graphics.drawLine(40, 40, 40 + (int)p2.x, 40 + (int)p2.y);
+        p2.move(32D, 0.0D, 0.0D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        String letter = new String("X");
+        double lx = p2.x - (double)fm.stringWidth(letter) / 2D;
+        double ly = p2.y + (double)fm.getAscent() / 2D;
+        graphics.drawString(letter, 40 + (int)lx, 40 + (int)ly);
+        p2.move(0.0D, 25D, 0.0D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        graphics.drawLine(40, 40, 40 + (int)p2.x, 40 + (int)p2.y);
+        p2.move(0.0D, 32D, 0.0D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        letter = new String("Y");
+        lx = p2.x - (double)fm.stringWidth(letter) / 2D;
+        ly = p2.y + (double)fm.getAscent() / 2D;
+        graphics.drawString(letter, 40 + (int)lx, 40 + (int)ly);
+        p2.move(0.0D, 0.0D, 25D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        graphics.drawLine(40, 40, 40 + (int)p2.x, 40 + (int)p2.y);
+        p2.move(0.0D, 0.0D, 32D);
+        p2.transform(rotzMatrix_);
+        p2.transform(rotxMatrix_);
+        letter = new String("Z");
+        lx = p2.x - (double)fm.stringWidth(letter) / 2D;
+        ly = p2.y + (double)fm.getAscent() / 2D;
+        graphics.drawString(letter, 40 + (int)lx, 40 + (int)ly);
+    }
+
+    private boolean drawBackEdge_(int n1, int n2)
+    {
+        if(n1 <= n2 || graph_.getEdge(n2, n1) == null)
+        {
+            return false;
+        }
+        DPoint3 path1[] = graph_.getEdgePathPoints(n1, n2);
+        DPoint3 path2[] = graph_.getEdgePathPoints(n2, n1);
+        if(path1.length != path2.length)
+        {
+            return false;
+        }
+        for(int pt = 0; pt < path1.length; pt++)
+        {
+            if(!path1[pt].equals(path2[path1.length - 1 - pt]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public synchronized void drawObjects_(boolean selected, Graphics graphics, int which_gr)
+    {
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            if(tmpnode.getSelected() == selected)
+            {
+                tmpnode.draw(this, graphics, viewTransform_, quality_);
+            }
+        }
+
+        Enumeration edges = graph_.getEdges();
+        boolean directed = graph_.isDirected();
+        while(edges.hasMoreElements()) 
+        {
+            Edge edge = (Edge)edges.nextElement();
+            Node head = edge.head();
+            Node tail = edge.tail();
+            if((head.getVisibleGroupRoot() != tail.getVisibleGroupRoot() || head == tail) && (head != tail || head.isVisible()))
+            {
+                boolean arrow_only = false;
+                if(directed)
+                {
+                    arrow_only = drawBackEdge_(tail.getIndex(), head.getIndex());
+                }
+                boolean sel = edge.selected;
+                sel |= head.getVisibleGroupRoot().getSelected();
+                sel |= tail.getVisibleGroupRoot().getSelected();
+                if(sel == selected && (directed || tail.getIndex() <= head.getIndex()))
+                {
+                    edge.draw(graphics, viewTransform_, xyPlane_, directed, arrow_only, quality_, this, which_gr);
+                    graphics.dispose();
+                    if(which_gr == 0)
+                    {
+                        graphics = getGraphicsInternal_();
+                    } else
+                    {
+                        graphics = getBackGraphics_();
+                    }
+                }
+            }
+        }
+    }
+
+    public void drawRotatedText(String string, double theta, int cx, int cy, Graphics graphics_in, int which_gr)
+    {
+        FontMetrics fm = graphics_in.getFontMetrics();
+        int label_w = fm.stringWidth(string);
+        int label_h = fm.getHeight();
+        graphics_in.dispose();
+        if(which_gr == 0)
+        {
+            graphics_in = getGraphicsInternal_();
+        } else
+        {
+            graphics_in = getBackGraphics_();
+        }
+        AffineTransform at = new AffineTransform();
+        at.setToRotation(1.5707963267948966D);
+        Graphics2D g2 = (Graphics2D)graphics_in;
+        g2.setFont(edgeFont_);
+        g2.setColor(Color.black);
+        g2.setTransform(at);
+        g2.drawString(string, cx, cy);
+    }
+
+    private void drawSelectedNodes_()
+    {
+        if(selectedNode_ == null)
+        {
+            return;
+        } else
+        {
+            Graphics graphics = getGraphicsInternal_();
+            graphics.setColor(Color.black);
+            graphics.setPaintMode();
+            graphics.drawImage(backImage_, 0, 0, null);
+            setWireframe(true);
+            drawObjects_(true, graphics, 0);
+            setWireframe(false);
+            graphics.dispose();
+            return;
+        }
+    }
+
+    private void drawSelectRect_()
+    {
+        Graphics graphics = getGraphics();
+        graphics.setColor(Color.black);
+        int sx = Math.min(multiSelectX_, multiSelectX2_);
+        int sy = Math.min(multiSelectY_, multiSelectY2_);
+        int sw = Math.abs(multiSelectX_ - multiSelectX2_);
+        int sh = Math.abs(multiSelectY_ - multiSelectY2_);
+        if(multiSelectX2_ != -1)
+        {
+            graphics.drawImage(backImage_, 0, 0, null);
+            graphics.drawRect(sx, sy, sw, sh);
+        }
+        graphics.dispose();
+    }
+
+    private Point findNearestEdge_(double x, double y)
+    {
+        Point edge = null;
+        DPoint3 pos = new DPoint3();
+        DPoint3 pos2 = new DPoint3();
+        double closest = width_ + height_;
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            if(!tmpnode.isGroup())
+            {
+                for(int child = tmpnode.firstChild(); child != -1; child = tmpnode.nextChild())
+                {
+                    Node childnode = graph_.getNodeFromIndex(child);
+                    if(!childnode.isGroup())
+                    {
+                        int npoints = 0;
+                        DPoint3 path[] = graph_.getEdgePathPoints(tmpnode.getIndex(), child);
+                        if(path != null)
+                        {
+                            npoints = path.length;
+                        }
+                        for(int pointindex = 0; pointindex <= npoints; pointindex++)
+                        {
+                            if(pointindex == 0)
+                            {
+                                pos = tmpnode.getPosition3();
+                            } else
+                            {
+                                pos.move(path[pointindex - 1]);
+                            }
+                            if(pointindex == npoints)
+                            {
+                                pos2 = childnode.getPosition3();
+                            } else
+                            {
+                                pos2.move(path[pointindex]);
+                            }
+                            pos.transform(viewTransform_);
+                            pos2.transform(viewTransform_);
+                            if((x >= pos.x - 1.0D && x <= pos2.x + 1.0D || x >= pos2.x - 1.0D && x <= pos.x + 1.0D) && (y >= pos.y - 1.0D && y <= pos2.y + 1.0D || y >= pos2.y - 1.0D && y <= pos.y + 1.0D))
+                            {
+                                double dx = pos2.x - pos.x;
+                                double dy = pos2.y - pos.y;
+                                double dist;
+                                if(dx == 0.0D || dy == 0.0D)
+                                {
+                                    dist = 0.0D;
+                                } else
+                                {
+                                    double xd = Math.abs(((dx / dy) * (y - pos.y) + pos.x) - x);
+                                    double yd = Math.abs(((dy / dx) * (x - pos.x) + pos.y) - y);
+                                    dist = Math.min(xd, yd);
+                                }
+                                if(dist < 3D && dist < closest)
+                                {
+                                    closest = dist;
+                                    edge = new Point(tmpnode.getIndex(), child);
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+        return edge;
+    }
+
+    private Node findNearestNode_(double x, double y, boolean group_nodes)
+    {
+        Node node = null;
+        double closest = (width_ + height_) * scale_;
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            if(tmpnode.isVisible() && (group_nodes || !tmpnode.isGroup()))
+            {
+                DPoint3 pos = tmpnode.getPosition3();
+                DDimension bbox = tmpnode.getBoundingBox();
+                pos.transform(viewTransform_);
+                pos.x = Math.abs(pos.x - x);
+                pos.y = Math.abs(pos.y - y);
+                if(pos.x < (bbox.width / 2D) * scale_ + 1.0D && pos.y < (bbox.height / 2D) * scale_ + 1.0D && pos.x + pos.y < closest)
+                {
+                    closest = pos.x + pos.y;
+                    node = tmpnode;
+                }
+            }
+        }
+
+        return node;
+    }
+
+    private Graphics getBackGraphics_()
+    {
+        Graphics graphics = backImage_.getGraphics();
+        graphics.setFont(font_);
+        return graphics;
+    }
+
+    public DPoint3 getCenter()
+    {
+        DPoint3 retval = new DPoint3((double)windowSize_.width / 2D, (double)windowSize_.height / 2D, 0.0D);
+        retval.transform(moveTransform_);
+        return retval;
+    }
+
+    public void getDrawBounds_(DPoint width, DPoint height)
+    {
+        boolean first = true;
+        DPoint tmpwidth = new DPoint();
+        DPoint tmpheight = new DPoint();
+        DPoint3 pos = new DPoint3();
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            tmpnode.getDrawBounds_(scale_, viewTransform_, tmpwidth, tmpheight);
+            if(first)
+            {
+                first = false;
+                width.move(tmpwidth);
+                height.move(tmpheight);
+            } else
+            {
+                width.x = Math.min(width.x, tmpwidth.x);
+                width.y = Math.max(width.y, tmpwidth.y);
+                height.x = Math.min(height.x, tmpheight.x);
+                height.y = Math.max(height.y, tmpheight.y);
+            }
+            int tmpnode_index = tmpnode.getIndex();
+            for(int child = tmpnode.firstChild(); child != -1; child = tmpnode.nextChild())
+            {
+                if(graph_.isDirected() || tmpnode_index <= child)
+                {
+                    DPoint3 path[] = graph_.getEdgePathPoints(tmpnode_index, child);
+                    if(path != null && path.length > 0)
+                    {
+                        for(int i = 0; i < path.length; i++)
+                        {
+                            pos.move(path[i]);
+                            pos.transform(viewTransform_);
+                            if(first)
+                            {
+                                first = false;
+                                width.move(pos.x, pos.x);
+                                height.move(pos.y, pos.y);
+                            } else
+                            {
+                                width.x = Math.min(width.x, pos.x);
+                                width.y = Math.max(width.y, pos.x);
+                                height.x = Math.min(height.x, pos.y);
+                                height.y = Math.max(height.y, pos.y);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
+
+        if(first)
+        {
+            width.move(0.0D, 1.0D);
+            height.move(0.0D, 1.0D);
+        }
+    }
+
+    public Font getFont(boolean node)
+    {
+        if(node)
+        {
+            return font_;
+        } else
+        {
+            return edgeFont_;
+        }
+    }
+
+    public Frame getFrame()
+    {
+        return frame_;
+    }
+
+    public Graph getGraph()
+    {
+        return graph_;
+    }
+
+    private Graphics getGraphicsInternal_()
+    {
+        Graphics graphics = getGraphics();
+        graphics.setFont(font_);
+        return graphics;
+    }
+
+    public double getHSpacing()
+    {
+        return (1.0D / scale_) * hSpacing;
+    }
+
+    private String getLabel_(double x, double y, double z, boolean mousein)
+    {
+        String string = new String();
+        if(mousein)
+        {
+            string = string.concat("x: " + x + "  y: " + y + "  z: " + z);
+        }
+        if(selectedNode_ != null)
+        {
+            DPoint3 pos = selectedNode_.getPosition3();
+            DDimension3 bbox = selectedNode_.getBoundingBox3();
+            string = string.concat("   Node " + selectedNode_.getIndex() + "   x: " + pos.x + "  y: " + pos.y + "  z: " + pos.z + "   w: " + bbox.width + "  h: " + bbox.height + "  d: " + bbox.depth);
+        }
+        if(selectedEdge_ != null)
+        {
+            string = string.concat("   Edge (" + selectedEdge_.x + "," + selectedEdge_.y + ")");
+        }
+        return string;
+    }
+
+    public DPoint getOffset()
+    {
+        DPoint val = new DPoint(0.0D, 0.0D);
+        val.x = -(offset_.x - (double)windowSize_.width) - minx_ * scale_;
+        val.y = -(offset_.y - (double)windowSize_.height) - miny_ * scale_;
+        return val;
+    }
+
+    public Node getSelectedNode()
+    {
+        return selectedNode_;
+    }
+
+    public double getVSpacing()
+    {
+        return (1.0D / scale_) * vSpacing;
+    }
+
+    public void groupControl(int key)
+    {
+        if(key == 103 || key == 117 || key == 100)
+        {
+            for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+            {
+                if(tmpnode.getSelected() && tmpnode.isVisible())
+                {
+                    if(key == 103 || key == 117)
+                    {
+                        graph_.group(tmpnode, key == 103);
+                    } else
+                    if(key == 100)
+                    {
+                        graph_.killGroup(tmpnode);
+                    }
+                }
+            }
+
+        } else
+        if(key == 99)
+        {
+            int groupnode_id = graph_.insertNode();
+            Node groupnode = graph_.nodeFromIndex(groupnode_id);
+            groupnode.setGroup();
+            Node one_member = null;
+            for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+            {
+                if(tmpnode.getSelected() && tmpnode.isVisible())
+                {
+                    graph_.setNodeGroup(tmpnode, groupnode);
+                    one_member = tmpnode;
+                }
+            }
+
+            if(one_member != null)
+            {
+                graph_.group(one_member, true);
+            }
+        }
+        unselectItems();
+        paintOver();
+    }
+
+    public boolean handleEvent(Event e)
+    {
+        if(e.id == 0x2bd7f)
+        {
+            super.handleEvent((Event)e.arg);
+            getParent().postEvent((Event)e.arg);
+            return true;
+        } else
+        {
+            dragFix_.queueEvent(e);
+            return true;
+        }
+    }
+
+    public boolean keyDown(Event e, int key)
+    {
+        if(e.id == 401)
+        {
+            if(key == 127)
+            {
+                deleteSelected(true);
+            } else
+            if(key == 103 || key == 117 || key == 100 || key == 99)
+            {
+                groupControl(key);
+            }
+        }
+        return true;
+    }
+
+    public boolean mouseDown(Event e, int x_in, int y_in)
+    {
+        DPoint3 pos;
+        if(currentMouseAction_ == 2 && newEdgeNode_ != null)
+        {
+            if((e.modifiers & 1) == 0)
+            {
+                Node tmpnode = findNearestNode_(x_in, y_in, false);
+                if(tmpnode != null)
+                {
+                    if(pathLength_ == 0 && newEdgeNode_ != tmpnode)
+                    {
+                        graph_.insertEdge(graph_.getIndexFromNode(newEdgeNode_), graph_.getIndexFromNode(tmpnode));
+                    } else
+                    {
+                        DPoint3 tmp_array[];
+                        if(pathLength_ == 0)
+                        {
+                            tmp_array = new DPoint3[2];
+                            DPoint3 pos = tmpnode.getPosition3();
+                            pos.transform(viewTransform_);
+                            DPoint3 pos2 = new DPoint3(pos);
+                            DDimension3 size = tmpnode.getBoundingBox3();
+                            double w = (size.width / 2D) * scale_;
+                            if(w < 10D)
+                            {
+                                w = 10D;
+                            }
+                            double h = (size.height / 2D) * scale_ + w * 1.5D;
+                            pos.translate(-w, -h, 0.0D);
+                            pos2.translate(w, -h, 0.0D);
+                            pos.transform(moveTransform_);
+                            pos2.transform(moveTransform_);
+                            tmp_array[0] = pos;
+                            tmp_array[1] = pos2;
+                        } else
+                        {
+                            tmp_array = new DPoint3[pathLength_];
+                            System.arraycopy(pathArray_, 0, tmp_array, 0, pathLength_);
+                        }
+                        graph_.insertEdge(graph_.getIndexFromNode(newEdgeNode_), graph_.getIndexFromNode(tmpnode), tmp_array);
+                    }
+                    currentMouseAction_ = 0;
+                    paintOver();
+                }
+            } else
+            {
+                pos = new DPoint3(x_in, y_in, 0.0D);
+                pos.transform(moveTransform_);
+                DPoint3 p2;
+                if(lastEdgePoint_ != null)
+                {
+                    p2 = new DPoint3(lastEdgePoint_);
+                } else
+                {
+                    p2 = newEdgeNode_.intersectWithLineTo(pos, xyPlane_, quality_);
+                }
+                p2.transform(viewTransform_);
+                Graphics bgraphics = getBackGraphics_();
+                bgraphics.setColor(Color.black);
+                bgraphics.drawLine(x_in, y_in, (int)p2.x, (int)p2.y);
+                bgraphics.dispose();
+                Graphics graphics = getGraphics();
+                graphics.drawImage(backImage_, 0, 0, null);
+                graphics.dispose();
+                lastEdgePoint_ = pos;
+                if(pathLength_ >= pathArraySize_)
+                {
+                    pathArraySize_ = pathLength_ * 2;
+                    DPoint3 new_array[] = new DPoint3[pathArraySize_];
+                    System.arraycopy(pathArray_, 0, new_array, 0, pathLength_);
+                    pathArray_ = new_array;
+                }
+                pathArray_[pathLength_] = lastEdgePoint_;
+                pathLength_++;
+                return false;
+            }
+            return false;
+        }
+        if(currentMouseAction_ != 0)
+        {
+            return false;
+        }
+        pos = new DPoint3(x_in, y_in, 0.0D);
+        pos.transform(moveTransform_);
+        movingZ_ = 0.0D;
+        if((e.modifiers & 0xe) == 0)
+        {
+            currentMouseAction_ = 1;
+            if(mouseMode_ == 1)
+            {
+                currentMouseAction_ = 2;
+            } else
+            if(mouseMode_ == 2 || mouseMode_ == 3 || mouseMode_ == 4)
+            {
+                currentMouseAction_ = 3;
+            }
+        } else
+        if((e.modifiers & 0xa) != 0)
+        {
+            currentMouseAction_ = 2;
+        } else
+        {
+            currentMouseAction_ = 3;
+        }
+        if(currentMouseAction_ == 1)
+        {
+            if(selectedNode_ != null || selectedEdge_ != null)
+            {
+                unselectItems();
+                paintOver();
+            }
+            int index = graph_.insertNode();
+            movingNode_ = graph_.getNodeFromIndex(index);
+            movingNode_.setPosition(pos);
+            DDimension bbox = movingNode_.getBoundingBox();
+            if(scaleBounds_)
+            {
+                bbox.width /= scale_;
+                bbox.height /= scale_;
+            }
+            movingNode_.setBoundingBox(bbox.width, bbox.height);
+            Graphics graphics = getGraphicsInternal_();
+            graphics.setColor(Color.black);
+            movingNode_.draw(this, graphics, viewTransform_, quality_);
+            graphics.dispose();
+        } else
+        if(currentMouseAction_ == 2)
+        {
+            newEdgeNode_ = null;
+            lastEdgePoint_ = null;
+            if(selectedNode_ != null || selectedEdge_ != null)
+            {
+                unselectItems();
+                paintOver();
+            }
+            if((newEdgeNode_ = findNearestNode_(x_in, y_in, false)) != null)
+            {
+                pathLength_ = 0;
+                pathArraySize_ = 10;
+                pathArray_ = new DPoint3[pathArraySize_];
+            }
+        } else
+        if(currentMouseAction_ == 3)
+        {
+            selected_ = 0;
+            if(selectedEdge_ != null && e.clickCount == 2)
+            {
+                setEdgeProperties(false);
+                return false;
+            }
+            if(selectedNode_ != null)
+            {
+                if(e.clickCount == 2)
+                {
+                    setNodeProperties(false);
+                    return false;
+                }
+                for(Node tmpnode = graph_.firstNode(); tmpnode != null && selected_ == 0; tmpnode = graph_.nextNode(tmpnode))
+                {
+                    if(tmpnode.getSelected() && tmpnode.isVisible())
+                    {
+                        selectedNode_ = tmpnode;
+                        DPoint3 posc = tmpnode.getPosition3();
+                        DDimension bbox = tmpnode.getBoundingBox();
+                        posc.transform(viewTransform_);
+                        DPoint tr = new DPoint(posc.x + (bbox.width / 2D) * scale_ + 1.0D, posc.y - (bbox.height / 2D) * scale_ - 1.0D);
+                        DPoint bl = new DPoint(posc.x - (bbox.width / 2D) * scale_ - 1.0D, posc.y + (bbox.height / 2D) * scale_ + 1.0D);
+                        double dist = 16D;
+                        double newdist = (posc.x - (double)x_in) * (posc.x - (double)x_in) + (posc.y - (double)y_in) * (posc.y - (double)y_in);
+                        if(newdist < dist)
+                        {
+                            selected_ = 1;
+                            dist = newdist;
+                        }
+                        newdist = (tr.x - (double)x_in) * (tr.x - (double)x_in) + (tr.y - (double)y_in) * (tr.y - (double)y_in);
+                        if(newdist < dist)
+                        {
+                            selected_ = 2;
+                            if(bbox.height == 0.0D && bbox.width == 0.0D)
+                            {
+                                selectedRatio_ = 1.0D;
+                            } else
+                            {
+                                selectedRatio_ = bbox.height / bbox.width;
+                            }
+                            dist = newdist;
+                        }
+                        newdist = (posc.x - (double)x_in) * (posc.x - (double)x_in) + (bl.y - (double)y_in) * (bl.y - (double)y_in);
+                        if(newdist < dist)
+                        {
+                            selected_ = 3;
+                            dist = newdist;
+                        }
+                        newdist = (bl.x - (double)x_in) * (bl.x - (double)x_in) + (posc.y - (double)y_in) * (posc.y - (double)y_in);
+                        if(newdist < dist)
+                        {
+                            selected_ = 4;
+                        }
+                    }
+                }
+
+                if(selected_ != 0)
+                {
+                    DPoint3 tmppos = selectedNode_.getPosition3();
+                    tmppos.transform(viewTransform_);
+                    movingZ_ = tmppos.z;
+                    movingX_ = tmppos.x;
+                    movingY_ = tmppos.y;
+                    for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                    {
+                        tmpnode.saveState();
+                    }
+
+                    for(Enumeration edges = graph_.getEdges(); edges.hasMoreElements(); ((Edge)edges.nextElement()).saveState()) { }
+                    moveX_ = x_in;
+                    moveY_ = y_in;
+                }
+            }
+            if(selected_ == 0)
+            {
+                if((e.modifiers & 1) == 0)
+                {
+                    unselectItems();
+                }
+                Node tmpnode = findNearestNode_(x_in, y_in, true);
+                Point tmpedge;
+                if(mouseMode_ != 3 && tmpnode != null)
+                {
+                    selectedNode_ = tmpnode;
+                    selectedNode_.setSelected(true);
+                    selected_ = 0;
+                } else
+                if(mouseMode_ != 2 && (tmpedge = findNearestEdge_(x_in, y_in)) != null)
+                {
+                    selectedEdge_ = tmpedge;
+                    setEdgeSelected_(selectedEdge_.x, selectedEdge_.y, true);
+                } else
+                {
+                    currentMouseAction_ = 4;
+                    multiSelectX_ = x_in;
+                    multiSelectY_ = y_in;
+                    multiSelectX2_ = -1;
+                }
+            }
+        }
+        String string = getLabel_(pos.x, pos.y, pos.z, true);
+        getParent().postEvent(new Event(this, OffsetCanvas.LABEL, string));
+        return false;
+    }
+
+    public boolean mouseDrag(Event e, int x_in, int y_in)
+    {
+        DPoint3 pos = new DPoint3(x_in, y_in, movingZ_);
+        DPoint3 vpos = new DPoint3(pos);
+        pos.transform(moveTransform_);
+        if(currentMouseAction_ == 1)
+        {
+            Graphics graphics = getGraphicsInternal_();
+            graphics.setColor(Color.black);
+            movingNode_.setPosition(pos);
+            graphics.drawImage(backImage_, 0, 0, null);
+            movingNode_.draw(this, graphics, viewTransform_, quality_);
+            graphics.dispose();
+        } else
+        if(currentMouseAction_ == 2 && newEdgeNode_ != null)
+        {
+            DPoint3 p2;
+            if(lastEdgePoint_ != null)
+            {
+                p2 = new DPoint3(lastEdgePoint_);
+            } else
+            {
+                p2 = newEdgeNode_.intersectWithLineTo(pos, xyPlane_, quality_);
+            }
+            p2.transform(viewTransform_);
+            Graphics graphics = getGraphics();
+            graphics.setColor(Color.black);
+            graphics.drawImage(backImage_, 0, 0, null);
+            graphics.drawLine(x_in, y_in, (int)p2.x, (int)p2.y);
+            graphics.dispose();
+        } else
+        if(currentMouseAction_ == 3 && selectedNode_ != null)
+        {
+            if(selected_ == 0)
+            {
+                DPoint3 tmppos = selectedNode_.getPosition3();
+                tmppos.transform(viewTransform_);
+                moveX_ = tmppos.x;
+                moveY_ = tmppos.y;
+                int xoffs = x_in - (int)moveX_;
+                int yoffs = y_in - (int)moveY_;
+                if(xoffs * xoffs + yoffs * yoffs > 9)
+                {
+                    selected_ = 1;
+                    movingZ_ = tmppos.z;
+                    movingX_ = tmppos.x;
+                    movingY_ = tmppos.y;
+                    for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                    {
+                        tmpnode.saveState();
+                    }
+
+                    for(Enumeration edges = graph_.getEdges(); edges.hasMoreElements(); ((Edge)edges.nextElement()).saveState()) { }
+                    paintOver();
+                }
+            }
+            if(selected_ == 1)
+            {
+                int xoffs = x_in - (int)moveX_;
+                int yoffs = y_in - (int)moveY_;
+                for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                {
+                    if(tmpnode.getSelected())
+                    {
+                        tmpnode.slide(moveTransform_, viewTransform_, xoffs, yoffs);
+                    }
+                }
+
+                for(Enumeration edges = graph_.getEdges(); edges.hasMoreElements();)
+                {
+                    Edge edge = (Edge)edges.nextElement();
+                    if(edge.tail().getSelected() && edge.head().getSelected())
+                    {
+                        edge.slide(moveTransform_, viewTransform_, xoffs, yoffs);
+                    }
+                }
+
+            } else
+            if(selected_ != 0)
+            {
+                double ratiox = 1.0D;
+                double ratioy = 1.0D;
+                double ratioz = 1.0D;
+                if(selected_ == 2)
+                {
+                    ratiox = ratioy = ratioz = Math.max(Math.abs((double)x_in - movingX_) / Math.abs(moveX_ - movingX_), Math.abs((double)y_in - movingY_) / Math.abs(moveY_ - movingY_));
+                } else
+                if(selected_ == 3)
+                {
+                    ratioy = Math.abs((double)y_in - movingY_) / Math.abs(moveY_ - movingY_);
+                } else
+                if(selected_ == 4)
+                {
+                    ratiox = Math.abs((double)x_in - movingX_) / Math.abs(moveX_ - movingX_);
+                }
+                for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+                {
+                    if(tmpnode.getSelected())
+                    {
+                        tmpnode.scale(ratiox, ratioy, ratioz);
+                    }
+                }
+
+            }
+            drawSelectedNodes_();
+        } else
+        if(currentMouseAction_ == 4)
+        {
+            multiSelectX2_ = x_in;
+            multiSelectY2_ = y_in;
+            drawSelectRect_();
+        }
+        String string = getLabel_(pos.x, pos.y, pos.z, true);
+        getParent().postEvent(new Event(this, OffsetCanvas.LABEL, string));
+        return false;
+    }
+
+    public boolean mouseExit(Event event, int x_in, int y_in)
+    {
+        String string = getLabel_(0.0D, 0.0D, 0.0D, false);
+        getParent().postEvent(new Event(this, OffsetCanvas.LABEL, string));
+        return false;
+    }
+
+    public boolean mouseMove(Event event, int x_in, int y_in)
+    {
+        mouseDrag(event, x_in, y_in);
+        return false;
+    }
+
+    public boolean mouseUp(Event e, int x_in, int y_in)
+    {
+        DPoint3 pos = new DPoint3(x_in, y_in, movingZ_);
+        pos.transform(moveTransform_);
+        if(currentMouseAction_ == 1)
+        {
+            computeBounds_();
+            getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+            paintOver();
+        } else
+        {
+            if(currentMouseAction_ == 2 && newEdgeNode_ != null)
+            {
+                return false;
+            }
+            if(currentMouseAction_ == 3)
+            {
+                computeBounds_();
+                getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+                paintOver();
+            } else
+            if(currentMouseAction_ == 4)
+            {
+                multiSelect_();
+            }
+        }
+        currentMouseAction_ = 0;
+        String string = getLabel_(pos.x, pos.y, pos.z, true);
+        getParent().postEvent(new Event(this, OffsetCanvas.LABEL, string));
+        return false;
+    }
+
+    private void multiSelect_()
+    {
+        if(multiSelectX2_ == -1)
+        {
+            return;
+        }
+        double x1 = Math.min(multiSelectX_, multiSelectX2_);
+        double y1 = Math.min(multiSelectY_, multiSelectY2_);
+        double x2 = Math.max(multiSelectX_, multiSelectX2_);
+        double y2 = Math.max(multiSelectY_, multiSelectY2_);
+        if(mouseMode_ != 3)
+        {
+            for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+            {
+                DPoint3 pos = tmpnode.getPosition3();
+                pos.transform(viewTransform_);
+                if(pos.x >= x1 && pos.x <= x2 && pos.y >= y1 && pos.y <= y2)
+                {
+                    tmpnode.setSelected(true);
+                    selectedNode_ = tmpnode;
+                }
+            }
+
+        }
+        if(mouseMode_ == 3)
+        {
+            Enumeration edges = graph_.getEdges();
+            boolean directed = graph_.isDirected();
+            while(edges.hasMoreElements()) 
+            {
+                Edge edge = (Edge)edges.nextElement();
+                if(directed || edge.tail().getIndex() <= edge.head().getIndex())
+                {
+                    DPoint3 p1 = edge.tail().getPosition3();
+                    p1.transform(viewTransform_);
+                    DPoint3 p2 = edge.head().getPosition3();
+                    p2.transform(viewTransform_);
+                    if(p1.x >= x1 && p1.x <= x2 && p1.y >= y1 && p1.y <= y2 && p2.x >= x1 && p2.x <= x2 && p2.y >= y1 && p2.y <= y2)
+                    {
+                        edge.selected = true;
+                        selectedEdge_ = new Point(edge.tail().getIndex(), edge.head().getIndex());
+                    }
+                }
+            }
+        }
+        paintOver();
+    }
+
+    public synchronized void paint(Graphics graphics)
+    {
+        graphics.dispose();
+        paintOver();
+    }
+
+    public synchronized void paintOver()
+    {
+        Dimension tmpdim = size();
+        if(tmpdim.width != windowSize_.width || tmpdim.height != windowSize_.height)
+        {
+            if(windowSize_.width > 0)
+            {
+                setOffsets_(offset_.x + (double)((tmpdim.width - windowSize_.width) / 2), offset_.y + (double)((tmpdim.height - windowSize_.height) / 2));
+            } else
+            {
+                setOffsets_(0.5D * ((double)tmpdim.width - (minx_ + maxx_) * scale_), 0.5D * ((double)tmpdim.height - (miny_ + maxy_) * scale_));
+            }
+            windowSize_.width = tmpdim.width;
+            windowSize_.height = tmpdim.height;
+            getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+            backImage_ = null;
+        }
+        if(backImage_ == null)
+        {
+            backImage_ = createImage(windowSize_.width, windowSize_.height);
+        }
+        Graphics back_graphics = getBackGraphics_();
+        back_graphics.setColor(Color.white);
+        back_graphics.setPaintMode();
+        back_graphics.clearRect(0, 0, windowSize_.width, windowSize_.height);
+        back_graphics.setColor(Color.black);
+        drawObjects_(false, back_graphics, 1);
+        back_graphics.dispose();
+        Graphics graphics = getGraphics();
+        if(graphics != null)
+        {
+            graphics.setPaintMode();
+            graphics.setColor(Color.black);
+            graphics.drawImage(backImage_, 0, 0, null);
+            graphics.setFont(font_);
+            drawObjects_(true, graphics, 0);
+            graphics.dispose();
+        }
+    }
+
+    public Dimension preferredSize()
+    {
+        return new Dimension(400, 400);
+    }
+
+    private String PSnum_(double num)
+    {
+        if(num > 0.0D)
+        {
+            return String.valueOf(num) + " ";
+        }
+        if(num < 0.0D)
+        {
+            return String.valueOf(-num) + " neg ";
+        } else
+        {
+            return "0 ";
+        }
+    }
+
+    public void removeEdgeBends()
+    {
+        graph_.removeEdgePaths();
+        paintOver();
+    }
+
+    public void removeGroups()
+    {
+        graph_.removeGroups();
+        paintOver();
+    }
+
+    public synchronized void removeNotify()
+    {
+        dragFix_.killThread();
+        super.removeNotify();
+    }
+
+    private void rotImage_(double theta, int pixels[], int w, int h, int result[], int image_size)
+    {
+        double dxX = Math.cos(theta);
+        double dyX = -Math.sin(theta);
+        double dxY = -dyX;
+        double dyY = dxX;
+        double dxIx = dxX / 4D;
+        double dyIx = dyX / 4D;
+        double dxIy = dxY / 4D;
+        double dyIy = dyY / 4D;
+        double hdxIx = dxIx / 2D;
+        double hdyIx = dyIx / 2D;
+        double hdxIy = dxIy / 2D;
+        double hdyIy = dyIy / 2D;
+        double xX = (double)image_size / 2D - (dxX * (double)w) / 2D - (dxY * (double)h) / 2D;
+        double yX = (double)image_size / 2D - (dyX * (double)w) / 2D - (dyY * (double)h) / 2D;
+        for(int x = 0; x < w; x++)
+        {
+            double xY = xX;
+            double yY = yX;
+            for(int y = 0; y < h; y++)
+            {
+                double xIx = xY + hdxIx;
+                double yIx = yY + hdyIx;
+                if((pixels[y * w + x] & 0xffffff) == 0)
+                {
+                    for(double Ix = 0.0D; Ix < 4D; Ix++)
+                    {
+                        double xIy = xIx + hdxIy;
+                        double yIy = yIx + hdyIy;
+                        for(double Iy = 0.0D; Iy < 4D; Iy++)
+                        {
+                            if((int)yIy * image_size + (int)xIy > 0 && (int)yIy * image_size + (int)xIy < image_size * image_size)
+                            {
+                                result[(int)yIy * image_size + (int)xIy]++;
+                            }
+                            xIy += dxIy;
+                            yIy += dyIy;
+                        }
+
+                        xIx += dxIx;
+                        yIx += dyIx;
+                    }
+
+                }
+                xY += dxY;
+                yY += dyY;
+            }
+
+            xX += dxX;
+            yX += dyX;
+        }
+
+    }
+
+    public void scale(double scaleval)
+    {
+        setScale(scaleval);
+    }
+
+    public void scaleBounds(boolean sb)
+    {
+        scaleBounds_ = sb;
+    }
+
+    public void selectAll()
+    {
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            tmpnode.setSelected(true);
+        }
+
+        selectedNode_ = graph_.firstNode();
+        paintOver();
+    }
+
+    public void selectRoot()
+    {
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            if(tmpnode.getShape() != 1)
+            {
+                continue;
+            }
+            tmpnode.setSelected(true);
+            selectedNode_ = tmpnode;
+            break;
+        }
+
+        paintOver();
+    }
+
+    public void selectNode(int node_index)
+    {
+        Node node = graph_.getNodeFromId(node_index);
+        selectedNode_ = node;
+        node.setSelected(true);
+        paintOver();
+    }
+
+    public void setDirected(boolean directed)
+    {
+        graph_.setDirected(directed);
+        paintOver();
+        getParent().postEvent(new Event(this, 38792, null));
+    }
+
+    public void setEdgeProperties(boolean always_default)
+    {
+        Edge which = graph_.getEdge(selectedEdge_.x, selectedEdge_.y);
+        if(always_default)
+        {
+            which = null;
+        }
+        if(edgePropDialog_ == null)
+        {
+            edgePropDialog_ = new EdgePropertiesDialog(frame_, which, graph_);
+        } else
+        {
+            edgePropDialog_.setEdge(which, graph_);
+        }
+        edgePropDialog_.pack();
+        edgePropDialog_.setVisible(true);
+        if(!always_default)
+        {
+            update(true);
+        }
+    }
+
+    private void setEdgeSelected_(int n1, int n2, boolean state)
+    {
+        if(!graph_.isDirected())
+        {
+            Edge edge = graph_.getEdge(Math.min(n1, n2), Math.max(n1, n2));
+            edge.selected = state;
+        } else
+        {
+            Edge edge = graph_.getEdge(n1, n2);
+            edge.selected = state;
+        }
+    }
+
+    public void setFont(Font font)
+    {
+        font_ = font;
+        paintOver();
+    }
+
+    public void setEdgeFont(Font font)
+    {
+        edgeFont_ = font;
+        paintOver();
+    }
+
+    public void setMouseMode(int mode)
+    {
+        mouseMode_ = mode;
+    }
+
+    public void setNodeProperties(boolean always_default)
+    {
+        Node which = selectedNode_;
+        if(always_default)
+        {
+            which = null;
+        }
+        if(propDialog_ == null)
+        {
+            propDialog_ = new NodePropertiesDialog(frame_, which);
+        } else
+        {
+            propDialog_.setNode(which);
+        }
+        propDialog_.pack();
+        propDialog_.setVisible(true);
+        if(!always_default)
+        {
+            update(true);
+        }
+    }
+
+    public void setOffsets(double xoffset, double yoffset, boolean redraw)
+    {
+        offsetx_ = xoffset / scale_;
+        offsety_ = yoffset / scale_;
+        computeDrawOffset_();
+        if(redraw)
+        {
+            paintOver();
+        }
+    }
+
+    private void setOffsets_(double offx, double offy)
+    {
+        offset_.x = offx;
+        offset_.y = offy;
+        shiftMatrix_.matrix[0][3] = offx;
+        shiftMatrix_.matrix[1][3] = offy;
+        updateViewTransform_();
+    }
+
+    public void setQuality(int quality)
+    {
+        if(qualityCB_ == quality_)
+        {
+            quality_ = quality;
+        }
+        qualityCB_ = quality;
+    }
+
+    public void setScale(double new_scale)
+    {
+        setOffsets_((double)windowSize_.width / 2D - (new_scale / scale_) * ((double)windowSize_.width / 2D - offset_.x), (double)windowSize_.height / 2D - (new_scale / scale_) * ((double)windowSize_.height / 2D - offset_.y));
+        scale_ = new_scale;
+        scaleMatrix_.matrix[0][0] = scaleMatrix_.matrix[1][1] = scaleMatrix_.matrix[2][2] = scale_;
+        updateViewTransform_();
+        getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+        paintOver();
+    }
+
+    public void setViewAngles(double theta, double phi)
+    {
+        rotxMatrix_.matrix[1][1] = rotxMatrix_.matrix[2][2] = -Math.cos(-phi + 1.5707963267948966D);
+        rotxMatrix_.matrix[2][1] = -(rotxMatrix_.matrix[1][2] = -Math.sin(-phi + 1.5707963267948966D));
+        rotzMatrix_.matrix[0][0] = rotzMatrix_.matrix[1][1] = Math.cos(-theta);
+        rotzMatrix_.matrix[1][0] = -(rotzMatrix_.matrix[0][1] = -Math.sin(-theta));
+        updateViewTransform_();
+        xyPlane_ = theta == 0.0D && phi == 1.5707963267948966D;
+        paintOver();
+    }
+
+    public void setWireframe(boolean wireframe)
+    {
+        if(wireframe)
+        {
+            quality_ = 0;
+        } else
+        {
+            quality_ = qualityCB_;
+        }
+    }
+
+    public String toPS(double width, double height, double pagewidth, double pageheight, double fontsize, double margin, double overlap, 
+            boolean landscape)
+    {
+        String result = new String();
+        if(landscape)
+        {
+            double tmp = pagewidth;
+            pagewidth = pageheight;
+            pageheight = tmp;
+        }
+        DPoint graphwidth = new DPoint();
+        DPoint graphheight = new DPoint();
+        getDrawBounds_(graphwidth, graphheight);
+        int pages_wide = (int)Math.ceil(width / pagewidth);
+        int pages_high = (int)Math.ceil(height / pageheight);
+        width -= 2D * margin + ((double)pages_wide - 1.0D) * overlap;
+        height -= 2D * margin + ((double)pages_high - 1.0D) * overlap;
+        width *= 72D;
+        height *= 72D;
+        margin *= 72D;
+        overlap *= 72D;
+        pagewidth *= 72D;
+        pageheight *= 72D;
+        height -= fontsize;
+        double ratio = (graphwidth.y - graphwidth.x) / (graphheight.y - graphheight.x);
+        if(ratio > width / height)
+        {
+            height = width / ratio;
+        } else
+        {
+            width = height * ratio;
+        }
+        pages_wide = (int)Math.ceil(((width - overlap) + 2D * margin) / (pagewidth - overlap));
+        pages_high = (int)Math.ceil((((height + fontsize) - overlap) + 2D * margin) / (pageheight - overlap));
+        double scale = width / (graphwidth.y - graphwidth.x);
+        result = result + "%!PS-Adobe-3.0\n\n%%BoundingBox: 0 0 612 792\n";
+        result = result + "%% Pages: " + pages_wide * pages_high + "\n%% EndComments\n\n";
+        result = result + "/ellipse\n  {\n  gsave\n  newpath\n  /h exch def\n";
+        result = result + "  /w exch def\n";
+        result = result + "  translate\n  1 h w div scale\n  0 0 w 2 div 0 360 arc\n";
+        result = result + "  1 w h div scale\n  stroke\n  grestore\n";
+        result = result + "  }\ndef\n\n";
+        result = result + "/rectangle\n  {\n  newpath\n  /h exch def\n  /w exch def\n";
+        result = result + "  moveto\n  w 2 div h 2 div rmoveto\n";
+        result = result + "  w neg 0 rlineto\n  0 h neg rlineto\n  w 0 rlineto\n  closepath\n";
+        result = result + "  stroke\n}\ndef\n\n";
+        result = result + "/label\n  {\n  gsave\n  newpath\n";
+        result = result + "  /type exch def\n  type 2 eq\n";
+        result = result + "  {  /h exch def  /w exch def  } if";
+        result = result + "  translate\n  1 -1 scale\n  dup dup length /rows exch def\n";
+        result = result + "  /sw 0 def\n  {\n    stringwidth pop /csw exch def\n";
+        result = result + "    csw sw gt\n    { /sw csw def }\n    if";
+        result = result + "  } forall\n";
+        result = result + "  type 0 eq\n  { sw 2 div neg fontsize neg moveto } if\n";
+        result = result + "  type 1 eq\n  { sw 2 div neg fontsize 2 div neg moveto } if\n";
+        result = result + "  type 2 eq\n  { w 8 scl div sub sw div h 8 scl div sub fontsize rows mul div scale\n";
+        result = result + "    sw 2 div neg rows 2 sub fontsize mul 2 div fontsize descent mul add moveto } if\n";
+        result = result + "  {\n    currentpoint 3 2 roll\n";
+        result = result + "    show\n    fontsize sub moveto\n  } forall\n";
+        result = result + "  stroke\n  grestore\n}\ndef\n\n";
+        result = result + "/inlabel\n  {\n  gsave\n  newpath\n";
+        result = result + "  /h exch def\n  /w exch def\n";
+        result = result + "  /y exch def\n  /x exch def\n";
+        result = result + "  x y h 2 div sub translate\n  1 -1 scale\n";
+        result = result + "  dup stringwidth pop\n  /sw exch def\n";
+        result = result + "  w 8 scl div sub sw div h 8 scl div sub fontsize div scale\n";
+        result = result + "  sw 2 div neg fontsize 2 div neg moveto\n  show\n";
+        result = result + "  stroke\n  grestore\n}\ndef\n\n";
+        result = result + "/arrow\n  {\n  newpath\n  /dy exch arrowsize mul def\n";
+        result = result + "  /dx exch arrowsize mul def\n";
+        result = result + "  /y exch def\n  /x exch def\n";
+        result = result + "  /dy2 .7 dy mul def\n  /dx2 .7 dx mul def\n  x y moveto\n  dx dy rmoveto\n";
+        result = result + "  dy2 dx2 neg rmoveto\n  x y lineto\n  dx dy rmoveto\n  dy2 neg dx2 rmoveto\n";
+        result = result + "  x y lineto\n  stroke\n}\ndef\n\n";
+        result = result + "/slantlabel\n  {\n  gsave\n  newpath\n  /angle exch def\n";
+        result = result + "  translate\n  1 -1 scale\n  angle rotate\n";
+        result = result + "  dup stringwidth pop 2 div neg fontsize 3 div moveto\n";
+        result = result + "  show\n  stroke\n  grestore\n}\ndef\n\n";
+        result = result + "/vgjimage\n  {\n  gsave\n  /ih exch def\n";
+        result = result + "  /iw exch def\n  /imagedata exch def\n  /h exch def\n";
+        result = result + "  /w exch def\n  translate\n  w h scale\n";
+        result = result + "  iw ih 8 [iw 0 0 ih iw 2 div ih 2 div]";
+        result = result + " { imagedata } image\n  grestore\n}\ndef\n\n";
+        int nnodes = graph_.numberOfNodes();
+        Image images[] = new Image[nnodes];
+        int image_count = 0;
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            Image tmpimage;
+            if((tmpimage = tmpnode.getImage()) != null)
+            {
+                int i;
+                for(i = 0; i < image_count; i++)
+                {
+                    if(images[i] == tmpimage)
+                    {
+                        break;
+                    }
+                }
+
+                if(i == image_count)
+                {
+                    images[image_count++] = tmpimage;
+                }
+            }
+        }
+
+        for(int i = 0; i < image_count; i++)
+        {
+            result = result + "/image" + i + "  {\n\n" + Node.imagePS(images[i]) + "}\ndef\n\n";
+        }
+
+        result = result + "/graph\n{\n";
+        result = result + "0 396 translate\n1 1 neg scale\n0 neg 396 neg translate\n\n";
+        result = result + "/scl " + scale + " def\nscl scl scale\n.6 scl div setlinewidth\n";
+        result = result + "/fontsize " + fontsize + " scl div def\n";
+        result = result + "/Courier findfont fontsize scalefont setfont\n";
+        result = result + "/Courier findfont\nbegin\nFontType 1 eq\n";
+        result = result + "{ FontBBox }\n{ -2 -2 8 8 } ifelse\nend\n";
+        result = result + "/y2 exch def pop /y1 exch def pop\n";
+        result = result + "y1 neg y2 y1 sub div /descent exch def\n";
+        result = result + "/arrowsize 5 scl div def\n";
+        result = result + PSnum_(-graphwidth.x + margin / scale) + PSnum_(-graphheight.x + margin / scale) + "translate\n\n";
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            Image tmpimage;
+            if((tmpimage = tmpnode.getImage()) != null)
+            {
+                for(int i = 0; i < image_count; i++)
+                {
+                    if(images[i] == tmpimage)
+                    {
+                        result = result + tmpnode.toPSimage(i, viewTransform_);
+                    }
+                }
+
+            }
+        }
+
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            result = result + tmpnode.toPS(viewTransform_);
+        }
+
+        Enumeration edges = graph_.getEdges();
+        boolean directed = graph_.isDirected();
+        while(edges.hasMoreElements()) 
+        {
+            Edge edge = (Edge)edges.nextElement();
+            Node head = edge.head();
+            Node tail = edge.tail();
+            if((head.getVisibleGroupRoot() != tail.getVisibleGroupRoot() || head == tail) && (head != tail || head.isVisible()) && (directed || tail.getIndex() <= head.getIndex()))
+            {
+                result = result + edge.toPS(viewTransform_, xyPlane_, directed);
+            }
+        }
+        result = result + "}\ndef\n\n";
+        int page = 1;
+        for(int w = 0; w < pages_wide; w++)
+        {
+            for(int h = 0; h < pages_high; h++)
+            {
+                result = result + "%%Page:" + page + " " + page + "\n";
+                if(landscape)
+                {
+                    result = result + "792 0 translate\n90 rotate\n";
+                }
+                result = result + PSnum_((double)w * (-pagewidth + overlap)) + PSnum_((double)h * (pageheight - overlap)) + "translate\n";
+                result = result + "graph\n";
+                result = result + "showpage\n\n";
+                page++;
+            }
+
+        }
+
+        return result;
+    }
+
+    public void toPict(double width, double height, double pagewidth, double pageheight, double fontsize, double margin, double overlap, 
+            boolean landscape, RandomAccessFile out_)
+    {
+        if(landscape)
+        {
+            double tmp = pagewidth;
+            pagewidth = pageheight;
+            pageheight = tmp;
+        }
+        DPoint graphwidth = new DPoint();
+        DPoint graphheight = new DPoint();
+        getDrawBounds_(graphwidth, graphheight);
+        int pages_wide = (int)Math.ceil(width / pagewidth);
+        int pages_high = (int)Math.ceil(height / pageheight);
+        width -= 2D * margin + ((double)pages_wide - 1.0D) * overlap;
+        height -= 2D * margin + ((double)pages_high - 1.0D) * overlap;
+        width *= 72D;
+        height *= 72D;
+        margin *= 72D;
+        overlap *= 72D;
+        pagewidth *= 72D;
+        pageheight *= 72D;
+        height1_ = (short)(int)pageheight;
+        width1_ = (short)(int)pagewidth;
+        height -= fontsize;
+        double ratio = (graphwidth.y - graphwidth.x) / (graphheight.y - graphheight.x);
+        if(ratio > width / height)
+        {
+            height = width / ratio;
+        } else
+        {
+            width = height * ratio;
+        }
+        pages_wide = (int)Math.ceil(((width - overlap) + 2D * margin) / (pagewidth - overlap));
+        pages_high = (int)Math.ceil((((height + fontsize) - overlap) + 2D * margin) / (pageheight - overlap));
+        double scale = width / (graphwidth.y - graphwidth.x);
+        int nnodes = graph_.numberOfNodes();
+        Image images[] = new Image[nnodes];
+        int image_count = 0;
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            Image tmpimage;
+            if((tmpimage = tmpnode.getImage()) != null)
+            {
+                int i;
+                for(i = 0; i < image_count; i++)
+                {
+                    if(images[i] == tmpimage)
+                    {
+                        break;
+                    }
+                }
+
+                if(i == image_count)
+                {
+                    images[image_count++] = tmpimage;
+                }
+            }
+        }
+
+        double minx = 10000D;
+        double minwid = 0.0D;
+        double maxx = -10000D;
+        double maxwid = -10000D;
+        double miny = 10000D;
+        double minhigh = 0.0D;
+        double maxy = -10000D;
+        double maxhigh = -10000D;
+        double totwid = 0.0D;
+        double tothigh = 0.0D;
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            double tempx = tmpnode.getX();
+            double tempy = tmpnode.getY();
+            minwid = tmpnode.getWidth(viewTransform_);
+            minhigh = tmpnode.getHeight(viewTransform_);
+            if(tempx < minx)
+            {
+                minx = tempx;
+            }
+            if(tempy < miny)
+            {
+                miny = tempy;
+            }
+            if(tempx > maxx)
+            {
+                maxx = tempx;
+            }
+            if(tempy > maxy)
+            {
+                maxy = tempy;
+            }
+            if(minwid > maxwid)
+            {
+                maxwid = minwid;
+            }
+            if(minhigh > maxhigh)
+            {
+                maxhigh = minhigh;
+            }
+        }
+
+        totwid = maxx - minx;
+        totwid = Math.abs(totwid);
+        totwid += 4D * maxwid;
+        tothigh = maxy - miny;
+        tothigh = Math.abs(tothigh);
+        tothigh += 4D * maxhigh;
+        if(minx < 0.0D)
+        {
+            minx -= 2D * minx;
+            minx += 2D * maxwid;
+        }
+        if(miny < 0.0D)
+        {
+            miny -= 2D * miny;
+            miny += maxhigh;
+        }
+        width1_ = (short)(int)totwid;
+        height1_ = (short)(int)tothigh;
+        try
+        {
+            writeHeader(out_);
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            tmpnode.drawOval(out_, viewTransform_, (short)(int)minx, (short)(int)miny);
+        }
+
+        Enumeration edges = graph_.getEdges();
+        boolean directed = graph_.isDirected();
+        while(edges.hasMoreElements()) 
+        {
+            Edge edge = (Edge)edges.nextElement();
+            Node head = edge.head();
+            Node tail = edge.tail();
+            if((head.getVisibleGroupRoot() != tail.getVisibleGroupRoot() || head == tail) && (head != tail || head.isVisible()))
+            {
+                boolean _tmp = directed || tail.getIndex() <= head.getIndex();
+                edge.toPict(viewTransform_, xyPlane_, directed, out_, minx, miny);
+            }
+        }
+        int page = 1;
+        for(int w = 0; w < pages_wide; w++)
+        {
+            for(int h = 0; h < pages_high; h++)
+            {
+                page++;
+            }
+
+        }
+
+        long thesize = 0L;
+        short size = 0;
+        long offset = 512L;
+        try
+        {
+            writeEnd(out_);
+            thesize = out_.length();
+            out_.seek(offset);
+            size = (short)(int)(thesize - offset);
+            out_.writeShort(size);
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+    }
+
+    public void writeHeader(RandomAccessFile out_)
+        throws IOException
+    {
+        byte buf[] = new byte[64];
+        for(int i = 8; --i >= 0;)
+        {
+            out_.write(buf);
+        }
+
+        out_.writeShort(0);
+        out_.writeShort(0);
+        out_.writeShort(0);
+        out_.writeShort(height1_);
+        out_.writeShort(width1_);
+        out_.writeShort(4353);
+        out_.writeShort(256);
+        out_.write(10);
+        out_.writeShort(0);
+        out_.writeShort(0);
+        out_.writeShort(height1_);
+        out_.writeShort(width1_);
+    }
+
+    public void writeEnd(RandomAccessFile out_)
+        throws IOException
+    {
+        out_.writeShort(255);
+    }
+
+    public void unselectItems()
+    {
+        if(selectedNode_ == null && selectedEdge_ == null)
+        {
+            return;
+        }
+        for(Node tmpnode = graph_.firstNode(); tmpnode != null; tmpnode = graph_.nextNode(tmpnode))
+        {
+            tmpnode.setSelected(false);
+        }
+
+        selectedNode_ = null;
+        for(Enumeration edges = graph_.getEdges(); edges.hasMoreElements();)
+        {
+            ((Edge)edges.nextElement()).selected = false;
+        }
+
+        selectedEdge_ = null;
+        paintOver();
+    }
+
+    public void update(boolean adjust_bounds)
+    {
+        unselectItems();
+        currentMouseAction_ = 0;
+        if(adjust_bounds)
+        {
+            computeBounds_();
+            getParent().postEvent(new Event(this, OffsetCanvas.RESIZE, this));
+            String string = getLabel_(0.0D, 0.0D, 0.0D, false);
+            getParent().postEvent(new Event(this, OffsetCanvas.LABEL, string));
+        }
+        paintOver();
+        getParent().postEvent(new Event(this, 38792, null));
+    }
+
+    private synchronized void updateViewTransform_()
+    {
+        viewTransform_ = new Matrix44(shiftMatrix_);
+        viewTransform_.mult(scaleMatrix_);
+        viewTransform_.mult(rotxMatrix_);
+        viewTransform_.mult(rotzMatrix_);
+        moveTransform_ = new Matrix44(rotzMatrix_);
+        moveTransform_.matrix[1][0] = -moveTransform_.matrix[1][0];
+        moveTransform_.matrix[0][1] = -moveTransform_.matrix[0][1];
+        Matrix44 tmp_matrix = new Matrix44(rotxMatrix_);
+        tmp_matrix.matrix[2][1] = -tmp_matrix.matrix[2][1];
+        tmp_matrix.matrix[1][2] = -tmp_matrix.matrix[1][2];
+        moveTransform_.mult(tmp_matrix);
+        tmp_matrix.setTo(scaleMatrix_);
+        tmp_matrix.matrix[0][0] = 1.0D / tmp_matrix.matrix[0][0];
+        tmp_matrix.matrix[1][1] = 1.0D / tmp_matrix.matrix[1][1];
+        tmp_matrix.matrix[2][2] = 1.0D / tmp_matrix.matrix[2][2];
+        moveTransform_.mult(tmp_matrix);
+        tmp_matrix.setTo(shiftMatrix_);
+        tmp_matrix.matrix[0][3] = -tmp_matrix.matrix[0][3];
+        tmp_matrix.matrix[1][3] = -tmp_matrix.matrix[1][3];
+        moveTransform_.mult(tmp_matrix);
+        viewTransform_.scale = scale_;
+    }
+
+    public DRect windowRect()
+    {
+        return new DRect(-offset_.x / scale_, -offset_.y / scale_, (double)windowSize_.width / scale_, (double)windowSize_.height / scale_);
+    }
+
+    public static final int MOUSEMOVE = 32451;
+    public static final int CREATE_NODES = 0;
+    public static final int CREATE_EDGES = 1;
+    public static final int SELECT_NODES = 2;
+    public static final int SELECT_EDGES = 3;
+    public static final int SELECT_BOTH = 4;
+    public static final int UPDATE = 38792;
+    private static final int aaDivs_ = 4;
+    private static final int NONE_ = 0;
+    private static final int CENTER_ = 1;
+    private static final int CORNER_ = 2;
+    private static final int BOTTOM_ = 3;
+    private static final int LEFT_ = 4;
+    private static Color aaShades_[];
+    private static NodePropertiesDialog propDialog_ = null;
+    private static EdgePropertiesDialog edgePropDialog_ = null;
+    private Frame frame_;
+    private double width_;
+    private double height_;
+    private Dimension windowSize_;
+    private double offsetx_;
+    private double offsety_;
+    private double minx_;
+    private double miny_;
+    private double maxx_;
+    private double maxy_;
+    private double scale_;
+    private Graph graph_;
+    private DPoint offset_;
+    private Node newEdgeNode_;
+    private Node movingNode_;
+    private Node selectedNode_;
+    private double movingZ_;
+    private double movingX_;
+    private double movingY_;
+    private double selectedRatio_;
+    private Point selectedEdge_;
+    private int selected_;
+    private int mouseMode_;
+    private boolean scaleBounds_;
+    private Matrix44 viewTransform_;
+    private Matrix44 moveTransform_;
+    private Matrix44 scaleMatrix_;
+    private Matrix44 shiftMatrix_;
+    private Matrix44 rotxMatrix_;
+    private Matrix44 rotzMatrix_;
+    private boolean xyPlane_;
+    private boolean _3d_;
+    private Image backImage_;
+    private Font font_;
+    private Font edgeFont_;
+    private int currentMouseAction_;
+    private DPoint3 lastEdgePoint_;
+    private int pathLength_;
+    private int pathArraySize_;
+    private DPoint3 pathArray_[];
+    private int multiSelectX_;
+    private int multiSelectY_;
+    private int multiSelectX2_;
+    private int multiSelectY2_;
+    private double moveX_;
+    private double moveY_;
+    public double hSpacing;
+    public double vSpacing;
+    private DragFix dragFix_;
+    private int qualityCB_;
+    private int quality_;
+    short height1_;
+    short width1_;
+
+    static 
+    {
+        aaShades_ = new Color[32];
+        for(int i = 0; i < 32; i++)
+        {
+            int shade = 255 - (i * 512) / 16;
+            if(shade < 0)
+            {
+                shade = 0;
+            }
+            aaShades_[i] = new Color(shade, shade, shade);
+        }
+
+    }
+}

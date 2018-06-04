@@ -1,0 +1,87 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   TaxaItem.java
+
+package clad;
+
+import java.util.ArrayList;
+import java.util.Vector;
+
+// Referenced classes of package clad:
+//            Component
+
+public class TaxaItem
+{
+
+    protected TaxaItem(String n, int ident, char chars[])
+    {
+        paths = new ArrayList();
+        name = n;
+        characters = chars;
+        realdist = new Vector();
+        compdist = new Vector();
+        nbor = new Vector();
+        newconnections = new Vector();
+        id = ident;
+        numduplicates = 0;
+        dupnames = new Vector();
+        metricdist = new Vector();
+        weight = 0.0D;
+        oweight = 0.0D;
+        visited = false;
+        levelNumber = -1;
+        resolved = false;
+        isAmbiguous = false;
+    }
+
+    protected TaxaItem(String n, int length, int ident)
+    {
+        paths = new ArrayList();
+        name = n;
+        characters = new char[length];
+        realdist = new Vector();
+        compdist = new Vector();
+        nbor = new Vector();
+        newconnections = new Vector();
+        id = ident;
+        numduplicates = 0;
+        dupnames = new Vector();
+        metricdist = new Vector();
+        weight = 0.0D;
+        oweight = 0.0D;
+        visited = false;
+        levelNumber = -1;
+        resolved = false;
+        isAmbiguous = false;
+    }
+
+    public String toString()
+    {
+        return name + "(resolved=" + resolved + ")";
+    }
+
+    public final int BIGNUM = 32767;
+    public boolean visited;
+    public int levelNumber;
+    public char characters[];
+    public Vector compdist;
+    public Vector dupnames;
+    public int id;
+    public boolean isIntermediate;
+    public boolean isTip;
+    public Vector metricdist;
+    public int minRealDist;
+    public String name;
+    public Vector nbor;
+    public Vector newconnections;
+    public int numduplicates;
+    public double oweight;
+    public Component parentComponent;
+    public Vector realdist;
+    public double weight;
+    public double confidence;
+    public boolean resolved;
+    public ArrayList paths;
+    public boolean isAmbiguous;
+}

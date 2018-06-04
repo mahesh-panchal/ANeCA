@@ -1,0 +1,215 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   NodeList.java
+
+package EDU.auburn.VGJ.graph;
+
+
+// Referenced classes of package EDU.auburn.VGJ.graph:
+//            Node
+
+public class NodeList
+    implements Cloneable
+{
+
+    public NodeList()
+    {
+        firstAvailable_ = 0;
+        numNodes_ = 0;
+        nodes_ = new Node[1];
+        lastSlot_ = -1;
+    }
+
+    public void addNode(Node new_node)
+    {
+        numNodes_++;
+        if(firstAvailable_ < lastSlot_)
+        {
+            nodes_[firstAvailable_] = new_node;
+            new_node.index_ = firstAvailable_;
+            updateFirstAvailable(firstAvailable_);
+        } else
+        {
+            addNodeAt(new_node, firstAvailable_);
+        }
+    }
+
+    public void addNodeAt(Node new_node, int index)
+    {
+        if(nodes_[index] != null)
+        {
+            numNodes_++;
+        }
+        if(index >= lastSlot_)
+        {
+            Node new_nodes[] = new Node[index + 30];
+            System.arraycopy(nodes_, 0, new_nodes, 0, lastSlot_ + 1);
+            for(int i = lastSlot_ + 1; i <= index + 29; i++)
+            {
+                new_nodes[i] = null;
+            }
+
+            lastSlot_ = index + 29;
+            nodes_ = new_nodes;
+        }
+        nodes_[index] = new_node;
+        new_node.index_ = index;
+        if(index == firstAvailable_)
+        {
+            updateFirstAvailable(index);
+        }
+    }
+
+    public Object clone()
+        throws CloneNotSupportedException
+    {
+        NodeList copy = new NodeList();
+        copy = (NodeList)super.clone();
+        copy.nodes_ = new Node[lastSlot_ + 1];
+        for(int i = 0; i <= lastSlot_; i++)
+        {
+            if(nodeFromIndex(i) != null)
+            {
+                copy.nodes_[i] = (Node)nodes_[i].clone();
+            }
+        }
+
+        return copy;
+    }
+
+    public int count()
+    {
+        return numNodes_;
+    }
+
+    public Node firstNode()
+    {
+        for(int i = 0; i <= lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                return nodes_[i];
+            }
+        }
+
+        return null;
+    }
+
+    public int firstNodeIndex()
+    {
+        for(int i = 0; i <= lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public int getFirstAvailable()
+    {
+        return firstAvailable_;
+    }
+
+    public int highestIndex()
+    {
+        int count = 0;
+        for(int i = 0; i < lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                count = i;
+            }
+        }
+
+        return count;
+    }
+
+    public Node nextNode(Node prev_node)
+    {
+        for(int i = prev_node.index_ + 1; i <= lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                return nodes_[i];
+            }
+        }
+
+        return null;
+    }
+
+    public int nextNodeIndex(int prev_index)
+    {
+        for(int i = prev_index + 1; i <= lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public Node nodeFromIndex(int index)
+    {
+        if(index > lastSlot_ || index < 0)
+        {
+            return null;
+        } else
+        {
+            return nodes_[index];
+        }
+    }
+
+    public void removeNode(Node node)
+    {
+        if(nodes_[node.index_] != null)
+        {
+            numNodes_--;
+        }
+        if(firstAvailable_ > node.index_)
+        {
+            firstAvailable_ = node.index_;
+        }
+        nodes_[node.index_] = null;
+    }
+
+    public void removeNodeAt(int index)
+    {
+        if(nodes_[index] != null)
+        {
+            numNodes_--;
+        }
+        if(index <= lastSlot_)
+        {
+            if(firstAvailable_ > index)
+            {
+                firstAvailable_ = index;
+            }
+            nodes_[index] = null;
+        }
+    }
+
+    public void updateFirstAvailable(int start)
+    {
+        for(int i = start; i <= lastSlot_; i++)
+        {
+            if(nodes_[i] != null)
+            {
+                continue;
+            }
+            firstAvailable_ = i;
+            break;
+        }
+
+    }
+
+    private Node nodes_[];
+    private int lastSlot_;
+    private int firstAvailable_;
+    private int numNodes_;
+}

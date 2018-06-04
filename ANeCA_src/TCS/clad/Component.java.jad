@@ -1,0 +1,28 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Component.java
+
+package clad;
+
+import java.util.Vector;
+
+// Referenced classes of package clad:
+//            Distance
+
+public class Component
+{
+
+    protected Component(int ident)
+    {
+        taxa = new Vector();
+        compdist = new Vector();
+        id = ident;
+        mindist = new Distance();
+    }
+
+    public Vector compdist;
+    public int id;
+    public Distance mindist;
+    public Vector taxa;
+}

@@ -1,0 +1,274 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   ViewportScroller.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            DragFix
+
+public class ViewportScroller extends Canvas
+{
+
+    public ViewportScroller(int width, int height, double contentw, double contenth, double portw, double porth, double offsx, double offsy)
+    {
+        width_ = -1;
+        height_ = -1;
+        mousedown_ = false;
+        backImage_ = null;
+        dragFix_ = new DragFix(this);
+        preferredW_ = width;
+        preferredH_ = height;
+        contentWidth_ = contentw;
+        contentHeight_ = contenth;
+        portWidth_ = portw;
+        portHeight_ = porth;
+        offsetX_ = offsx;
+        offsetY_ = offsy;
+        contentRect_ = new Rectangle();
+        portRect_ = new Rectangle();
+        color_ = Color.white;
+    }
+
+    double getOffsetX()
+    {
+        return offsetX_;
+    }
+
+    double getOffsetY()
+    {
+        return offsetY_;
+    }
+
+    public boolean handleEvent(Event e)
+    {
+        if(e.id == 0x2bd7f)
+        {
+            super.handleEvent((Event)e.arg);
+            getParent().postEvent((Event)e.arg);
+            return true;
+        } else
+        {
+            dragFix_.queueEvent(e);
+            return true;
+        }
+    }
+
+    public boolean mouseDown(Event e, int x, int y)
+    {
+        if(mousedown_)
+        {
+            return true;
+        } else
+        {
+            mousedown_ = true;
+            dragOffsetX_ = (x - portRect_.x) + contentRect_.x;
+            dragOffsetY_ = (y - portRect_.y) + contentRect_.y;
+            return true;
+        }
+    }
+
+    public boolean mouseDrag(Event e, int x, int y)
+    {
+        if(!mousedown_)
+        {
+            return true;
+        }
+        if(x < dragOffsetX_)
+        {
+            x = dragOffsetX_;
+        }
+        if((x - dragOffsetX_) + portRect_.width > contentRect_.width)
+        {
+            x = (contentRect_.width + dragOffsetX_) - portRect_.width;
+        }
+        if(y < dragOffsetY_)
+        {
+            y = dragOffsetY_;
+        }
+        if((y - dragOffsetY_) + portRect_.height > contentRect_.height)
+        {
+            y = (contentRect_.height + dragOffsetY_) - portRect_.height;
+        }
+        Graphics graphics = getGraphics();
+        getGraphics().drawImage(backImage_, 0, 0, null);
+        portRect_.x = (x - dragOffsetX_) + contentRect_.x;
+        portRect_.y = (y - dragOffsetY_) + contentRect_.y;
+        graphics.drawRect(portRect_.x, portRect_.y, portRect_.width, portRect_.height);
+        graphics.dispose();
+        double scale_ratio = contentWidth_ / (double)contentRect_.width;
+        offsetX_ = (double)(portRect_.x - contentRect_.x) * scale_ratio + 0.5D;
+        offsetY_ = (double)(portRect_.y - contentRect_.y) * scale_ratio + 0.5D;
+        getParent().postEvent(new Event(this, SCROLL, this));
+        return true;
+    }
+
+    public boolean mouseUp(Event e, int x, int y)
+    {
+        mousedown_ = false;
+        paintOver();
+        getParent().postEvent(new Event(this, DONE, this));
+        return true;
+    }
+
+    public synchronized void paint(Graphics graphics)
+    {
+        graphics.dispose();
+        paintOver();
+    }
+
+    public synchronized void paintOver()
+    {
+        Dimension winsize = size();
+        if(winsize.width != width_ || winsize.height != height_)
+        {
+            width_ = winsize.width;
+            height_ = winsize.height;
+            recompute_();
+            backImage_ = null;
+        }
+        if(backImage_ == null)
+        {
+            backImage_ = createImage(width_, height_);
+        }
+        Graphics graphics = backImage_.getGraphics();
+        graphics.setColor(getBackground());
+        graphics.fillRect(0, 0, width_, height_);
+        graphics.setColor(color_);
+        graphics.fillRect(contentRect_.x, contentRect_.y, contentRect_.width, contentRect_.height);
+        graphics.setColor(Color.black);
+        graphics.setPaintMode();
+        graphics.drawRect(contentRect_.x, contentRect_.y, contentRect_.width, contentRect_.height);
+        graphics.dispose();
+        Graphics screen = getGraphics();
+        screen.drawImage(backImage_, 0, 0, null);
+        screen.drawRect(portRect_.x, portRect_.y, portRect_.width, portRect_.height);
+        screen.dispose();
+    }
+
+    public Dimension preferredSize()
+    {
+        return new Dimension(preferredW_, preferredH_);
+    }
+
+    private void recompute_()
+    {
+        double d_width = (double)width_ - 1.0D;
+        double d_height = (double)height_ - 1.0D;
+        if(d_width * contentHeight_ > d_height * contentWidth_)
+        {
+            contentRect_.y = 0;
+            contentRect_.height = (int)d_height;
+            contentRect_.width = (int)((d_height * contentWidth_) / contentHeight_);
+            contentRect_.x = (int)((d_width - (double)contentRect_.width) / 2D);
+        } else
+        {
+            contentRect_.x = 0;
+            contentRect_.width = (int)d_width;
+            contentRect_.height = (int)((d_width * contentHeight_) / contentWidth_);
+            contentRect_.y = (int)((d_height - (double)contentRect_.height) / 2D);
+        }
+        double scale_ratio = (double)contentRect_.width / contentWidth_;
+        portRect_.x = contentRect_.x + (int)(offsetX_ * scale_ratio);
+        portRect_.y = contentRect_.y + (int)(offsetY_ * scale_ratio);
+        portRect_.width = (int)(portWidth_ * scale_ratio) + 1;
+        portRect_.height = (int)(portHeight_ * scale_ratio) + 1;
+        if(portRect_.x < contentRect_.x)
+        {
+            portRect_.x = contentRect_.x;
+        }
+        if(portRect_.y < contentRect_.y)
+        {
+            portRect_.y = contentRect_.y;
+        }
+        if(portRect_.x + portRect_.width > contentRect_.x + contentRect_.width)
+        {
+            portRect_.x = (contentRect_.x + contentRect_.width) - portRect_.width;
+        }
+        if(portRect_.y + portRect_.height > contentRect_.y + contentRect_.height)
+        {
+            portRect_.y = (contentRect_.y + contentRect_.height) - portRect_.height;
+        }
+    }
+
+    public synchronized void removeNotify()
+    {
+        dragFix_.killThread();
+        super.removeNotify();
+    }
+
+    public void setContentSize(double width, double height)
+    {
+        if(contentWidth_ == width && contentHeight_ == height)
+        {
+            return;
+        } else
+        {
+            contentWidth_ = width;
+            contentHeight_ = height;
+            recompute_();
+            repaint();
+            return;
+        }
+    }
+
+    public void setOffset(double x, double y)
+    {
+        if((int)offsetX_ == (int)x && (int)offsetY_ == (int)y)
+        {
+            return;
+        } else
+        {
+            offsetX_ = x;
+            offsetY_ = y;
+            recompute_();
+            paintOver();
+            return;
+        }
+    }
+
+    public void setPortSize(double width, double height)
+    {
+        if(portWidth_ == width && portHeight_ == height)
+        {
+            return;
+        } else
+        {
+            portWidth_ = width;
+            portHeight_ = height;
+            recompute_();
+            repaint();
+            return;
+        }
+    }
+
+    void setTheColor(Color new_color)
+    {
+        color_ = new_color;
+    }
+
+    public static int SCROLL = 38773;
+    public static int DONE = 38774;
+    public static double offsetX_;
+    public static double offsetY_;
+    private int width_;
+    private int height_;
+    private double portWidth_;
+    private double portHeight_;
+    private double contentWidth_;
+    private double contentHeight_;
+    private Rectangle portRect_;
+    private Rectangle contentRect_;
+    private int preferredW_;
+    private int preferredH_;
+    private Color color_;
+    private boolean mousedown_;
+    private int dragOffsetX_;
+    private int dragOffsetY_;
+    private DragFix dragFix_;
+    private Image backImage_;
+
+}

@@ -1,0 +1,1386 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GeoDis.java
+
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.*;
+import javax.swing.*;
+
+public class GeoDis
+{
+
+    public GeoDis()
+    {
+    }
+
+    public static void main(String args[])
+        throws IOException
+    {
+        try
+        {
+            UIManager.getCrossPlatformLookAndFeelClassName();
+        }
+        catch(Exception e) { }
+        frame = new GeoDis_GUI();
+        frame.setTitle((new StringBuilder()).append("GEODIS 2.5  (Java ").append(System.getProperty("java.version")).append(" from ").append(System.getProperty("java.vendor")).append(")").append(" -- ").append(System.getProperty("os.name")).append(" ").append(System.getProperty("os.version")).toString());
+        frame.setResizable(false);
+        JFrame _tmp = frame;
+        frame.setDefaultCloseOperation(2);
+        frame.setJMenuBar(GeoDis_GUI.menuBar);
+        frame.pack();
+        frame.setBounds(20, 20, 550, 300);
+        frame.setVisible(true);
+        frame.addWindowListener(new WindowAdapter() {
+
+            public void windowClosing(WindowEvent e)
+            {
+                System.exit(0);
+            }
+
+        }
+);
+    }
+
+    public static void statistics()
+    {
+        logfile.print("\nCalculating statistics and permuting ... ");
+        progress = 0;
+        start = System.currentTimeMillis();
+        for(k = 0; k < numClades; k++)
+        {
+            currentCladeName = clad[k].cladeName;
+            CalcChiSquare();
+            if(doingDistances)
+            {
+                matrixDis();
+            } else
+            {
+                obsDis();
+            }
+            ITdistances();
+            if(weights)
+            {
+                corrDistOut();
+            }
+            permute();
+        }
+
+        end = System.currentTimeMillis();
+        logfile.println("OK");
+    }
+
+    public static void CalcChiSquare()
+    {
+        clade = clad[k];
+        clade.obsChi = 0.0D;
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                clade.expObsMatrix[i][j] = (double)(clade.rowTotal[i] * clade.columnTotal[j]) / (double)clade.totaNumObs;
+                clade.obsChi = clade.obsChi + Math.pow((double)clade.obsMatrix[i][j] - clade.expObsMatrix[i][j], 2D) / clade.expObsMatrix[i][j];
+            }
+
+        }
+
+    }
+
+    public static void pairwiseKm()
+    {
+        pairwiseKm = new double[numLocations][numLocations];
+        logfile.println("\nPairwise distance matrix in km");
+        for(int i = 0; i < numLocations; i++)
+        {
+            logfile.print(locationName[i]);
+            for(int j = 0; j < i; j++)
+            {
+                double Z;
+                if(Latitude[i] == Latitude[j] && Longitude[i] == Longitude[j])
+                {
+                    Z = 1.0D;
+                } else
+                {
+                    Z = Math.sin(Latitude[i]) * Math.sin(Latitude[j]) + Math.cos(Latitude[i]) * Math.cos(Latitude[j]) * Math.cos(Longitude[j] - Longitude[i]);
+                }
+                if(Math.abs(Z) < 1.0D)
+                {
+                    pairwiseKm[i][j] = 6364.9629999999997D * Math.acos(Z);
+                } else
+                {
+                    pairwiseKm[i][j] = 0.0D;
+                }
+                logfile.printf("%9.2f", pairwiseKm[i][j]);
+            }
+
+            logfile.println("");
+        }
+
+        logfile.println("OK");
+    }
+
+    public static void obsDis()
+    {
+        clade = clad[k];
+        clade.meanLatNest = 0.0D;
+        clade.meanLonNest = 0.0D;
+        clade.sumTotal = 0.0D;
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            clade.meanLatitude[i] = 0.0D;
+            clade.meanLongitude[i] = 0.0D;
+            clade.Dc[i] = 0.0D;
+            clade.Dn[i] = 0.0D;
+            clade.varDc[i] = 0.0D;
+            clade.varDn[i] = 0.0D;
+        }
+
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            clade.subCladeSum[i] = 0.0D;
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                clade.subCladeSum[i] += clade.absFreq[i][j];
+            }
+
+            clade.sumTotal += clade.subCladeSum[i];
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                clade.relFreq[i][j] = clade.absFreq[i][j] / clade.subCladeSum[i];
+            }
+
+        }
+
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                index = clade.cladeLocIndex[j] - 1;
+                clade.meanLatNest += (clade.absFreq[i][j] / clade.sumTotal) * Latitude[index];
+                clade.meanLonNest += (clade.absFreq[i][j] / clade.sumTotal) * Longitude[index];
+            }
+
+        }
+
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                index = clade.cladeLocIndex[j] - 1;
+                clade.meanLatitude[i] += clade.relFreq[i][j] * Latitude[index];
+                clade.meanLongitude[i] += clade.relFreq[i][j] * Longitude[index];
+            }
+
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                if(clade.relFreq[i][j] == 0.0D)
+                {
+                    continue;
+                }
+                index = clade.cladeLocIndex[j] - 1;
+                if(Latitude[index] == clade.meanLatitude[i] && Longitude[index] == clade.meanLongitude[i])
+                {
+                    Z = 1.0D;
+                } else
+                {
+                    Z = Math.sin(Latitude[index]) * Math.sin(clade.meanLatitude[i]) + Math.cos(Latitude[index]) * Math.cos(clade.meanLatitude[i]) * Math.cos(clade.meanLongitude[i] - Longitude[index]);
+                }
+                if(Math.abs(Z) < 1.0D)
+                {
+                    VZ = 6364.9629999999997D * Math.acos(Z);
+                    if(verbose)
+                    {
+                        logfile.println((new StringBuilder()).append("Dc: Subclade = ").append(clade.subCladeName[i]).append(" in ").append(locationName[j]).append("   distance to clade center ").append(clade.subCladeName[i]).append(" = ").append(VZ).toString());
+                    }
+                    clade.Dc[i] += clade.relFreq[i][j] * VZ;
+                    clade.varDc[i] += clade.relFreq[i][j] * Math.pow(VZ, 2D);
+                }
+                if(Latitude[index] == clade.meanLatNest && Longitude[index] == clade.meanLonNest)
+                {
+                    ZB = 1.0D;
+                } else
+                {
+                    ZB = Math.sin(Latitude[index]) * Math.sin(clade.meanLatNest) + Math.cos(Latitude[index]) * Math.cos(clade.meanLatNest) * Math.cos(clade.meanLonNest - Longitude[index]);
+                }
+                if(Math.abs(ZB) >= 1.0D)
+                {
+                    continue;
+                }
+                VZB = 6364.9629999999997D * Math.acos(ZB);
+                clade.Dn[i] += clade.relFreq[i][j] * VZB;
+                if(verbose)
+                {
+                    logfile.println((new StringBuilder()).append("clade.Dn[i](").append(clade.Dn[i]).append(")").append("+= clade.relFreq[i][j]").append("(").append(clade.relFreq[i][j]).append(")").append("* VZB").append("(").append(VZB).append(")").toString());
+                }
+                clade.varDn[i] += clade.relFreq[i][j] * Math.pow(VZB, 2D);
+                if(verbose)
+                {
+                    logfile.println((new StringBuilder()).append("Dn: Subclade = ").append(clade.subCladeName[i]).append(" in ").append(locationName[j]).append("   distance to nested clade center  = ").append(VZB).toString());
+                }
+            }
+
+        }
+
+    }
+
+    public static void matrixDis()
+    {
+        clade = clad[k];
+        for(c = 0; c < clade.numSubClades; c++)
+        {
+            clade.Dc[c] = 0.0D;
+            clade.Dn[c] = 0.0D;
+            sum1 = sum2 = sum3 = 0.0D;
+            sumc1 = sumc2 = sumc3 = 0.0D;
+            for(i = 0; i < clade.numCladeLocations; i++)
+            {
+                sum2 += (clade.obsMatrix[c][i] * (clade.obsMatrix[c][i] - 1)) / 2;
+                sumc2 += (clade.obsMatrix[c][i] * (clade.obsMatrix[c][i] - 1)) / 2 + clade.obsMatrix[c][i] * (clade.columnTotal[i] - clade.obsMatrix[c][i]);
+                for(j = 0; j < clade.numCladeLocations; j++)
+                {
+                    popA = clade.cladeLocIndex[i];
+                    popB = clade.cladeLocIndex[j];
+                    if(j != i)
+                    {
+                        sum1 += (double)(clade.obsMatrix[c][i] * clade.obsMatrix[c][j]) * distance[popA - 1][popB - 1];
+                        sum3 += clade.obsMatrix[c][i] * clade.obsMatrix[c][j];
+                        sumc1 += (double)(clade.obsMatrix[c][i] * clade.columnTotal[j]) * distance[popA - 1][popB - 1];
+                        sumc3 += clade.obsMatrix[c][i] * clade.columnTotal[j];
+                    }
+                }
+
+            }
+
+            if(sum3 == 0.0D)
+            {
+                clade.Dc[c] = 0.0D;
+            } else
+            {
+                clade.Dc[c] = sum1 / (sum2 + sum3);
+            }
+            if(sumc3 == 0.0D)
+            {
+                clade.Dn[c] = 0.0D;
+            } else
+            {
+                clade.Dn[c] = sumc1 / (sumc2 + sumc3);
+            }
+        }
+
+    }
+
+    public static void ITdistances()
+    {
+        clade = clad[k];
+        clade.tipDistance = 0.0D;
+        clade.intDistance = 0.0D;
+        clade.tipDisNested = 0.0D;
+        clade.intDisNested = 0.0D;
+        clade.indTipClades = 0;
+        clade.indIntClades = 0;
+        if(clade.check != (double)clade.numSubClades && clade.check != 0.0D)
+        {
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                if(clade.Position[i] == 1.0D)
+                {
+                    clade.indTipClades += clade.rowTotal[i];
+                } else
+                {
+                    clade.indIntClades += clade.rowTotal[i];
+                }
+            }
+
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                clade.tipDistance += (clade.Position[i] * clade.Dc[i] * (double)clade.rowTotal[i]) / (double)clade.indTipClades;
+                clade.tipDisNested += (clade.Position[i] * clade.Dn[i] * (double)clade.rowTotal[i]) / (double)clade.indTipClades;
+                clade.intDistance += ((1.0D - clade.Position[i]) * clade.Dc[i] * (double)clade.rowTotal[i]) / (double)clade.indIntClades;
+                clade.intDisNested += ((1.0D - clade.Position[i]) * clade.Dn[i] * (double)clade.rowTotal[i]) / (double)clade.indIntClades;
+            }
+
+            clade.tipIntDistance = clade.intDistance - clade.tipDistance;
+            clade.tipIntDisNested = clade.intDisNested - clade.tipDisNested;
+            if(verbose)
+            {
+                logfile.println((new StringBuilder()).append("\nIT ").append(clade.cladeName).append("   indTipClades = ").append(clade.indTipClades).append("  indIntClades = ").append(clade.indIntClades).toString());
+                logfile.println((new StringBuilder()).append("\nITc ").append(clade.cladeName).append("   meanInt = ").append(clade.intDistance).append("  meanTip = ").append(clade.tipDistance).toString());
+                logfile.println((new StringBuilder()).append("ITn ").append(clade.cladeName).append("   meanInt = ").append(clade.intDisNested).append("  meanTip = ").append(clade.tipDisNested).toString());
+            }
+        }
+    }
+
+    public static void corrDistOut()
+    {
+        clade = clad[k];
+        clade.meanDc = 0.0D;
+        clade.meanDn = 0.0D;
+        clade.meanWeight = 0.0D;
+        clade.sumDcxWeight = 0.0D;
+        clade.sumDnxWeight = 0.0D;
+        clade.sumDcSq = 0.0D;
+        clade.sumDnSq = 0.0D;
+        clade.sumWeightSq = 0.0D;
+        double n;
+        double w;
+        double c = n = w = 0.0D;
+        for(i = 0; i < clade.numSubClades; i++)
+        {
+            clade.meanDc += clade.Dc[i] / (double)clade.numSubClades;
+            clade.meanDn += clade.Dn[i] / (double)clade.numSubClades;
+            clade.meanWeight += clade.weight[i] / (double)clade.numSubClades;
+            clade.sumDcxWeight += clade.Dc[i] * clade.weight[i];
+            clade.sumDnxWeight += clade.Dn[i] * clade.weight[i];
+            clade.sumDcSq += Math.pow(clade.Dc[i], 2D);
+            clade.sumDnSq += Math.pow(clade.Dn[i], 2D);
+            clade.sumWeightSq += Math.pow(clade.weight[i], 2D);
+        }
+
+        c = clade.sumDcSq - (double)clade.numSubClades * Math.pow(clade.meanDc, 2D);
+        n = clade.sumDnSq - (double)clade.numSubClades * Math.pow(clade.meanDn, 2D);
+        w = clade.sumWeightSq - (double)clade.numSubClades * Math.pow(clade.meanWeight, 2D);
+        if(clade.sumDcSq == 0.0D || c == 0.0D || w == 0.0D)
+        {
+            clade.corrDcWeights = 999D;
+        } else
+        {
+            clade.corrDcWeights = (clade.sumDcxWeight - (double)clade.numSubClades * clade.meanDc * clade.meanWeight) / Math.sqrt(c * w);
+        }
+        if(clade.sumDnSq == 0.0D || n == 0.0D || w == 0.0D)
+        {
+            clade.corrDnWeights = 999D;
+        } else
+        {
+            clade.corrDnWeights = (clade.sumDnxWeight - (double)clade.numSubClades * clade.meanDn * clade.meanWeight) / Math.sqrt(n * w);
+        }
+        if(clade.corrDcWeights > 1.0D && clade.corrDcWeights < 2D)
+        {
+            clade.corrDcWeights = 1.0D;
+        }
+        if(clade.corrDcWeights < -1D)
+        {
+            clade.corrDcWeights = -1D;
+        }
+        if(clade.corrDnWeights > 1.0D && clade.corrDnWeights < 2D)
+        {
+            clade.corrDnWeights = 1.0D;
+        }
+        if(clade.corrDnWeights < -1D)
+        {
+            clade.corrDnWeights = -1D;
+        }
+    }
+
+    public static void permute()
+    {
+        Random random = new Random(13L);
+        clade = clad[k];
+        clade.chiPvalue = 0.0D;
+        for(int l = 0; l < 2; l++)
+        {
+            clade.ITcPvalue[l] = 0.0D;
+            clade.ITnPvalue[l] = 0.0D;
+            clade.corrDcWPvalue[l] = 0.0D;
+            clade.corrDnWPvalue[l] = 0.0D;
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                clade.DcPvalue[i][l] = 0.0D;
+                clade.DnPvalue[i][l] = 0.0D;
+            }
+
+        }
+
+        for(int K = 0; K < numPermutations; K++)
+        {
+            progress++;
+            percentage = ((double)progress * 100D) / ((double)numPermutations * (double)numClades);
+            randObsChi = 0.0D;
+            for(int l = 0; l < clade.totaNumObs; l++)
+            {
+                clade.RBMatrix[l][0] = random.nextInt();
+            }
+
+            clade.cumColTotal = 0;
+            for(j = 0; j < clade.numCladeLocations; j++)
+            {
+                if(j == 0)
+                {
+                    clade.cumColTotal = 0;
+                } else
+                {
+                    clade.cumColTotal = clade.cumColTotal + clade.columnTotal[j - 1];
+                }
+                for(int s = 0; s < clade.columnTotal[j]; s++)
+                {
+                    int l = s + clade.cumColTotal;
+                    clade.RBMatrix[l][1] = j + 1;
+                }
+
+            }
+
+            for(int l = 0; l < clade.totaNumObs - 1; l++)
+            {
+                for(int r = l + 1; r < clade.totaNumObs; r++)
+                {
+                    if(clade.RBMatrix[r][0] < clade.RBMatrix[l][0])
+                    {
+                        int T = clade.RBMatrix[r][0];
+                        clade.RBMatrix[r][0] = clade.RBMatrix[l][0];
+                        clade.RBMatrix[l][0] = T;
+                        T = clade.RBMatrix[r][1];
+                        clade.RBMatrix[r][1] = clade.RBMatrix[l][1];
+                        clade.RBMatrix[l][1] = T;
+                    }
+                }
+
+            }
+
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                for(j = 0; j < clade.numCladeLocations; j++)
+                {
+                    clade.randMatrix[i][j] = 0;
+                }
+
+            }
+
+            clade.cumRowTotal = 0;
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                if(i == 0)
+                {
+                    clade.cumRowTotal = 0;
+                } else
+                {
+                    clade.cumRowTotal += clade.rowTotal[i - 1];
+                }
+                for(int s = 0; s < clade.rowTotal[i]; s++)
+                {
+                    int l = s + clade.cumRowTotal;
+                    index = clade.RBMatrix[l][1] - 1;
+                    clade.randMatrix[i][index]++;
+                }
+
+            }
+
+            randObsChi = 0.0D;
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                for(j = 0; j < clade.numCladeLocations; j++)
+                {
+                    randObsChi += Math.pow((double)clade.randMatrix[i][j] - clade.expObsMatrix[i][j], 2D) / clade.expObsMatrix[i][j];
+                }
+
+            }
+
+            if(randObsChi - clade.obsChi >= -1.0000000000000001E-005D)
+            {
+                clade.chiPvalue++;
+            }
+            if(doingDistances)
+            {
+                for(c = 0; c < clade.numSubClades; c++)
+                {
+                    clade.randDc[c] = 0.0D;
+                    clade.randDn[c] = 0.0D;
+                    sum1 = sum2 = sum3 = 0.0D;
+                    sumc1 = sumc2 = sumc3 = 0.0D;
+                    for(i = 0; i < clade.numCladeLocations; i++)
+                    {
+                        sum2 += (clade.randMatrix[c][i] * (clade.randMatrix[c][i] - 1)) / 2;
+                        sumc2 += (clade.randMatrix[c][i] * (clade.randMatrix[c][i] - 1)) / 2 + clade.randMatrix[c][i] * (clade.columnTotal[i] - clade.randMatrix[c][i]);
+                        for(j = 0; j < clade.numCladeLocations; j++)
+                        {
+                            popA = clade.cladeLocIndex[i];
+                            popB = clade.cladeLocIndex[j];
+                            if(j != i)
+                            {
+                                sum1 += (double)(clade.randMatrix[c][i] * clade.randMatrix[c][j]) * distance[popA - 1][popB - 1];
+                                sum3 += clade.randMatrix[c][i] * clade.randMatrix[c][j];
+                                sumc1 += (double)(clade.randMatrix[c][i] * clade.columnTotal[j]) * distance[popA - 1][popB - 1];
+                                sumc3 += clade.randMatrix[c][i] * clade.columnTotal[j];
+                            }
+                        }
+
+                    }
+
+                    if(sum3 == 0.0D)
+                    {
+                        clade.randDc[c] = 0.0D;
+                    } else
+                    {
+                        clade.randDc[c] = sum1 / (sum2 + sum3);
+                    }
+                    if(sumc3 == 0.0D)
+                    {
+                        clade.randDn[c] = 0.0D;
+                    } else
+                    {
+                        clade.randDn[c] = sumc1 / (sumc2 + sumc3);
+                    }
+                    if(clade.Dc[c] - clade.randDc[c] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DcPvalue[c][0]++;
+                    }
+                    if(clade.randDc[c] - clade.Dc[c] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DcPvalue[c][1]++;
+                    }
+                    if(clade.Dn[c] - clade.randDn[c] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DnPvalue[c][0]++;
+                    }
+                    if(clade.randDn[c] - clade.Dn[c] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DnPvalue[c][1]++;
+                    }
+                }
+
+            } else
+            {
+                for(i = 0; i < clade.numSubClades; i++)
+                {
+                    clade.randMeanLatitude[i] = 0.0D;
+                    clade.randMeanLongitude[i] = 0.0D;
+                    clade.randDc[i] = 0.0D;
+                    clade.randDn[i] = 0.0D;
+                    clade.subCladeSum[i] = 0.0D;
+                    for(j = 0; j < clade.numCladeLocations; j++)
+                    {
+                        index = clade.cladeLocIndex[j] - 1;
+                        clade.absFreq[i][j] = (double)clade.randMatrix[i][j] / (double)sampleSize[index];
+                        clade.subCladeSum[i] = clade.subCladeSum[i] + clade.absFreq[i][j];
+                    }
+
+                    for(j = 0; j < clade.numCladeLocations; j++)
+                    {
+                        clade.relFreq[i][j] = clade.absFreq[i][j] / clade.subCladeSum[i];
+                    }
+
+                }
+
+                for(i = 0; i < clade.numSubClades; i++)
+                {
+                    for(j = 0; j < clade.numCladeLocations; j++)
+                    {
+                        index = clade.cladeLocIndex[j] - 1;
+                        clade.randMeanLatitude[i] = clade.randMeanLatitude[i] + clade.relFreq[i][j] * Latitude[index];
+                        clade.randMeanLongitude[i] = clade.randMeanLongitude[i] + clade.relFreq[i][j] * Longitude[index];
+                    }
+
+                    for(j = 0; j < clade.numCladeLocations; j++)
+                    {
+                        if(clade.relFreq[i][j] == 0.0D)
+                        {
+                            continue;
+                        }
+                        index = clade.cladeLocIndex[j] - 1;
+                        if(Latitude[index] == clade.randMeanLatitude[i] && Longitude[index] == clade.randMeanLongitude[i])
+                        {
+                            Z = 1.0D;
+                        } else
+                        {
+                            Z = Math.sin(Latitude[index]) * Math.sin(clade.randMeanLatitude[i]) + Math.cos(Latitude[index]) * Math.cos(clade.randMeanLatitude[i]) * Math.cos(clade.randMeanLongitude[i] - Longitude[index]);
+                        }
+                        if(Math.abs(Z) < 1.0D)
+                        {
+                            RVZ = 6364.9629999999997D * Math.acos(Z);
+                            clade.randDc[i] += clade.relFreq[i][j] * RVZ;
+                        }
+                        if(Latitude[index] == clade.meanLatNest && Longitude[index] == clade.meanLonNest)
+                        {
+                            ZB = 1.0D;
+                        } else
+                        {
+                            ZB = Math.sin(Latitude[index]) * Math.sin(clade.meanLatNest) + Math.cos(Latitude[index]) * Math.cos(clade.meanLatNest) * Math.cos(clade.meanLonNest - Longitude[index]);
+                        }
+                        if(Math.abs(ZB) < 1.0D)
+                        {
+                            RVZ = 6364.9629999999997D * Math.acos(ZB);
+                            clade.randDn[i] += clade.relFreq[i][j] * RVZ;
+                        }
+                    }
+
+                    if(clade.Dc[i] - clade.randDc[i] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DcPvalue[i][0]++;
+                    }
+                    if(clade.randDc[i] - clade.Dc[i] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DcPvalue[i][1]++;
+                    }
+                    if(clade.Dn[i] - clade.randDn[i] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DnPvalue[i][0]++;
+                    }
+                    if(clade.randDn[i] - clade.Dn[i] >= -1.0000000000000001E-005D)
+                    {
+                        clade.DnPvalue[i][1]++;
+                    }
+                }
+
+            }
+            randTipDistance = 0.0D;
+            randIntDistance = 0.0D;
+            randTipDisNested = 0.0D;
+            randIntDisNested = 0.0D;
+            if(clade.check != (double)clade.numSubClades && clade.check != 0.0D)
+            {
+                for(i = 0; i < clade.numSubClades; i++)
+                {
+                    randTipDistance += (clade.Position[i] * clade.randDc[i] * (double)clade.rowTotal[i]) / (double)clade.indTipClades;
+                    randTipDisNested += (clade.Position[i] * clade.randDn[i] * (double)clade.rowTotal[i]) / (double)clade.indTipClades;
+                    randIntDistance += ((1.0D - clade.Position[i]) * clade.randDc[i] * (double)clade.rowTotal[i]) / (double)clade.indIntClades;
+                    randIntDisNested += ((1.0D - clade.Position[i]) * clade.randDn[i] * (double)clade.rowTotal[i]) / (double)clade.indIntClades;
+                }
+
+                if(clade.tipIntDistance - (randIntDistance - randTipDistance) >= -1.0000000000000001E-005D)
+                {
+                    clade.ITcPvalue[0]++;
+                }
+                if(randIntDistance - randTipDistance - clade.tipIntDistance >= -1.0000000000000001E-005D)
+                {
+                    clade.ITcPvalue[1]++;
+                }
+                if(clade.tipIntDisNested - (randIntDisNested - randTipDisNested) >= -1.0000000000000001E-005D)
+                {
+                    clade.ITnPvalue[0]++;
+                }
+                if(randIntDisNested - randTipDisNested - clade.tipIntDisNested >= -1.0000000000000001E-005D)
+                {
+                    clade.ITnPvalue[1]++;
+                }
+            }
+            if(!weights)
+            {
+                continue;
+            }
+            clade.meanDc = 0.0D;
+            clade.meanDn = 0.0D;
+            clade.sumDcxWeight = 0.0D;
+            clade.sumDnxWeight = 0.0D;
+            clade.sumDcSq = 0.0D;
+            clade.sumDnSq = 0.0D;
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                clade.meanDc += clade.randDc[i] / (double)clade.numSubClades;
+                clade.meanDn += clade.randDn[i] / (double)clade.numSubClades;
+                clade.sumDcxWeight += clade.randDc[i] * clade.weight[i];
+                clade.sumDnxWeight += clade.randDn[i] * clade.weight[i];
+                clade.sumDcSq += Math.pow(clade.randDc[i], 2D);
+                clade.sumDnSq += Math.pow(clade.randDn[i], 2D);
+            }
+
+            double c = clade.sumDcSq - (double)clade.numSubClades * Math.pow(clade.meanDc, 2D);
+            double n = clade.sumDnSq - (double)clade.numSubClades * Math.pow(clade.meanDn, 2D);
+            double w = clade.sumWeightSq - (double)clade.numSubClades * Math.pow(clade.meanWeight, 2D);
+            if(clade.corrDcWeights != 999D && c > 0.0D && w > 0.0D)
+            {
+                clade.randCorrDcWeights = (clade.sumDcxWeight - (double)clade.numSubClades * clade.meanDc * clade.meanWeight) / Math.sqrt(c * w);
+                if(clade.randCorrDcWeights > 1.0D)
+                {
+                    clade.randCorrDnWeights = 1.0D;
+                }
+                if(clade.randCorrDcWeights < -1D)
+                {
+                    clade.randCorrDcWeights = -1D;
+                }
+                if(clade.corrDcWeights - clade.randCorrDcWeights >= -1.0000000000000001E-005D)
+                {
+                    clade.corrDcWPvalue[0]++;
+                }
+                if(clade.randCorrDcWeights - clade.corrDcWeights >= -1.0000000000000001E-005D)
+                {
+                    clade.corrDcWPvalue[1]++;
+                }
+            }
+            if(clade.corrDnWeights == 999D || n <= 0.0D || w <= 0.0D)
+            {
+                continue;
+            }
+            clade.randCorrDnWeights = (clade.sumDnxWeight - (double)clade.numSubClades * clade.meanDn * clade.meanWeight) / Math.sqrt(n * w);
+            if(clade.randCorrDnWeights > 1.0D)
+            {
+                clade.randCorrDnWeights = 1.0D;
+            }
+            if(clade.randCorrDnWeights < -1D)
+            {
+                clade.randCorrDnWeights = -1D;
+            }
+            if(clade.corrDnWeights - clade.randCorrDnWeights >= -1.0000000000000001E-005D)
+            {
+                clade.corrDnWPvalue[0]++;
+            }
+            if(clade.randCorrDnWeights - clade.corrDnWeights >= -1.0000000000000001E-005D)
+            {
+                clade.corrDnWPvalue[1]++;
+            }
+        }
+
+        clade.chiPvalue /= numPermutations;
+        for(int l = 0; l < 2; l++)
+        {
+            clade.ITcPvalue[l] /= numPermutations;
+            clade.ITnPvalue[l] /= numPermutations;
+            clade.corrDcWPvalue[l] /= numPermutations;
+            clade.corrDnWPvalue[l] /= numPermutations;
+            for(i = 0; i < clade.numSubClades; i++)
+            {
+                clade.DcPvalue[i][l] /= numPermutations;
+                clade.DnPvalue[i][l] /= numPermutations;
+            }
+
+        }
+
+    }
+
+    public static void readLocations()
+    {
+        logfile.print("\nReading geographical locations ...");
+        infile = new TextInputStream(infilename);
+        dataName = infile.readLine();
+        numLocations = infile.readInt();
+        locationName = new String[numLocations];
+        sampleSize = new int[numLocations];
+        Latitude = new double[numLocations];
+        Longitude = new double[numLocations];
+        for(j = 0; j < numLocations; j++)
+        {
+            locationName[j] = infile.readLine();
+            if(locationName[j].length() == 0)
+            {
+                locationName[j] = infile.readLine();
+            }
+            sampleSize[j] = infile.readInt();
+            if(usingDecimalDegrees)
+            {
+                Latitude[j] = infile.readFloat();
+                Longitude[j] = infile.readFloat();
+            } else
+            {
+                lat_deg = infile.readInt();
+                lat_min = infile.readInt();
+                lat_sec = infile.readInt();
+                lat_coor = infile.readWord();
+                lon_deg = infile.readInt();
+                lon_min = infile.readInt();
+                lon_sec = infile.readInt();
+                lon_coor = infile.readWord();
+                dec_lat = (double)lat_deg + (double)lat_min / 60D + (double)lat_sec / 3600D;
+                dec_lon = (double)lon_deg + (double)lon_min / 60D + (double)lon_sec / 3600D;
+                if(lat_coor.equalsIgnoreCase("N"))
+                {
+                    Latitude[j] = dec_lat;
+                } else
+                if(lat_coor.equalsIgnoreCase("S"))
+                {
+                    Latitude[j] = -1D * dec_lat;
+                } else
+                {
+                    JOptionPane.showMessageDialog(frame, "The letter for the latitude is neither N nor S.\n Note that latitude should POcome first than longitude", "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+                if(lon_coor.equalsIgnoreCase("E"))
+                {
+                    Longitude[j] = dec_lon;
+                } else
+                if(lon_coor.equalsIgnoreCase("W"))
+                {
+                    Longitude[j] = -1D * dec_lon;
+                } else
+                {
+                    JOptionPane.showMessageDialog(frame, "The letter for the longitude is neither E nor W.\n See that latitude come first than longitude", "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+            }
+            if(locationName[i] == null || sampleSize[i] <= 0 || Latitude[j] > 90D || Latitude[j] < -90D || Longitude[j] < -180D || Longitude[j] > 180D)
+            {
+                if(locationName[i] == null)
+                {
+                    System.err.println("\nlocationName [i] == null");
+                }
+                if(sampleSize[i] <= 0)
+                {
+                    System.err.println("\nsampleSize[i] <= 0");
+                }
+                if(Latitude[j] > 90D)
+                {
+                    System.err.println("\nLatitude[j] > 90");
+                }
+                if(Latitude[j] < -90D)
+                {
+                    System.err.println("\nLatitude[j]< -90");
+                }
+                if(Longitude[j] < -180D)
+                {
+                    System.err.println("\nLongitude[j] < -180");
+                }
+                if(Longitude[j] > 180D)
+                {
+                    System.err.println("\nLongitude[j] > 180");
+                }
+                JOptionPane.showMessageDialog(frame, "There was an error reading the population description\nor its coordinates. If your coordinates are in decimal degrees, have you checked that box?", "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            logfile.print((new StringBuilder()).append("\nreading ").append(locationName[j]).append(" ").toString());
+            logfile.print((new StringBuilder()).append(sampleSize[j]).append(" ").toString());
+            logfile.printf(" %6.4f", Latitude[j]);
+            logfile.printf(" %6.4f", Longitude[j]);
+        }
+
+        for(j = 0; j < numLocations; j++)
+        {
+            Latitude[j] *= 0.017453293000000002D;
+            Longitude[j] *= 0.017453293000000002D;
+        }
+
+        logfile.println("\nOK");
+    }
+
+    public static void readMatrix()
+    {
+        logfile.print("\nReading distance matrix ...");
+        infile = new TextInputStream(infilename);
+        dataName = infile.readLine();
+        numLocations = infile.readInt();
+        distance = new double[numLocations][numLocations];
+        locationIndex = new int[numLocations];
+        locationName = new String[numLocations];
+        sampleSize = new int[numLocations];
+        for(popA = 0; popA < numLocations; popA++)
+        {
+            locationIndex[popA] = infile.readInt();
+            locationName[popA] = infile.readWord();
+            sampleSize[popA] = infile.readInt();
+            if(locationIndex[popA] <= 0 || locationName[popA] == null || sampleSize[popA] < 0)
+            {
+                JOptionPane.showMessageDialog(frame, "There was an error reading the population descriptions\nin the pairwise distance matrix", "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            for(popB = 0; popB < popA; popB++)
+            {
+                distance[popA][popB] = distance[popB][popA] = infile.readDouble();
+                if(distance[popA][popB] < 0.0D)
+                {
+                    JOptionPane.showMessageDialog(frame, "There was an error reading the distance matrix", "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+            }
+
+        }
+
+        logfile.println("OK");
+    }
+
+    public static void readClade()
+    {
+        numClades = infile.readInt();
+        logfile.println((new StringBuilder()).append("\nReading ").append(numClades).append(" clades ...").toString());
+        if(numClades <= 0)
+        {
+            JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There is a mistake reading the clades (numClades = ").append(numClades).append(").").append("\nAre you inputting a matrix? If so, make sure you check the box").toString(), "GeoDis warning", 2);
+            frame.dispose();
+            System.exit(0);
+        }
+        clad = new Clade[numClades];
+        for(k = 0; k < numClades; k++)
+        {
+            clad[k] = new Clade();
+            currentCladeName = clad[k].cladeName;
+            if(infile.EOF())
+            {
+                JOptionPane.showMessageDialog(frame, "There are less clades than indicated.", "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            clad[k].cladeName = infile.readLine();
+            if(clad[k].cladeName.length() == 0)
+            {
+                clad[k].cladeName = infile.readLine();
+            }
+            logfile.println((new StringBuilder()).append("  Reading clade \"").append(clad[k].cladeName).append("\" ... ").toString());
+            if(clad[k].cladeName == null)
+            {
+                JOptionPane.showMessageDialog(frame, "There was an error reading the clade name.", "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            clad[k].numSubClades = infile.readInt();
+            if(clad[k].numSubClades <= 0)
+            {
+                JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was an error reading the number of haplotypes (rows) \nin clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            if(clad[k].numSubClades == 1)
+            {
+                JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("Number of haplotypes in clade ").append(clad[k].cladeName).append("\n cannot be one. You need genetic variation for this analysis.").toString(), "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            clad[k].rowTotal = new int[clad[k].numSubClades];
+            clad[k].meanLatitude = new double[clad[k].numSubClades];
+            clad[k].meanLongitude = new double[clad[k].numSubClades];
+            clad[k].randMeanLatitude = new double[clad[k].numSubClades];
+            clad[k].randMeanLongitude = new double[clad[k].numSubClades];
+            clad[k].Dc = new double[clad[k].numSubClades];
+            clad[k].Dn = new double[clad[k].numSubClades];
+            clad[k].varDc = new double[clad[k].numSubClades];
+            clad[k].varDn = new double[clad[k].numSubClades];
+            clad[k].Position = new double[clad[k].numSubClades];
+            clad[k].randDc = new double[clad[k].numSubClades];
+            clad[k].randDn = new double[clad[k].numSubClades];
+            clad[k].subCladeSum = new double[clad[k].numSubClades];
+            clad[k].ITcPvalue = new double[2];
+            clad[k].ITnPvalue = new double[2];
+            clad[k].corrDcWPvalue = new double[2];
+            clad[k].corrDnWPvalue = new double[2];
+            clad[k].subCladeName = new String[clad[k].numSubClades];
+            clad[k].subCladePosition = new String[clad[k].numSubClades];
+            clad[k].weight = new double[clad[k].numSubClades];
+            for(i = 0; i < clad[k].numSubClades; i++)
+            {
+                clad[k].subCladeName[i] = infile.readWord();
+                if(clad[k].subCladeName[i] == null)
+                {
+                    JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was an error reading the name of the inner clades in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+            }
+
+            clad[k].check = 0.0D;
+            for(i = 0; i < clad[k].numSubClades; i++)
+            {
+                clad[k].Position[i] = infile.readInt();
+                if(clad[k].Position[i] < 0.0D)
+                {
+                    JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was an error reading the tip/interior designation in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+                if(clad[k].Position[i] == 1.0D)
+                {
+                    clad[k].subCladePosition[i] = "Tip";
+                } else
+                {
+                    clad[k].subCladePosition[i] = "Interior";
+                }
+                clad[k].check += clad[k].Position[i];
+            }
+
+            if(weights)
+            {
+                for(i = 0; i < clad[k].numSubClades; i++)
+                {
+                    clad[k].weight[i] = infile.readDouble();
+                    if(clad[k].weight[i] <= 0.0D)
+                    {
+                        JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was an error reading \nthe outweights in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                        frame.dispose();
+                        System.exit(0);
+                    }
+                }
+
+            }
+            clad[k].numCladeLocations = infile.readInt();
+            if(clad[k].numCladeLocations <= 0)
+            {
+                JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was an error reading the number of \ngeographical locations (columns) in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                JOptionPane.showMessageDialog(frame, "Could be that you have outgroup probabilities \nand forgot to check the box? ", "GeoDis warning", 2);
+                frame.dispose();
+                System.exit(0);
+            }
+            if(clad[k].numCladeLocations == 1)
+            {
+                JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("Number of geographical locations (columns) in clade ").append(clad[k].cladeName).append(" cannot be one. You need geographical variation for this analysis.").toString(), "GeoDis warning", 2);
+                System.exit(0);
+                frame.dispose();
+            }
+            clad[k].columnTotal = new int[clad[k].numCladeLocations];
+            clad[k].cladeLocIndex = new int[clad[k].numCladeLocations];
+            for(i = 0; i < clad[k].numCladeLocations; i++)
+            {
+                clad[k].cladeLocIndex[i] = infile.readInt();
+                if(clad[k].cladeLocIndex[i] <= 0 || clad[k].cladeLocIndex[i] > 1000)
+                {
+                    JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was a mistake reading the location indexes in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                    frame.dispose();
+                    System.exit(0);
+                }
+            }
+
+            clad[k].DcPvalue = new double[clad[k].numSubClades][2];
+            clad[k].DnPvalue = new double[clad[k].numSubClades][2];
+            clad[k].obsMatrix = new int[clad[k].numSubClades][clad[k].numCladeLocations];
+            clad[k].randMatrix = new int[clad[k].numSubClades][clad[k].numCladeLocations];
+            clad[k].expObsMatrix = new double[clad[k].numSubClades][clad[k].numCladeLocations];
+            clad[k].relFreq = new double[clad[k].numSubClades][clad[k].numCladeLocations];
+            clad[k].absFreq = new double[clad[k].numSubClades][clad[k].numCladeLocations];
+            clad[k].RBMatrix = new int[10000][2];
+            for(i = 0; i < clad[k].numSubClades; i++)
+            {
+                for(j = 0; j < clad[k].numCladeLocations; j++)
+                {
+                    clad[k].obsMatrix[i][j] = 0;
+                    clad[k].absFreq[i][j] = 0.0D;
+                }
+
+            }
+
+            clad[k].totaNumObs = 0;
+            for(i = 0; i < clad[k].numSubClades; i++)
+            {
+                for(j = 0; j < clad[k].numCladeLocations; j++)
+                {
+                    int index = clad[k].cladeLocIndex[j] - 1;
+                    clad[k].obsMatrix[i][j] = infile.readInt();
+                    if(clad[k].obsMatrix[i][j] < 0)
+                    {
+                        JOptionPane.showMessageDialog(frame, (new StringBuilder()).append("There was a mistake reading the observation matrix in clade: ").append(clad[k].cladeName).toString(), "GeoDis warning", 2);
+                        frame.dispose();
+                        System.exit(0);
+                    }
+                    clad[k].rowTotal[i] += clad[k].obsMatrix[i][j];
+                    clad[k].columnTotal[j] += clad[k].obsMatrix[i][j];
+                    clad[k].totaNumObs += clad[k].obsMatrix[i][j];
+                    clad[k].absFreq[i][j] = (double)clad[k].obsMatrix[i][j] / (double)sampleSize[index];
+                }
+
+            }
+
+        }
+
+        if(infile.EOF())
+        {
+            JOptionPane.showMessageDialog(frame, "There are more clades than indicated.", "GeoDis warning", 2);
+            frame.dispose();
+            System.exit(0);
+        }
+        infile.close();
+        logfile.println("OK");
+    }
+
+    public static void printOut()
+    {
+        time = new Date();
+        if(!printToFile)
+        {
+            GeoDis_GUI.outWindow();
+            outfile = new TextOutputStream(GeoDis_GUI.outdoc);
+        } else
+        {
+            outfile = new TextOutputStream(outfilename);
+        }
+        outfile.print("Differentiating population structure from history - Geodis");
+        outfile.print("  2.5");
+        outfile.print("\n(c) Copyright, 1999-2006 David Posada and Alan Templeton");
+        outfile.print("\nContact: David Posada, University of Vigo, Spain (dposada@uvigo.es)");
+        outfile.print("\n________________________________________________________________________\n\n");
+        outfile.println((new StringBuilder()).append("Input file: ").append(infilename).toString());
+        outfile.print(dataName);
+        outfile.print((new StringBuilder()).append("\n\n").append(time.toString()).toString());
+        if(doingDistances)
+        {
+            outfile.print("\n\nCalculations from USER-defined distances");
+        }
+        for(k = 0; k < numClades; k++)
+        {
+            outfile.print((new StringBuilder()).append("\n\n\n\n\nPERMUTATION ANALYSIS OF ").append(clad[k].cladeName).toString());
+            outfile.print((new StringBuilder()).append("\n   BASED ON ").append(numPermutations).append(" RESAMPLES").toString());
+            outfile.println("\n\n\nPART I.  PERMUTATIONAL CONTINGENCY TEST:");
+            if(clad[k].numSubClades != 1)
+            {
+                outfile.print("\n\n  OBSERVED CHI-SQUARE STATISTIC = ");
+                outfile.printf("%10.4f", clad[k].obsChi);
+                outfile.print("\n\n  THE PROBABILITY OF A RANDOM CHI-SQUARE BEING GREATER THAN");
+                outfile.print("\n    OR EQUAL TO THE OBSERVED CHI-SQUARE = ");
+                outfile.printf("%10.4f", clad[k].chiPvalue);
+            } else
+            {
+                outfile.println("\nNO. OF CLADES = 1, CHI-SQUARE N.A.");
+            }
+            outfile.println("\n\n\nPART II.  GEOGRAPHIC DISTANCE ANALYSIS:");
+            if(usingDecimalDegrees)
+            {
+                outfile.print("\nGEOGRAPHICAL CENTERS    LATITUDE    LONGITUDE");
+                outfile.printf("\n%16s", clad[k].cladeName);
+                outfile.printf("%16.4f", clad[k].meanLatNest / 0.017453293000000002D);
+                outfile.printf("%16.4f", clad[k].meanLonNest / 0.017453293000000002D);
+                for(i = 0; i < clad[k].numSubClades; i++)
+                {
+                    outfile.printf("\n%16s", clad[k].subCladeName[i]);
+                    outfile.printf("%16.4f", clad[k].meanLatitude[i] / 0.017453293000000002D);
+                    outfile.printf("%16.4f", clad[k].meanLongitude[i] / 0.017453293000000002D);
+                }
+
+            } else
+            if(!doingDistances)
+            {
+                outfile.print("\nGEOGRAPHICAL CENTERS    LATITUDE      LONGITUDE");
+                outfile.printf("\n%16s", clad[k].cladeName);
+                int dms[] = DDtoDMS(clad[k].meanLatNest / 0.017453293000000002D);
+                outfile.printf("      % 4d ", dms[0]);
+                outfile.printf("%02d'", dms[1]);
+                outfile.printf("%02d\"", dms[2]);
+                dms = DDtoDMS(clad[k].meanLonNest / 0.017453293000000002D);
+                outfile.printf("   % 4d ", dms[0]);
+                outfile.printf("%02d'", dms[1]);
+                outfile.printf("%02d\"", dms[2]);
+                for(i = 0; i < clad[k].numSubClades; i++)
+                {
+                    outfile.printf("\n%16s", clad[k].subCladeName[i]);
+                    dms = DDtoDMS(clad[k].meanLatitude[i] / 0.017453293000000002D);
+                    outfile.printf("      % 4d ", dms[0]);
+                    outfile.printf("%02d'", dms[1]);
+                    outfile.printf("%02d\"", dms[2]);
+                    dms = DDtoDMS(clad[k].meanLongitude[i] / 0.017453293000000002D);
+                    outfile.printf("   % 4d ", dms[0]);
+                    outfile.printf("%02d'", dms[1]);
+                    outfile.printf("%02d\"", dms[2]);
+                }
+
+            }
+            for(i = 0; i < clad[k].numSubClades; i++)
+            {
+                outfile.print((new StringBuilder()).append("\n\nCLADE ").append(clad[k].subCladeName[i]).append(" (").append(clad[k].subCladePosition[i]).append(")").toString());
+                outfile.print("\n TYPE OF DISTANCE       DISTANCE      PROB.<=      PROB.>=");
+                if(clad[k].numSubClades == 1)
+                {
+                    outfile.print("\n      WITHIN CLADE  ");
+                    outfile.printf("%12.4f", clad[k].Dc[i]);
+                    outfile.print("N.A      N.A");
+                    outfile.print("\n      NESTED CLADE  ");
+                    outfile.printf("%12.4f", clad[k].Dn[i]);
+                    outfile.print("N.A      N.A");
+                } else
+                {
+                    outfile.print("\n      WITHIN CLADE  ");
+                    outfile.printf("%12.4f", clad[k].Dc[i]);
+                    outfile.print("   ");
+                    outfile.printf("%10.4f", clad[k].DcPvalue[i][0]);
+                    outfile.print("   ");
+                    outfile.printf("%10.4f", clad[k].DcPvalue[i][1]);
+                    outfile.print("\n      NESTED CLADE  ");
+                    outfile.printf("%12.4f", clad[k].Dn[i]);
+                    outfile.print("   ");
+                    outfile.printf("%10.4f", clad[k].DnPvalue[i][0]);
+                    outfile.print("   ");
+                    outfile.printf("%10.4f", clad[k].DnPvalue[i][1]);
+                }
+            }
+
+            if(weights)
+            {
+                outfile.print("\n\n\nCORRELATIONS OF DISTANCES WITH OUTGROUP WEIGHTS:\n");
+                outfile.print("\n TYPE OF DISTANCE      CORR. COEF.    PROB.<=      PROB.>=");
+                if(clad[k].numSubClades == 1)
+                {
+                    outfile.print(" N.A. -- ONLY 1 CLADE IN NESTING GROUP");
+                } else
+                {
+                    if(clad[k].corrDcWeights == 999D)
+                    {
+                        outfile.print("\n FROM CLADE MIDPT. -- N.A. -- NO DISTANCE OR WEIGHT VARIATION");
+                    } else
+                    {
+                        outfile.print("\n FROM CLADE MIDPT.  ");
+                        outfile.printf("%12.4f", clad[k].corrDcWeights);
+                        outfile.print("   ");
+                        outfile.printf("%10.4f", clad[k].corrDcWPvalue[0]);
+                        outfile.print("   ");
+                        outfile.printf("%10.4f", clad[k].corrDcWPvalue[1]);
+                    }
+                    if(clad[k].corrDnWeights == 999D)
+                    {
+                        outfile.print("\n FROM NESTING MIDPT. -- N.A. -- NO DISTANCE OR WEIGHT VARIATION");
+                    } else
+                    {
+                        outfile.print("\n FROM NESTING MIDPT.");
+                        outfile.printf("%12.4f", clad[k].corrDnWeights);
+                        outfile.print("   ");
+                        outfile.printf("%10.4f", clad[k].corrDnWPvalue[0]);
+                        outfile.print("   ");
+                        outfile.printf("%10.4f", clad[k].corrDnWPvalue[1]);
+                    }
+                }
+            }
+            if(clad[k].check == (double)clad[k].numSubClades || clad[k].check == 0.0D)
+            {
+                outfile.print("\n\n\nNO INTERIOR/TIP CLADES EXIST IN THIS GROUP");
+            } else
+            {
+                outfile.print("\n\n\nPART III.  TEST OF INTERIOR VS. TIP CLADES:");
+                outfile.print("\n\n TYPE OF DISTANCE   I-T DISTANCE      PROB.<=      PROB.>=");
+                outfile.print("\n      WITHIN CLADE  ");
+                outfile.printf("%12.4f", clad[k].tipIntDistance);
+                outfile.print("  ");
+                outfile.printf(" %10.4f", clad[k].ITcPvalue[0]);
+                outfile.print("  ");
+                outfile.printf(" %10.4f", clad[k].ITcPvalue[1]);
+                outfile.print("\n      NESTED CLADE  ");
+                outfile.printf("%12.4f", clad[k].tipIntDisNested);
+                outfile.print("  ");
+                outfile.printf(" %10.4f", clad[k].ITnPvalue[0]);
+                outfile.print("  ");
+                outfile.printf(" %10.4f", clad[k].ITnPvalue[1]);
+            }
+        }
+
+        long total_time = end - start;
+        double seconds = (double)total_time / 1000D;
+        outfile.print("\n\n\n** ANALYSIS FINISHED **\nIt took ");
+        outfile.printf("%5.4f", seconds);
+        outfile.print(" seconds.\n");
+        outfile.close();
+    }
+
+    public static int[] DDtoDMS(double dd)
+    {
+        boolean negativeDD = false;
+        if(dd < 0.0D)
+        {
+            negativeDD = true;
+            dd = Math.abs(dd);
+        }
+        int dms[] = new int[3];
+        int deg = (int)Math.floor(dd);
+        int min = (int)Math.floor((dd - (double)deg) * 60D);
+        int sec = (int)Math.round(((dd - (double)deg) * 60D - (double)min) * 60D);
+        if(negativeDD)
+        {
+            deg *= -1;
+        }
+        dms[0] = deg;
+        dms[1] = Math.abs(min);
+        dms[2] = Math.abs(sec);
+        return dms;
+    }
+
+    public static void CheckExpiration(Frame theframe)
+    {
+label0:
+        {
+label1:
+            {
+                Calendar now = Calendar.getInstance();
+                Calendar _tmp = now;
+                Calendar _tmp1 = now;
+                if(now.get(2) != 1)
+                {
+                    Calendar _tmp2 = now;
+                    Calendar _tmp3 = now;
+                    if(now.get(2) != 2)
+                    {
+                        break label1;
+                    }
+                }
+                Calendar _tmp4 = now;
+                if(now.get(1) == 2005)
+                {
+                    break label0;
+                }
+            }
+            JOptionPane.showMessageDialog(theframe, "This version has expired! \n    Good bye...", "GeoDis warning", 2);
+            theframe.dispose();
+            System.exit(0);
+        }
+    }
+
+    public static final String PROGRAM_NAME = "Geodis";
+    public static final String VERSION_NUMBER = "2.5";
+    private static final double D2R = 0.017453293000000002D;
+    private static final double GC2K = 111.12D;
+    private static final double RADIUS = 6364.9629999999997D;
+    private static final int NA = 999;
+    private static final int tip = 1;
+    private static final int interior = 0;
+    public static String infilename = "none selected";
+    public static String outfilename = "none selected";
+    public static String logfilename = "logfile";
+    private static TextInputStream infile;
+    private static TextOutputStream outfile;
+    private static TextOutputStream outdoc;
+    public static TextOutputStream logfile;
+    public static boolean printToFile = false;
+    public static boolean weights = false;
+    public static boolean doingDistances = false;
+    public static boolean usingDecimalDegrees = false;
+    public static boolean done = false;
+    public static Clade clad[];
+    public static long start;
+    public static long end;
+    public static double distance[][];
+    private static final double ROUNDING_ERROR = -1.0000000000000001E-005D;
+    public static String url = "http://darwin.uvigo.es/software/geodis.html";
+    public static String dataName;
+    private static Date time;
+    static int locationIndex[];
+    static String locationName[];
+    static int sampleSize[];
+    static double Longitude[];
+    static double Latitude[];
+    static int numLocations;
+    static int numClades;
+    static int numPermutations;
+    static JFrame frame;
+    static Clade clade;
+    public static String currentCladeName;
+    static double pairwiseKm[][];
+    static TextOutputStream error;
+    public static int i;
+    public static int j;
+    public static int k;
+    public static int c;
+    public static int progress;
+    public static int popA;
+    public static int popB;
+    public static int index;
+    public static int lon_deg;
+    public static int lon_min;
+    public static int lon_sec;
+    public static int lat_deg;
+    public static int lat_min;
+    public static int lat_sec;
+    public static double randObsChi;
+    public static double Z;
+    public static double ZB;
+    public static double VZ;
+    public static double VZB;
+    public static double RVZ;
+    public static double RVZB;
+    public static double randTipDistance;
+    public static double randIntDistance;
+    public static double randTipDisNested;
+    public static double randIntDisNested;
+    public static double randCorrDcWeights;
+    public static double randCorrDnWeights;
+    public static double N;
+    public static double sum1;
+    public static double sum2;
+    public static double sum3;
+    public static double sumc1;
+    public static double sumc2;
+    public static double sumc3;
+    public static double percentage;
+    public static double dec_lon;
+    public static double dec_lat;
+    public static String lon_coor;
+    public static String lat_coor;
+    public static String trash;
+    public static boolean verbose = false;
+
+    static 
+    {
+        error = new TextOutputStream(System.err);
+    }
+}

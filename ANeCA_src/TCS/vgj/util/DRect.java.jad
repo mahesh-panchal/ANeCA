@@ -1,0 +1,24 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   DRect.java
+
+package EDU.auburn.VGJ.util;
+
+
+public class DRect
+{
+
+    public DRect(double x_in, double y_in, double width_in, double height_in)
+    {
+        x = x_in;
+        y = y_in;
+        width = width_in;
+        height = height_in;
+    }
+
+    public double x;
+    public double y;
+    public double width;
+    public double height;
+}

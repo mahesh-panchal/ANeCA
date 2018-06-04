@@ -1,0 +1,30 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GraphUpdate.java
+
+package EDU.auburn.VGJ.algorithm;
+
+import EDU.auburn.VGJ.graph.Node;
+import EDU.auburn.VGJ.util.DRect;
+import java.awt.Frame;
+
+public interface GraphUpdate
+{
+
+    public abstract void center();
+
+    public abstract Frame getFrame();
+
+    public abstract double getHSpacing();
+
+    public abstract Node getSelectedNode();
+
+    public abstract double getVSpacing();
+
+    public abstract void scale(double d);
+
+    public abstract void update(boolean flag);
+
+    public abstract DRect windowRect();
+}

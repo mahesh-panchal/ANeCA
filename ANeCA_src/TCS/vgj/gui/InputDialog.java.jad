@@ -1,0 +1,55 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   InputDialog.java
+
+package EDU.auburn.VGJ.gui;
+
+import java.awt.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel
+
+public class InputDialog extends Dialog
+{
+
+    public InputDialog(Frame frame, String title, Component post_to, int event_id_in)
+    {
+        super(frame, "Input", true);
+        event_id = event_id_in;
+        postTo_ = post_to;
+        LPanel p = new LPanel();
+        p.addLabel(title, 0, 0, 1.0D, 1.0D, 1, 0);
+        text = p.addTextField(50, 0, 0, 1.0D, 1.0D, 1, 0);
+        p.addButtonPanel("OK Cancel", 0);
+        p.finish();
+        add("Center", p);
+        pack();
+        show();
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            if("OK".equals(object))
+            {
+                hide();
+                dispose();
+                postTo_.postEvent(new Event(this, event_id, text.getText()));
+                return true;
+            }
+            if("Cancel".equals(object))
+            {
+                hide();
+                dispose();
+                return true;
+            }
+        }
+        return super.action(event, object);
+    }
+
+    private int event_id;
+    private TextField text;
+    private Component postTo_;
+}

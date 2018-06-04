@@ -1,0 +1,261 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GraphIO.java
+
+package clad;
+
+import EDU.auburn.VGJ.graph.*;
+import EDU.auburn.VGJ.gui.*;
+import java.awt.*;
+import java.io.*;
+
+// Referenced classes of package clad:
+//            TCS
+
+public class GraphIO
+{
+
+    public static String getFileName(String label, TCS tcs, GraphWindow gw)
+    {
+        String filename = null;
+        FileDialog fd2 = new FileDialog(gw, label, 0);
+        fd2.setVisible(true);
+        filename = fd2.getFile();
+        if(filename == null)
+        {
+            fd2 = null;
+            return filename;
+        } else
+        {
+            filename = fd2.getDirectory() + filename;
+            return filename;
+        }
+    }
+
+    public static GMLobject loadFile(String filename, GMLobject GMLfile_, GraphWindow gw, Graph graph_, GraphCanvas graphCanvas_)
+    {
+        GMLobject gmlgraph = null;
+        try
+        {
+            File fname = new File(filename);
+            int size = (int)fname.length();
+            int bytesRead = 0;
+            FileInputStream infile = new FileInputStream(fname);
+            byte data[] = new byte[size];
+            for(; bytesRead < size; bytesRead += infile.read(data, bytesRead, size - bytesRead)) { }
+            StringBufferInputStream stream = new StringBufferInputStream(new String(data, 0));
+            GMLlexer lexer = new GMLlexer(stream);
+            try
+            {
+                GMLfile_ = new GMLobject(lexer, null);
+                gmlgraph = GMLfile_.getGMLSubObject("graph", 3, false);
+                if(gmlgraph == null)
+                {
+                    GMLfile_ = null;
+                    new MessageDialog(gw, "Error", "File does not contain a graph.", true);
+                    return null;
+                }
+                Graph newgraph = null;
+                newgraph = new Graph(gmlgraph);
+                graph_.copy(newgraph);
+                graphCanvas_.update(true);
+            }
+            catch(ParseError error)
+            {
+                new MessageDialog(gw, "Error", "Invalid graph file!\n\n" + error.getMessage() + " at line " + lexer.getLineNumber() + " at or near \"" + lexer.getStringval() + "\".", true);
+            }
+        }
+        catch(FileNotFoundException _ex)
+        {
+            new MessageDialog(gw, "Error", "Error loading file  \"" + filename + "\".", true);
+        }
+        catch(IOException e)
+        {
+            new MessageDialog(gw, "Error", e.getMessage(), true);
+        }
+        return GMLfile_;
+    }
+
+    public static GMLobject saveStandard(boolean writeNet, String filename, GraphCanvas graphCanvas_, GraphWindow gw, GMLobject GMLfile_, Graph graph_, TCS tcs)
+    {
+        if(writeNet)
+        {
+            GMLobject GMLo = loadFile(filename, GMLfile_, gw, graph_, graphCanvas_);
+            graphCanvas_.selectRoot();
+            gw.applyAlgorithm("Tree Up");
+            graphCanvas_.removeGroups();
+        }
+        try
+        {
+            if(GMLfile_ == null)
+            {
+                GMLfile_ = new GMLobject(null, 5);
+                GMLfile_.addObjectToEnd(new GMLobject("graph", 3));
+            }
+            GMLobject gmlgraph = GMLfile_.getGMLSubObject("graph", 3, false);
+            graph_.setGMLvalues(gmlgraph);
+            gmlgraph.prune();
+            PrintStream ps = new PrintStream(new FileOutputStream(filename));
+            ps.println(GMLfile_.toString(0));
+            ps.close();
+            if(writeNet)
+            {
+                String net = saveStandardHelper(gmlgraph, graph_, tcs);
+                PrintStream netF = new PrintStream(new FileOutputStream(filename + ".net"));
+                netF.println(net);
+                netF.close();
+            }
+            return GMLfile_;
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error writing Graph/Network File!\n");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static pictdialog pictSave(boolean interactive, String filename, GraphCanvas graphCanvas_, GraphWindow gw, pictdialog pictDialog_)
+    {
+        if(!interactive)
+        {
+            graphCanvas_.selectRoot();
+            gw.applyAlgorithm("Tree Down");
+        }
+        if(pictDialog_ == null)
+        {
+            pictDialog_ = new pictdialog(gw, graphCanvas_);
+        }
+        if(interactive)
+        {
+            pictDialog_.pack();
+            pictDialog_.setVisible(true);
+        } else
+        {
+            filename = filename + ".PICT";
+            pictDialog_.Save(filename);
+        }
+        return pictDialog_;
+    }
+
+    public static String saveGML(String label, String filename_, GMLobject GMLfile_, GraphWindow gw, Graph graph_)
+    {
+        String filename = null;
+        try
+        {
+            if(label.equals("Save Graph As (GML)") || filename_ == null)
+            {
+                FileDialog fd = new FileDialog(gw, "Save VGJ File (GML) Graph", 1);
+                fd.setVisible(true);
+                filename = fd.getFile();
+                if(filename == null)
+                {
+                    fd = null;
+                    return null;
+                }
+                filename = fd.getDirectory() + filename;
+            } else
+            {
+                filename = filename_;
+            }
+            if(GMLfile_ == null)
+            {
+                GMLfile_ = new GMLobject(null, 5);
+                GMLfile_.addObjectToEnd(new GMLobject("graph", 3));
+            }
+            PrintStream ps = new PrintStream(new FileOutputStream(filename));
+            ps.println(GMLfile_.toString(0));
+            ps.close();
+        }
+        catch(IOException e)
+        {
+            new MessageDialog(gw, "Error", e.getMessage(), true);
+        }
+        return filename;
+    }
+
+    public static String openGMLGraph(GraphWindow gw, GMLobject GMLfile_, Graph graph_, GraphCanvas graphCanvas_)
+    {
+        FileDialog fd1 = new FileDialog(gw, "Open VGJ File (GML) graph", 0);
+        fd1.setVisible(true);
+        String filename = fd1.getFile();
+        if(filename == null)
+        {
+            fd1 = null;
+            return null;
+        } else
+        {
+            filename = fd1.getDirectory() + filename;
+            return filename;
+        }
+    }
+
+    private static String saveStandardHelper(GMLobject GMLo, Graph graph_, TCS tcs)
+    {
+        GMLobject gml = GMLo;
+        GMLobject GMLtmp = gml.getGMLSubObject("graph", 3, false);
+        if(GMLtmp != null)
+        {
+            gml = GMLtmp;
+        }
+        int nodeCount = graph_.numberOfNodes();
+        String outputString = "";
+        int existingNodeCount = nodeCount;
+        double xs[] = new double[nodeCount];
+        double ys[] = new double[nodeCount];
+        double xoffset = 0.0D;
+        double yoffset = 0.0D;
+        for(GMLobject nodegml = gml.getGMLSubObject("node", 3, false); nodegml != null; nodegml = gml.getNextGMLSubObject())
+        {
+            int id = -1;
+            Integer tmpint = (Integer)nodegml.getValue("id", 0);
+            id = tmpint.intValue();
+            String label = (String)nodegml.getValue("label", 2);
+            if(label.equals(" "))
+            {
+                existingNodeCount--;
+            }
+            GMLobject graphics = nodegml.getGMLSubObject("graphics", 3, false);
+            GMLobject center = graphics.getGMLSubObject("center", 3, false);
+            Double x = (Double)center.getValue("x", 1);
+            Double y = (Double)center.getValue("y", 1);
+            double tempx = x.doubleValue();
+            double tempy = y.doubleValue();
+            xs[id] = tempx;
+            ys[id] = tempy;
+            if(tempx < xoffset)
+            {
+                xoffset = tempx;
+            }
+            if(tempy < yoffset)
+            {
+                yoffset = tempy;
+            }
+        }
+
+        for(int r = 0; r < nodeCount; r++)
+        {
+            outputString = outputString + (xs[r] - xoffset) + " " + (ys[r] - yoffset) + " " + tcs.getHaplotypeList(r) + "\n";
+        }
+
+        for(GMLobject edgegml = gml.getGMLSubObject("edge", 3, false); edgegml != null; edgegml = gml.getNextGMLSubObject())
+        {
+            Integer source = (Integer)edgegml.getValue("source", 0);
+            Integer target = (Integer)edgegml.getValue("target", 0);
+            int s = source.intValue() + 1;
+            int t = target.intValue() + 1;
+            if(source != null && target != null)
+            {
+                outputString = outputString + s + " " + t + "\n";
+            }
+        }
+
+        outputString = nodeCount + " " + existingNodeCount + "\n" + outputString;
+        return outputString;
+    }
+
+    public GraphIO()
+    {
+    }
+}

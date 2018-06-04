@@ -1,0 +1,80 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Logger.java
+
+package clad;
+
+
+// Referenced classes of package clad:
+//            TextOutputStream
+
+public class Logger
+{
+
+    public void setLogFile(String logFileName)
+    {
+        logfile = new TextOutputStream(logFileName);
+    }
+
+    public void close()
+    {
+        logfile.close();
+    }
+
+    public void dprint(String str)
+    {
+        if(printout == 1)
+        {
+            logfile.print(str);
+        }
+    }
+
+    public void dprint(String str, int level)
+    {
+        if(printout == 1 && (0x8800 & level) != 0)
+        {
+            logfile.print(str);
+        }
+    }
+
+    public void dprintln()
+    {
+        if(printout == 1)
+        {
+            logfile.println();
+        }
+    }
+
+    public void dprintln(int level)
+    {
+        if(printout == 1 && (0x8800 & level) != 0)
+        {
+            logfile.println();
+        }
+    }
+
+    public void dprintln(String str)
+    {
+        if(printout == 1)
+        {
+            logfile.println(str);
+        }
+    }
+
+    public void dprintln(String str, int level)
+    {
+        if(printout == 1 && (0x8800 & level) != 0)
+        {
+            logfile.println(str);
+        }
+    }
+
+    public Logger()
+    {
+        printout = 1;
+    }
+
+    private TextOutputStream logfile;
+    private int printout;
+}

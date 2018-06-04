@@ -1,0 +1,239 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   PSdialog.java
+
+package EDU.auburn.VGJ.gui;
+
+import EDU.auburn.VGJ.graph.Graph;
+import java.awt.*;
+import java.io.*;
+
+// Referenced classes of package EDU.auburn.VGJ.gui:
+//            LPanel, TextOutDialog, MessageDialog, GraphCanvas
+
+public class PSdialog extends Dialog
+{
+
+    public PSdialog(Frame frame, GraphCanvas graph_canvas)
+    {
+        super(frame, "PostScript Output", false);
+        graphCanvas_ = graph_canvas;
+        frame_ = frame;
+        LPanel p = new LPanel();
+        p.addLineLabel("Printed Size (inches):", 0);
+        p.addLabel("Width", 1, 1, 0.0D, 1.0D, 0, 2);
+        width_ = p.addTextField("8.5", 8, 1, -1, 1.0D, 0.0D, 1, 1);
+        p.addLabel("Height", 1, 1, 0.0D, 1.0D, 0, 2);
+        height_ = p.addTextField("11", 8, 0, -1, 1.0D, 0.0D, 1, 1);
+        p.addLineLabel("Paper Size (inches) (A4 is 8.2677 x 11.6929):", 0);
+        p.addLabel("Width", 1, 1, 0.0D, 1.0D, 0, 2);
+        pWidth_ = p.addTextField("8.5", 8, 1, -1, 1.0D, 0.0D, 1, 1);
+        p.addLabel("Height", 1, 1, 0.0D, 1.0D, 0, 2);
+        pHeight_ = p.addTextField("11", 8, 0, -1, 1.0D, 0.0D, 1, 1);
+        p.addLabel("Font Size (points)", 3, 1, 0.0D, 1.0D, 0, 2);
+        pointSize_ = p.addTextField("10", 8, 0, -1, 1.0D, 0.0D, 1, 1);
+        p.addLabel("Outside Margin (inches)", 3, 1, 0.0D, 1.0D, 0, 2);
+        margin_ = p.addTextField(".5", 8, 0, -1, 1.0D, 0.0D, 1, 1);
+        p.addLabel("Multi-Page Overlap (inches)", 3, 1, 0.0D, 1.0D, 0, 2);
+        overlap_ = p.addTextField(".5", 8, 0, -1, 1.0D, 0.0D, 1, 1);
+        landscape_ = new Checkbox("Landscape", null, false);
+        p.addComponent(landscape_, 0, -1, 0.0D, 1.0D, 0, 0);
+        p.addButtonPanel("Save Close", 0);
+        p.finish();
+        add("Center", p);
+        pack();
+        show();
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            if("View".equals(object))
+            {
+                String PS = getPS_();
+                if(PS != null)
+                {
+                    new TextOutDialog(frame_, "PostScript", PS, false);
+                }
+            } else
+            if("Close".equals(object))
+            {
+                hide();
+            } else
+            if("Save".equals(object))
+            {
+                String PS = getPS_();
+                if(PS == null)
+                {
+                    return false;
+                }
+                MessageDialog dg;
+                try
+                {
+                    FileDialog fd;
+                    try
+                    {
+                        fd = new FileDialog(frame_, "Save PostScript", 1);
+                        fd.setVisible(true);
+                    }
+                    catch(Throwable _ex)
+                    {
+                        MessageDialog dg = new MessageDialog(frame_, "Error", "It appears your VM does not allow file saving.", true);
+                        return true;
+                    }
+                    String filename = fd.getFile();
+                    if(filename == null)
+                    {
+                        return true;
+                    }
+                    if(filename.endsWith(".*.*"))
+                    {
+                        String tmpstr = filename.substring(0, filename.length() - 4);
+                        filename = tmpstr;
+                    }
+                    filename = fd.getDirectory() + filename;
+                    PrintStream ps = new PrintStream(new FileOutputStream(filename));
+                    ps.println(PS);
+                    ps.close();
+                }
+                catch(IOException e)
+                {
+                    dg = new MessageDialog(frame_, "Error", e.getMessage(), true);
+                }
+            } else
+            if("Print".equals(object))
+            {
+                String PS = getPS_();
+                if(PS == null)
+                {
+                    return false;
+                }
+                File file = new File("vgj00.ps");
+                MessageDialog messagedialog;
+                try
+                {
+                    PrintStream ps = new PrintStream(new FileOutputStream(file));
+                    ps.println(PS);
+                    ps.close();
+                    String cmd = new String(printCmd_.getText() + " " + "vgj00.ps");
+                    Runtime.getRuntime().exec(cmd).waitFor();
+                }
+                catch(Exception e)
+                {
+                    messagedialog = new MessageDialog(frame_, "Error", "Printing error: " + e.getMessage(), true);
+                }
+                try
+                {
+                    file.delete();
+                }
+                catch(Exception _ex) { }
+            }
+        } else
+        if(event.target instanceof Checkbox)
+        {
+            String tmp = width_.getText();
+            String tmp2 = height_.getText();
+            width_.setText(tmp2);
+            height_.setText(tmp);
+        }
+        return false;
+    }
+
+    private String getPS_()
+    {
+        double width = 7.5D;
+        double height = 10D;
+        double p_width = 7.5D;
+        double p_height = 7.5D;
+        double fontsize = 10D;
+        double margin = 0.5D;
+        double overlap = 0.5D;
+        boolean landscape = false;
+        try
+        {
+            width = getVal_(width_, "Width", 1.0D, 1000000D);
+            height = getVal_(height_, "Height", 1.0D, 1000000D);
+            p_width = getVal_(pWidth_, "Parer Width", 1.0D, 1000000D);
+            p_height = getVal_(pHeight_, "Paper Height", 1.0D, 1000000D);
+            fontsize = getVal_(pointSize_, "Font Size", 0.5D, 100D);
+            margin = getVal_(margin_, "Margin", 0.0D, 4D);
+            overlap = getVal_(overlap_, "Overlap", 0.0D, 2D);
+        }
+        catch(NumberFormatException _ex)
+        {
+            return null;
+        }
+        if(width - margin * 2D < 1.0D)
+        {
+            new MessageDialog(frame_, "Error", "Width minus twice margin must be at least one inch.", true);
+            return null;
+        }
+        if(height - margin * 2D < 1.0D)
+        {
+            new MessageDialog(frame_, "Error", "Height minus twice margin must be at least one inch.", true);
+            return null;
+        } else
+        {
+            landscape = landscape_.getState();
+            return graphCanvas_.toPS(width, height, p_width, p_height, fontsize, margin, overlap, landscape);
+        }
+    }
+
+    private double getVal_(TextField text, String name, double min, double max)
+    {
+        double result = 1.0D;
+        try
+        {
+            result = Double.valueOf(text.getText()).doubleValue();
+        }
+        catch(NumberFormatException e)
+        {
+            result = 1.0D;
+            String msg = "Bad format for " + name + ".";
+            new MessageDialog(frame_, "Error", msg, true);
+            throw e;
+        }
+        if(result < min)
+        {
+            String msg = name + " must be at least " + min + ".";
+            new MessageDialog(frame_, "Error", msg, true);
+            throw new NumberFormatException();
+        }
+        if(result > max)
+        {
+            String msg = name + " must be no more than " + max + ".";
+            new MessageDialog(frame_, "Error", msg, true);
+            throw new NumberFormatException();
+        } else
+        {
+            return result;
+        }
+    }
+
+    public boolean handleEvent(Event event)
+    {
+        if(event.id == 201)
+        {
+            hide();
+            return true;
+        } else
+        {
+            return super.handleEvent(event);
+        }
+    }
+
+    private Graph graph_;
+    private GraphCanvas graphCanvas_;
+    private Frame frame_;
+    private TextField width_;
+    private TextField height_;
+    private TextField pointSize_;
+    private TextField margin_;
+    private TextField pWidth_;
+    private TextField pHeight_;
+    private TextField overlap_;
+    private TextField printCmd_;
+    private Checkbox landscape_;
+}

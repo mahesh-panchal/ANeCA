@@ -1,0 +1,273 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   EdgePropertiesDialog.java
+
+package EDU.auburn.VGJ.graph;
+
+import EDU.auburn.VGJ.gui.*;
+import EDU.auburn.VGJ.util.DPoint3;
+import java.awt.*;
+import java.util.*;
+
+// Referenced classes of package EDU.auburn.VGJ.graph:
+//            Edge, Node, Graph
+
+public class EdgePropertiesDialog extends Dialog
+{
+
+    public EdgePropertiesDialog(Frame frame, Edge edge_in, Graph graph_in)
+    {
+        super(frame, "", true);
+        notDefault_ = new Component[3];
+        ndCount_ = 0;
+        frame_ = frame;
+        graph_ = graph_in;
+        edge_ = edge_in;
+        LPanel p = new LPanel();
+        p.constraints.weighty = 0.0D;
+        notDefault_[ndCount_++] = p.addLineLabel("Label:", 1);
+        labelText_ = p.addTextField(8, 0, -1, 1.0D, 0.0D, 1, 1);
+        p.addLineLabel("Line Style", 1);
+        style_ = new Choice();
+        for(int i = 0; i < Edge.styleLabels.length; i++)
+        {
+            style_.addItem(Edge.styleLabels[i]);
+        }
+
+        p.addComponent(style_, 0, -1, 1.0D, 0.0D, 0, 1);
+        p.addLineLabel("Points in order x y z:", 0);
+        pointsText_ = new TextArea(4, 20);
+        pointsText_.setBackground(Color.white);
+        p.addComponent(pointsText_, 0, -1, 1.0D, 1.0D, 3, 0);
+        p.constraints.gridwidth = 1;
+        p.constraints.weightx = 0.0D;
+        p.addLineLabel("Data", 1);
+        data_ = new Choice();
+        dataPanel_ = new Panel();
+        dataPanel_.add(data_);
+        p.addComponent(dataPanel_, 0, -1, 1.0D, 0.0D, 0, 1);
+        dataText_ = new TextArea(4, 20);
+        dataText_.setBackground(Color.white);
+        p.constraints.insets.top = 0;
+        p.addComponent(dataText_, 0, -1, 1.0D, 1.0D, 3, 0);
+        p.addButtonPanel("Apply Cancel", 0);
+        p.finish();
+        add("Center", p);
+        setEdge(edge_, graph_);
+    }
+
+    public boolean action(Event event, Object object)
+    {
+        if(event.target instanceof Button)
+        {
+            if("Apply".equals(object))
+            {
+                if(setValues_())
+                {
+                    hide();
+                }
+                return true;
+            }
+            if("Cancel".equals(object))
+            {
+                hide();
+                return true;
+            }
+        } else
+        if(event.target == data_)
+        {
+            dataHash_.put(currentData_, dataText_.getText());
+            String old_data = currentData_;
+            currentData_ = data_.getSelectedItem();
+            if(!currentData_.equals("<NEW>"))
+            {
+                String value = (String)dataHash_.get(currentData_);
+                if(value == null)
+                {
+                    value = new String("");
+                }
+                dataText_.setText(value);
+            } else
+            {
+                new InputDialog(frame_, "Enter name for new data item (must be a letter followed by letters and numbers).", this, 9999);
+                if(data_.getSelectedItem().equals("<NEW>"))
+                {
+                    data_.select(old_data);
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean handleEvent(Event event)
+    {
+        if(event.target instanceof InputDialog)
+        {
+            String label = (String)event.arg;
+            for(int i = 0; i < label.length(); i++)
+            {
+                char chr = label.charAt(i);
+                if((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (i == 0 || chr < '0' || chr > '9'))
+                {
+                    new MessageDialog(frame_, "Error", "Bad format for new data item name.", true);
+                    return true;
+                }
+            }
+
+            data_.addItem(label);
+            data_.select(data_.countItems() - 1);
+            currentData_ = label;
+            dataText_.setText("");
+            return true;
+        }
+        if(event.id == 201)
+        {
+            hide();
+            return true;
+        } else
+        {
+            return super.handleEvent(event);
+        }
+    }
+
+    public void setEdge(Edge edge_in, Graph graph_in)
+    {
+        graph_ = graph_in;
+        edge_ = edge_in;
+        String title = "Edge " + edge_.tail().id_ + " " + edge_.head().id_;
+        setTitle(title);
+        style_.select(edge_.getLineStyle());
+        labelText_.setText(edge_.getLabel());
+        String points_string = new String();
+        DPoint3 points[] = edge_.points();
+        for(int i = 0; i < points.length; i++)
+        {
+            points_string = points_string + points[i].x + " " + points[i].y + " " + points[i].z + "\n";
+        }
+
+        pointsText_.setText(points_string);
+        dataPanel_.remove(data_);
+        data_ = new Choice();
+        dataPanel_.add(data_);
+        dataHash_ = (Hashtable)edge_.data_.clone();
+        data_.addItem("<NEW>");
+        String key;
+        for(Enumeration keys = dataHash_.keys(); keys.hasMoreElements(); data_.addItem(key))
+        {
+            key = (String)keys.nextElement();
+        }
+
+        if(data_.countItems() == 1)
+        {
+            data_.addItem("Data");
+        }
+        data_.select(1);
+        currentData_ = data_.getItem(1);
+        String value = (String)dataHash_.get(currentData_);
+        if(value == null)
+        {
+            value = new String("");
+        }
+        dataText_.setText(value);
+        for(int i = 0; i < ndCount_; i++)
+        {
+            notDefault_[i].setVisible(true);
+        }
+
+        pack();
+    }
+
+    private boolean setValues_()
+    {
+label0:
+        {
+            String points_string = pointsText_.getText();
+            StringTokenizer tokenizer = new StringTokenizer(points_string, " \t\n\r,", false);
+            int num_tokens = tokenizer.countTokens();
+            if(num_tokens % 3 != 0)
+            {
+                new MessageDialog(frame_, "Error", "Expecting sets of three numbers for points", true);
+                break label0;
+            }
+            int count = num_tokens / 3;
+            DPoint3 points[] = new DPoint3[count];
+            for(int i = 0; i < count; i++)
+            {
+                points[i] = new DPoint3();
+            }
+
+            for(int index = 0; tokenizer.hasMoreTokens(); index++)
+            {
+                for(int element = 0; element < 3; element++)
+                {
+                    String token = tokenizer.nextToken();
+                    double val;
+                    try
+                    {
+                        val = (new Double(token)).doubleValue();
+                    }
+                    catch(Exception _ex)
+                    {
+                        char el = 'X';
+                        if(element == 1)
+                        {
+                            el = 'Y';
+                        }
+                        if(element == 2)
+                        {
+                            el = 'Z';
+                        }
+                        new MessageDialog(frame_, "Error", "Element " + el + " of point " + index + " is not" + " a number.", true);
+                        break label0;
+                    }
+                    if(element == 0)
+                    {
+                        points[index].x = val;
+                    } else
+                    if(element == 1)
+                    {
+                        points[index].y = val;
+                    } else
+                    {
+                        points[index].z = val;
+                    }
+                }
+
+            }
+
+            dataHash_.put(currentData_, dataText_.getText());
+            for(Enumeration keys = dataHash_.keys(); keys.hasMoreElements();)
+            {
+                String key = (String)keys.nextElement();
+                String value = (String)dataHash_.get(key);
+                if(value != null && value.length() != 0)
+                {
+                    edge_.data_.put(key, value);
+                }
+            }
+
+            Edge edge = new Edge(edge_.tail(), edge_.head(), points, false);
+            graph_.insertEdge(edge);
+            edge.setLabel(labelText_.getText());
+            edge.setLineStyle(style_.getSelectedIndex());
+            edge.data_ = edge_.data_;
+            return true;
+        }
+        return false;
+    }
+
+    private TextField labelText_;
+    private TextArea pointsText_;
+    private TextArea dataText_;
+    private Panel dataPanel_;
+    private Edge edge_;
+    private Graph graph_;
+    private Component notDefault_[];
+    private int ndCount_;
+    private Frame frame_;
+    private Choice style_;
+    private Choice data_;
+    private Hashtable dataHash_;
+    private String currentData_;
+}

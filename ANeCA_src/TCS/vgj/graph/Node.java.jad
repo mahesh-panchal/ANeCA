@@ -1,0 +1,1642 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   Node.java
+
+package EDU.auburn.VGJ.graph;
+
+import EDU.auburn.VGJ.util.*;
+import java.awt.*;
+import java.awt.image.ImageObserver;
+import java.awt.image.PixelGrabber;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+// Referenced classes of package EDU.auburn.VGJ.graph:
+//            Set, GMLobject
+
+public class Node
+    implements Cloneable, ImageObserver
+{
+
+    public Node()
+    {
+        oldpos_ = null;
+        grouppos_ = null;
+        oldbox_ = null;
+        groupbox_ = null;
+        isGroup_ = false;
+        groupActive_ = false;
+        inActiveGroup_ = false;
+        index_ = -1;
+        copyAttributes(defaults);
+        adjacencies_ = new Set();
+    }
+
+    private Node(int unused)
+    {
+        oldpos_ = null;
+        grouppos_ = null;
+        oldbox_ = null;
+        groupbox_ = null;
+        isGroup_ = false;
+        groupActive_ = false;
+        inActiveGroup_ = false;
+        x_ = 0.0D;
+        y_ = 0.0D;
+        z_ = 0.0D;
+        temp_ = 0.0D;
+        width_ = 1.0D;
+        height_ = 1.0D;
+        depth_ = 0.0D;
+        shape_ = 0;
+        label_ = new String[0];
+        labelPosition_ = 0;
+        imageLocation_ = new String("");
+        imageType_ = new String("");
+        image_ = null;
+        isDummy_ = false;
+        selected_ = false;
+        haveId_ = false;
+        isGroup_ = false;
+        inActiveGroup_ = false;
+        data_ = new Hashtable((int)((double)(defaultDataTypes_.length + 1) * 1.5D));
+        for(int i = 0; i < defaultDataTypes_.length; i++)
+        {
+            data_.put(defaultDataTypes_[i], "");
+        }
+
+    }
+
+    public String getSequence()
+    {
+        String result = new String(((String)data_.get("Sequence")).substring(11));
+        return result;
+    }
+
+    public Node(GMLobject gml)
+    {
+        oldpos_ = null;
+        grouppos_ = null;
+        oldbox_ = null;
+        groupbox_ = null;
+        isGroup_ = false;
+        groupActive_ = false;
+        inActiveGroup_ = false;
+        boolean gotw = false;
+        boolean goth = false;
+        index_ = -1;
+        copyAttributes(defaults);
+        adjacencies_ = new Set();
+        GMLobject graphics;
+        if((graphics = gml.getGMLSubObject("graphics", 3, false)) != null)
+        {
+            Double tmp;
+            GMLobject center;
+            if((center = graphics.getGMLSubObject("center", 3, false)) != null)
+            {
+                if((tmp = (Double)center.getValue("x", 1)) != null)
+                {
+                    x_ = tmp.doubleValue();
+                }
+                if((tmp = (Double)center.getValue("y", 1)) != null)
+                {
+                    y_ = tmp.doubleValue();
+                }
+                if((tmp = (Double)center.getValue("z", 1)) != null)
+                {
+                    z_ = tmp.doubleValue();
+                }
+            }
+            if((tmp = (Double)graphics.getValue("width", 1)) != null)
+            {
+                width_ = tmp.doubleValue();
+                gotw = true;
+            }
+            if((tmp = (Double)graphics.getValue("height", 1)) != null)
+            {
+                height_ = tmp.doubleValue();
+                goth = true;
+            }
+            if((tmp = (Double)graphics.getValue("depth", 1)) != null)
+            {
+                depth_ = tmp.doubleValue();
+            }
+            String image_loc;
+            if((image_loc = (String)graphics.getValue("Image.Location", 2)) != null)
+            {
+                imageLocation_ = image_loc;
+                String image_type;
+                if((image_type = (String)graphics.getValue("Image.Type", 2)) != null)
+                {
+                    imageType_ = image_type;
+                } else
+                {
+                    imageType_ = "URL";
+                }
+            }
+        }
+        String label;
+        if((label = (String)gml.getValue("label", 2)) != null)
+        {
+            setLabel(label);
+        }
+        Integer id;
+        if((id = (Integer)gml.getValue("id", 0)) != null)
+        {
+            haveId_ = true;
+            id_ = id.intValue();
+        }
+        String shape;
+        if((shape = (String)gml.getValue("vgj.shape", 2)) != null)
+        {
+            for(int i = 0; shapeNames[i] != null; i++)
+            {
+                if(shape.equalsIgnoreCase(shapeNames[i]))
+                {
+                    shape_ = i;
+                }
+            }
+
+        }
+        Integer tmpint;
+        if((tmpint = (Integer)gml.getValue("vgj.group", 0)) != null)
+        {
+            groupNodeId_ = tmpint.intValue();
+            groupNode_ = this;
+        }
+        Double temp;
+        if((temp = (Double)gml.getValue("vgj.Temperature", 1)) != null)
+        {
+            temp_ = temp.doubleValue();
+        }
+        String label_position;
+        if((label_position = (String)gml.getValue("vgj.labelPosition", 2)) != null)
+        {
+            if(label_position.length() > 0)
+            {
+                if(label_position.charAt(0) == 'i' || label_position.charAt(0) == 'I')
+                {
+                    labelPosition_ = 1;
+                } else
+                if(label_position.charAt(0) == 'c' || label_position.charAt(0) == 'C')
+                {
+                    labelPosition_ = 2;
+                }
+            } else
+            {
+                labelPosition_ = 0;
+            }
+        }
+        gml.setHashFromGML("data", 2, data_);
+        setImage(null, gotw ^ true, goth ^ true);
+    }
+
+    public Node(boolean dummy)
+    {
+        oldpos_ = null;
+        grouppos_ = null;
+        oldbox_ = null;
+        groupbox_ = null;
+        isGroup_ = false;
+        groupActive_ = false;
+        inActiveGroup_ = false;
+        index_ = -1;
+        copyAttributes(defaults);
+        adjacencies_ = new Set();
+        isDummy_ = dummy;
+        if(dummy)
+        {
+            width_ = height_ = 0.0D;
+        }
+    }
+
+    public static boolean getDefaultLabel()
+    {
+        return defaultLabel_;
+    }
+
+    public static int[] getImagePixels(Image image, int wd, int ht)
+    {
+        if(image == null)
+        {
+            return null;
+        }
+        int pixels[] = new int[ht * wd];
+        PixelGrabber grabber = new PixelGrabber(image, 0, 0, wd, ht, pixels, 0, wd);
+        boolean stat;
+        try
+        {
+            stat = grabber.grabPixels(2000L);
+        }
+        catch(InterruptedException _ex)
+        {
+            stat = false;
+        }
+        if(!stat)
+        {
+            return null;
+        } else
+        {
+            return pixels;
+        }
+    }
+
+    public static String imagePS(Image image)
+    {
+        StringBuffer result = new StringBuffer(30);
+        result.append("   < ");
+        int ht = image.getHeight(null);
+        int wd = image.getWidth(null);
+        int pixels[] = getImagePixels(image, wd, ht);
+        if(pixels != null)
+        {
+            result.ensureCapacity(ht * wd * 4 + 30);
+            int count = 0;
+            int chr = 0;
+            for(int row = 0; row < ht; row++)
+            {
+                for(int col = 0; col < wd; col++)
+                {
+                    if(count % 20 == 0 && count != 0)
+                    {
+                        result.append("\n     ");
+                    }
+                    int pixel = pixels[count++];
+                    if((pixel & 0xff000000) == 0)
+                    {
+                        pixel = 255;
+                    } else
+                    {
+                        pixel = (int)(0.29899999999999999D * (double)(pixel >> 16 & 0xff) + 0.58699999999999997D * (double)(pixel >> 8 & 0xff) + 0.114D * (double)(pixel & 0xff));
+                    }
+                    int cbyte = pixel >> 4 & 0xf;
+                    result.append(hexchars_[cbyte]);
+                    cbyte = pixel & 0xf;
+                    result.append(hexchars_[cbyte]).append(' ');
+                }
+
+            }
+
+        } else
+        {
+            result.append("ff");
+        }
+        result.append(">\n");
+        result.append("   ").append(wd).append(" ").append(ht).append("\n");
+        return result.toString();
+    }
+
+    public static void setContext(URL context)
+    {
+        context_ = context;
+    }
+
+    public static void setDefaultLabel(boolean use_default)
+    {
+        defaultLabel_ = use_default;
+    }
+
+    public static void setToolkit(Toolkit toolkit)
+    {
+        toolkit_ = toolkit;
+    }
+
+    public void clearChild(int child)
+    {
+        adjacencies_.removeElement(child);
+    }
+
+    public Object clone()
+        throws CloneNotSupportedException
+    {
+        Node copy = (Node)super.clone();
+        copy.adjacencies_ = (Set)adjacencies_.clone();
+        copy.data_ = (Hashtable)data_.clone();
+        return copy;
+    }
+
+    public void copyAttributes(Node node_to_copy)
+    {
+        x_ = node_to_copy.x_;
+        y_ = node_to_copy.y_;
+        z_ = node_to_copy.z_;
+        width_ = node_to_copy.width_;
+        height_ = node_to_copy.height_;
+        depth_ = node_to_copy.depth_;
+        shape_ = node_to_copy.shape_;
+        temp_ = node_to_copy.temp_;
+        isDummy_ = node_to_copy.isDummy_;
+        int rows = node_to_copy.label_.length;
+        label_ = new String[rows];
+        for(int i = 0; i < rows; i++) { }
+        labelPosition_ = node_to_copy.labelPosition_;
+        selected_ = node_to_copy.selected_;
+        imageType_ = new String(node_to_copy.imageType_);
+        imageLocation_ = new String(node_to_copy.imageLocation_);
+        setImage(null, false, false);
+        data_ = (Hashtable)node_to_copy.data_.clone();
+    }
+
+    public void draw(Component comp, Graphics graphics, Matrix44 transform, int quality)
+    {
+        if(isGroup_ && !groupActive_ || inActiveGroup_)
+        {
+            return;
+        }
+        double scale = transform.scale;
+        imageChange_ = false;
+        boolean errflag = false;
+        Image image = image_;
+        if(quality == 0)
+        {
+            image = null;
+        }
+        scaleBounds_(graphics, scale);
+        double w = width_ * scale;
+        double h = height_ * scale;
+        if(w < 1.0D)
+        {
+            w = 1.0D;
+        }
+        if(h < 1.0D)
+        {
+            h = 1.0D;
+        }
+        DPoint3 position = new DPoint3(x_, y_, z_);
+        position.transform(transform);
+        int x = (int)position.x;
+        int y = (int)position.y;
+        graphics.setColor(Color.black);
+        if(image != null)
+        {
+            MediaTracker mt = new MediaTracker(comp);
+            mt.addImage(image_, 0, (int)w, (int)h);
+            boolean stat = false;
+            try
+            {
+                stat = mt.waitForID(0, 1000L);
+            }
+            catch(Exception _ex) { }
+            if(stat && !mt.isErrorID(0))
+            {
+                if(imageChange_)
+                {
+                    w = width_ * scale;
+                    h = height_ * scale;
+                    if(w < 1.0D)
+                    {
+                        w = 1.0D;
+                    }
+                    if(h < 1.0D)
+                    {
+                        h = 1.0D;
+                    }
+                    mt.addImage(image_, 1, (int)w, (int)h);
+                    try
+                    {
+                        stat = mt.waitForID(1, 1000L);
+                    }
+                    catch(Exception _ex) { }
+                }
+                if(stat)
+                {
+                    graphics.drawImage(image_, (int)((double)x - w / 2D), (int)((double)y - h / 2D), (int)w, (int)h, null);
+                } else
+                {
+                    errflag = true;
+                }
+            } else
+            {
+                errflag = true;
+            }
+            if(errflag)
+            {
+                String type = "URL";
+                if(imageType_.equalsIgnoreCase("file"))
+                {
+                    type = "file";
+                }
+                String error;
+                if(mt.isErrorID(0))
+                {
+                    error = "Error loading or scaling " + type + " \"" + imageLocation_ + "\".";
+                } else
+                {
+                    error = "Timeout loading image - try a refresh.";
+                }
+                FontMetrics fm = graphics.getFontMetrics();
+                double lx = (double)x - (double)fm.stringWidth(error) / 2D;
+                graphics.drawString(error, (int)lx, (int)((double)y + h / 2D));
+            }
+        } else
+        if(shape_ == 0)
+        {
+            graphics.drawOval((int)((double)x - w / 2D), (int)((double)y - h / 2D), (int)w, (int)h);
+            if(isGroup_ && w > 4D && h > 4D)
+            {
+                graphics.drawOval((int)(((double)x - w / 2D) + 2D), (int)(((double)y - h / 2D) + 2D), (int)w - 4, (int)h - 4);
+            }
+        } else
+        if(shape_ == 1)
+        {
+            graphics.drawRect((int)((double)x - w / 2D), (int)((double)y - h / 2D), (int)w, (int)h);
+            if(isGroup_ && w > 4D && h > 4D)
+            {
+                graphics.drawRect((int)(((double)x - w / 2D) + 2D), (int)(((double)y - h / 2D) + 2D), (int)w - 4, (int)h - 4);
+            }
+        }
+        if((defaultLabel_ || label_.length > 0) && quality > 0)
+        {
+            FontMetrics fm = graphics.getFontMetrics();
+            double widest = 0.0D;
+            if(label_.length > 0)
+            {
+                for(int i = 0; i < label_.length; i++)
+                {
+                    if((double)fm.stringWidth(label_[i]) > widest)
+                    {
+                        widest = fm.stringWidth(label_[i]);
+                    }
+                }
+
+            } else
+            {
+                widest = fm.stringWidth(new String("Node " + id_));
+            }
+            double lx = (double)x - widest / 2D;
+            double ly;
+            if(labelPosition_ != 0)
+            {
+                if(label_.length > 0)
+                {
+                    ly = (double)y - (double)(fm.getHeight() * (label_.length - 2)) / 2D;
+                } else
+                {
+                    ly = (double)y + (double)fm.getHeight() / 2D;
+                }
+                ly -= fm.getDescent();
+            } else
+            {
+                ly = (double)y + h / 2D + (double)fm.getAscent() + 1.0D;
+            }
+            if(label_.length == 0)
+            {
+                graphics.drawString(new String("Node " + id_), (int)lx, (int)ly);
+            } else
+            {
+                for(int i = 0; i < label_.length; i++)
+                {
+                    Graphics2D g = (Graphics2D)graphics;
+                    g.drawString(label_[i], (int)lx, (int)ly);
+                    ly += fm.getHeight();
+                }
+
+            }
+        }
+        if(!selected_)
+        {
+            return;
+        } else
+        {
+            graphics.setColor(Color.red);
+            DPoint tr = new DPoint(position.x + (width_ * scale) / 2D + 1.0D, position.y - (height_ * scale) / 2D - 1.0D);
+            DPoint bl = new DPoint(position.x - (width_ * scale) / 2D - 1.0D, position.y + (height_ * scale) / 2D + 1.0D);
+            graphics.drawRect((int)position.x - 4, (int)position.y - 1, 8, 2);
+            graphics.drawRect((int)position.x - 1, (int)position.y - 4, 2, 8);
+            graphics.drawRect((int)tr.x - 2, (int)tr.y - 2, 4, 4);
+            graphics.drawRect((int)position.x - 3, (int)bl.y - 1, 6, 2);
+            graphics.drawRect((int)bl.x - 1, (int)position.y - 3, 2, 6);
+            graphics.setColor(Color.white);
+            graphics.drawLine((int)position.x - 3, (int)position.y, (int)position.x + 3, (int)position.y);
+            graphics.drawLine((int)position.x, (int)position.y - 3, (int)position.x, (int)position.y + 3);
+            graphics.drawRect((int)tr.x - 1, (int)tr.y - 1, 2, 2);
+            graphics.drawLine((int)position.x - 2, (int)bl.y, (int)position.x + 2, (int)bl.y);
+            graphics.drawLine((int)bl.x, (int)position.y - 2, (int)bl.x, (int)position.y + 2);
+            return;
+        }
+    }
+
+    public int firstChild()
+    {
+        return adjacencies_.first();
+    }
+
+    public DDimension getBoundingBox()
+    {
+        DDimension bbox = new DDimension(width_, height_);
+        return bbox;
+    }
+
+    public DDimension3 getBoundingBox3()
+    {
+        DDimension3 bbox = new DDimension3(width_, height_, depth_);
+        return bbox;
+    }
+
+    public Set getChildren()
+    {
+        return (Set)adjacencies_.clone();
+    }
+
+    public void getDrawBounds_(double scale, Matrix44 transform, DPoint width, DPoint height)
+    {
+        double w = width_ * scale;
+        double h = height_ * scale;
+        if(w < 1.0D)
+        {
+            w = 1.0D;
+        }
+        if(h < 1.0D)
+        {
+            h = 1.0D;
+        }
+        DPoint3 position = new DPoint3(x_, y_, z_);
+        position.transform(transform);
+        width.x = position.x - w / 2D;
+        width.y = position.x + w / 2D;
+        height.x = position.y - h / 2D;
+        height.y = position.y + h / 2D;
+    }
+
+    public int getId()
+    {
+        return id_;
+    }
+
+    public Integer getIdObject()
+    {
+        if(!haveId_)
+        {
+            return null;
+        } else
+        {
+            return new Integer(id_);
+        }
+    }
+
+    public Image getImage()
+    {
+        return image_;
+    }
+
+    public String getImageSource()
+    {
+        return imageLocation_;
+    }
+
+    public String getImageType()
+    {
+        return imageType_;
+    }
+
+    public int getIndex()
+    {
+        return index_;
+    }
+
+    public String getLabel()
+    {
+        if(label_.length > 0)
+        {
+            int len = 0;
+            for(int i = 0; i < label_.length; i++)
+            {
+                len += label_[i].length() + 2;
+            }
+
+            StringBuffer result = new StringBuffer(len);
+            for(int i = 0; i < label_.length; i++)
+            {
+                result.append(label_[i]);
+                if(i < label_.length - 1)
+                {
+                    result.append("\\n");
+                }
+            }
+
+            return new String(result);
+        } else
+        {
+            return new String("");
+        }
+    }
+
+    public int getLabelPosition()
+    {
+        return labelPosition_;
+    }
+
+    public DPoint getPosition()
+    {
+        DPoint position = new DPoint(x_, y_);
+        return position;
+    }
+
+    public DPoint3 getPosition3()
+    {
+        if(inActiveGroup_)
+        {
+            return groupNode_.getPosition3();
+        } else
+        {
+            DPoint3 position = new DPoint3(x_, y_, z_);
+            return position;
+        }
+    }
+
+    public boolean getSelected()
+    {
+        return selected_;
+    }
+
+    public int getShape()
+    {
+        return shape_;
+    }
+
+    public double getTemp()
+    {
+        return temp_;
+    }
+
+    public Node getVisibleGroupRoot()
+    {
+        Node node;
+        for(node = this; node.inActiveGroup_; node = node.groupNode_) { }
+        return node;
+    }
+
+    public boolean groupActive()
+    {
+        return groupActive_;
+    }
+
+    public boolean hasChild(int child)
+    {
+        return adjacencies_.isElement(child);
+    }
+
+    public boolean hasChild(Node child)
+    {
+        return adjacencies_.isElement(child.index_);
+    }
+
+    public boolean imageUpdate(Image image, int info, int x, int y, int w, int h)
+    {
+        if((info & 2) != 0)
+        {
+            height_ = h;
+            imageChange_ = true;
+        }
+        if((info & 1) != 0)
+        {
+            width_ = w;
+            imageChange_ = true;
+        }
+        return true;
+    }
+
+    public boolean inGroup()
+    {
+        return groupNode_ != null;
+    }
+
+    public DPoint3 intersectWithLineTo(DPoint3 to, boolean inplane, int quality)
+    {
+        if(inActiveGroup_)
+        {
+            return groupNode_.intersectWithLineTo(to, inplane, quality);
+        }
+        if(isDummy_)
+        {
+            return new DPoint3(x_, y_, z_);
+        }
+        if(width_ == 0.0D || height_ == 0.0D)
+        {
+            return new DPoint3(x_, y_, z_);
+        }
+        if(!inplane || z_ != to.z)
+        {
+            double mindim = Math.min(width_, height_) / 2D;
+            double dist = Math.sqrt((to.x - x_) * (to.x - x_) + (to.y - y_) * (to.y - y_) + (to.z - z_) * (to.z - z_));
+            if(dist <= mindim)
+            {
+                return new DPoint3(x_, y_, z_);
+            } else
+            {
+                double ratio = mindim / dist;
+                return new DPoint3(x_ + (to.x - x_) * ratio, y_ + (to.y - y_) * ratio, z_ + (to.z - z_) * ratio);
+            }
+        }
+        double dy = to.y - y_;
+        double dx = to.x - x_;
+        if((dx * dx) / (width_ * width_) + (dy * dy) / (height_ * height_) <= 0.25D)
+        {
+            return new DPoint3(x_, y_, z_);
+        }
+        if(image_ != null && quality > 1)
+        {
+            int ht = image_.getHeight(null);
+            int wd = image_.getWidth(null);
+            int pixels[] = getImagePixels(image_, wd, ht);
+            if(pixels != null)
+            {
+                double t = 0.0D;
+                double wmul = to.x >= x_ ? -1 : 1;
+                double hmul = to.y >= y_ ? -1 : 1;
+                double pixelw = width_ / (double)wd;
+                double pixelh = height_ / (double)ht;
+                double xorg = x_ - width_ / 2D;
+                double yorg = y_ - height_ / 2D;
+                double tx = 0.0D;
+                double ty = 0.0D;
+                dx = -dx;
+                dy = -dy;
+                boolean first = true;
+                tx = 0.0D;
+                for(int xpix = 0; xpix < wd; xpix++)
+                {
+                    double xint = xorg + ((double)(wmul >= 0.0D ? 0 : wd) + (double)xpix * wmul) * pixelw;
+                    tx = (xint - to.x) / dx;
+                    double yint = to.y + dy * tx;
+                    int ypix = -(int)Math.floor(((yint - yorg) / pixelh - (double)ht) + 1.0D);
+                    if(ypix < 0 || ypix >= ht)
+                    {
+                        continue;
+                    }
+                    int xind = wmul >= 0.0D ? xpix : wd - xpix - 1;
+                    if((pixels[ypix * wd + xind] & 0xff000000) != 0)
+                    {
+                        break;
+                    }
+                }
+
+                ty = 0.0D;
+                for(int ypix = 0; ypix < ht; ypix++)
+                {
+                    double yint = yorg + ((double)(hmul <= 0.0D ? 0 : ht) - (double)(ht - ypix) * hmul) * pixelh;
+                    ty = (yint - to.y) / dy;
+                    double xint = to.x + dx * ty;
+                    int xpix = (int)Math.floor((xint - xorg) / pixelw);
+                    if(xpix < 0 || xpix >= wd)
+                    {
+                        continue;
+                    }
+                    int yind = hmul <= 0.0D ? ypix : ht - ypix - 1;
+                    if((pixels[yind * wd + xpix] & 0xff000000) != 0)
+                    {
+                        break;
+                    }
+                }
+
+                t = -1D;
+                if(ty >= 0.0D && ty < 1.0D && (ty < tx || tx < 0.0D))
+                {
+                    t = ty;
+                } else
+                if(tx >= 0.0D && tx < 1.0D)
+                {
+                    t = tx;
+                }
+                if(t >= 1.0D || t < 0.0D)
+                {
+                    return new DPoint3(x_, y_, z_);
+                } else
+                {
+                    double xint = to.x + dx * t;
+                    double yint = to.y + dy * t;
+                    return new DPoint3(xint, yint, z_);
+                }
+            } else
+            {
+                return new DPoint3(x_, y_, z_);
+            }
+        }
+        if(dx == 0.0D)
+        {
+            if(dy > 0.0D)
+            {
+                return new DPoint3(x_, y_ + height_ / 2D, z_);
+            } else
+            {
+                return new DPoint3(x_, y_ - height_ / 2D, z_);
+            }
+        }
+        double slope = dy / dx;
+        if(shape_ == 0)
+        {
+            double x = (width_ * height_) / (2D * Math.sqrt(height_ * height_ + slope * slope * width_ * width_));
+            if(to.x < x_)
+            {
+                x = -x;
+            }
+            double y = slope * x;
+            return new DPoint3(x_ + x, y_ + y, z_);
+        }
+        if(shape_ == 1)
+        {
+            double x;
+            if(dx > 0.0D)
+            {
+                x = x_ + width_ / 2D;
+            } else
+            {
+                x = x_ - width_ / 2D;
+            }
+            double y = to.y - (to.x - x) * slope;
+            if(Math.abs(y - y_) <= height_ / 2D)
+            {
+                return new DPoint3(x, y, z_);
+            }
+            if(dy > 0.0D)
+            {
+                y = y_ + height_ / 2D;
+            } else
+            {
+                y = y_ - height_ / 2D;
+            }
+            x = to.x - (to.y - y) / slope;
+            return new DPoint3(x, y, z_);
+        } else
+        {
+            return new DPoint3(x_, y_, z_);
+        }
+    }
+
+    public boolean isGroup()
+    {
+        return isGroup_;
+    }
+
+    public boolean isVisible()
+    {
+        if(inActiveGroup_)
+        {
+            return false;
+        } else
+        {
+            return (isGroup_ && !groupActive_) ^ true;
+        }
+    }
+
+    public int nextChild()
+    {
+        return adjacencies_.next();
+    }
+
+    public int numberOfChildren()
+    {
+        return adjacencies_.numberOfElements();
+    }
+
+    private String PSnum_(double num)
+    {
+        if(num > 0.0D)
+        {
+            return String.valueOf(num) + " ";
+        } else
+        {
+            return String.valueOf(-num) + " neg ";
+        }
+    }
+
+    private StringBuffer psString_(String source)
+    {
+        int len = source.length();
+        StringBuffer result = new StringBuffer(len * 2);
+        for(int i = 0; i < len; i++)
+        {
+            char chr = source.charAt(i);
+            if(chr == '(' || chr == ')' || chr == '\\')
+            {
+                result.append('\\');
+            }
+            if(chr >= ' ' && chr < '\200')
+            {
+                result.append(chr);
+            } else
+            {
+                result.append("\\" + (chr >> 6 & 7) + (chr >> 3 & 7) + (chr & 7));
+            }
+        }
+
+        return result;
+    }
+
+    public void saveState()
+    {
+        oldpos_ = new DPoint3(x_, y_, z_);
+        oldbox_ = new DDimension3(width_, height_, depth_);
+    }
+
+    public void scale(double scalex, double scaley, double scalez)
+    {
+        if(oldbox_ == null)
+        {
+            return;
+        } else
+        {
+            width_ = scalex * oldbox_.width;
+            height_ = scaley * oldbox_.height;
+            depth_ = scalez * oldbox_.depth;
+            return;
+        }
+    }
+
+    private void scaleBounds_(Graphics graphics, double scale)
+    {
+        if(labelPosition_ == 1)
+        {
+            FontMetrics fm = graphics.getFontMetrics();
+            double w;
+            double h;
+            if(label_.length > 0)
+            {
+                h = fm.getHeight() * label_.length;
+                w = 0.0D;
+                for(int i = 0; i < label_.length; i++)
+                {
+                    if((double)fm.stringWidth(label_[i]) > w)
+                    {
+                        w = fm.stringWidth(label_[i]);
+                    }
+                }
+
+            } else
+            {
+                h = fm.getHeight();
+                w = fm.stringWidth(new String("Node " + id_));
+            }
+            if(shape_ == 0)
+            {
+                w *= 1.4199999999999999D;
+                h *= 1.4199999999999999D;
+            }
+            w += 6D;
+            h += 6D;
+            width_ = w / scale;
+            height_ = h / scale;
+        }
+    }
+
+    public int searchNextChild(int n)
+    {
+        return adjacencies_.searchNext(n);
+    }
+
+    public void setBoundingBox(double new_width, double new_height)
+    {
+        width_ = new_width;
+        height_ = new_height;
+    }
+
+    public void setBoundingBox(double new_width, double new_height, double new_depth)
+    {
+        width_ = new_width;
+        height_ = new_height;
+        depth_ = new_depth;
+    }
+
+    public void setBoundingBox(DDimension new_bbox)
+    {
+        width_ = new_bbox.width;
+        height_ = new_bbox.height;
+    }
+
+    public void setBoundingBox(DDimension3 new_bbox)
+    {
+        width_ = new_bbox.width;
+        height_ = new_bbox.height;
+        depth_ = new_bbox.depth;
+    }
+
+    public void setChild(int child)
+    {
+        adjacencies_.includeElement(child);
+    }
+
+    public void setGMLvalues(GMLobject gml)
+    {
+        if(temp_ == 0.0D)
+        {
+            gml.setValue("vgj.Temperature", 1, null);
+        } else
+        {
+            gml.setValue("vgj.Temperature", 1, new Double(temp_));
+        }
+        gml.setValue("vgj.shape", 2, shapeNames[shape_]);
+        if(inGroup())
+        {
+            gml.setValue("vgj.group", 0, new Integer(groupNode_.getId()));
+        }
+        if(labelPosition_ == 1)
+        {
+            gml.setValue("vgj.labelPosition", 2, "in");
+        } else
+        if(labelPosition_ == 2)
+        {
+            gml.setValue("vgj.labelPosition", 2, "center");
+        } else
+        {
+            gml.setValue("vgj.labelPosition", 2, "below");
+        }
+        gml.setValue("graphics.depth", 1, new Double(depth_));
+        gml.setValue("graphics.height", 1, new Double(height_));
+        gml.setValue("graphics.width", 1, new Double(width_));
+        gml.setValue("graphics.center.z", 1, new Double(z_));
+        gml.setValue("graphics.center.y", 1, new Double(y_));
+        gml.setValue("graphics.center.x", 1, new Double(x_));
+        gml.setValue("graphics.Image.Location", 2, imageLocation_);
+        gml.setValue("graphics.Image.Type", 2, imageType_);
+        gml.setValue("label", 2, getLabel());
+        gml.setValue("id", 0, new Integer(id_));
+        gml.setValue("data", 3, null);
+        for(Enumeration keys = data_.keys(); keys.hasMoreElements();)
+        {
+            String key = (String)keys.nextElement();
+            String value = (String)data_.get(key);
+            if(value != null && value.length() != 0)
+            {
+                String datakey = "data." + key;
+                gml.setValue(datakey, 2, value);
+            }
+        }
+
+    }
+
+    public void setGroup()
+    {
+        isGroup_ = true;
+    }
+
+    public void setId(int id)
+    {
+        haveId_ = true;
+        id_ = id;
+    }
+
+    public void setImage(Component comp, boolean set_w, boolean set_h)
+    {
+        image_ = null;
+        if(imageLocation_.length() <= 0)
+        {
+            return;
+        }
+        if(toolkit_ != null)
+        {
+            if(imageType_.equalsIgnoreCase("file"))
+            {
+                image_ = toolkit_.getImage(imageLocation_);
+            } else
+            {
+                URL src = null;
+                try
+                {
+                    src = new URL(context_, imageLocation_);
+                }
+                catch(MalformedURLException _ex) { }
+                if(src != null)
+                {
+                    image_ = toolkit_.getImage(src);
+                }
+            }
+            if(comp != null)
+            {
+                MediaTracker mt = new MediaTracker(comp);
+                mt.addImage(image_, 0);
+                boolean stat = false;
+                try
+                {
+                    stat = mt.waitForID(0, 2000L);
+                }
+                catch(Exception _ex) { }
+            }
+            if(set_h)
+            {
+                height_ = -1D;
+                int ht = image_.getHeight(this);
+                if(ht != -1)
+                {
+                    height_ = ht;
+                }
+            }
+            if(set_w)
+            {
+                width_ = -1D;
+                int wd = image_.getWidth(this);
+                if(wd != -1)
+                {
+                    width_ = wd;
+                }
+            }
+        }
+        if(image_ == null)
+        {
+            imageType_ = new String("");
+        }
+    }
+
+    public void setImageSource(String image_source)
+    {
+        imageLocation_ = image_source;
+    }
+
+    public void setImageType(String image_type)
+    {
+        imageType_ = image_type;
+    }
+
+    public void setLabel(String label)
+    {
+        int rows = 0;
+        int llen = label.length();
+        for(int i = 0; i < llen; i++)
+        {
+            if(label.charAt(i) == '\\' && i < llen - 1)
+            {
+                i++;
+                if(label.charAt(i) == 'n')
+                {
+                    rows++;
+                }
+            }
+        }
+
+        if(llen > 0)
+        {
+            rows++;
+        }
+        label_ = new String[rows];
+        if(llen == 0)
+        {
+            return;
+        }
+        int row = 0;
+        int start = 0;
+        for(int i = 0; i <= llen; i++)
+        {
+            if(i == llen || label.charAt(i) == '\\' && i < llen - 1)
+            {
+                if(i == llen || label.charAt(i + 1) == 'n')
+                {
+                    char chars[] = new char[i - start];
+                    int j = start;
+                    int k = 0;
+                    for(; j < i; j++)
+                    {
+                        if(label.charAt(j) != '\\' || j == i - 1)
+                        {
+                            chars[k++] = label.charAt(j);
+                        } else
+                        {
+                            chars[k++] = label.charAt(++j);
+                        }
+                    }
+
+                    label_[row++] = new String(chars, 0, k);
+                    if(i < llen)
+                    {
+                        i++;
+                    }
+                    start = i + 1;
+                }
+                i++;
+            }
+        }
+
+    }
+
+    public void setLabelPosition(String label_position)
+    {
+        if(label_position.length() <= 0)
+        {
+            return;
+        }
+        if(label_position.charAt(0) == 'I')
+        {
+            labelPosition_ = 1;
+        } else
+        if(label_position.charAt(0) == 'C')
+        {
+            labelPosition_ = 2;
+        } else
+        {
+            labelPosition_ = 0;
+        }
+    }
+
+    public void setPosition(double new_x, double new_y)
+    {
+        x_ = new_x;
+        y_ = new_y;
+    }
+
+    public void setPosition(double new_x, double new_y, double new_z)
+    {
+        x_ = new_x;
+        y_ = new_y;
+        z_ = new_z;
+    }
+
+    public void setPosition(DPoint new_position)
+    {
+        x_ = new_position.x;
+        y_ = new_position.y;
+    }
+
+    public void setPosition(DPoint3 new_position)
+    {
+        x_ = new_position.x;
+        y_ = new_position.y;
+        z_ = new_position.z;
+    }
+
+    public void setSelected(boolean selected)
+    {
+        selected_ = selected;
+    }
+
+    public void setShape(int shape)
+    {
+        shape_ = shape;
+    }
+
+    public void setTemp(double temp)
+    {
+        temp_ = temp;
+    }
+
+    public void slide(Matrix44 moveTransform, Matrix44 viewTransform, int xoffs, int yoffs)
+    {
+        if(oldpos_ == null)
+        {
+            return;
+        } else
+        {
+            DPoint3 tmppos = new DPoint3(oldpos_);
+            tmppos.transform(viewTransform);
+            tmppos.x += xoffs;
+            tmppos.y += yoffs;
+            tmppos.transform(moveTransform);
+            x_ = tmppos.x;
+            y_ = tmppos.y;
+            z_ = tmppos.z;
+            return;
+        }
+    }
+
+    public String toPS(Matrix44 transform)
+    {
+        if(!isVisible())
+        {
+            return new String("");
+        }
+        double scale = transform.scale;
+        String result = new String();
+        double w = width_ * scale;
+        double h = height_ * scale;
+        if(w < 1.0D)
+        {
+            w = 1.0D;
+        }
+        if(h < 1.0D)
+        {
+            h = 1.0D;
+        }
+        DPoint3 pos = new DPoint3(x_, y_, z_);
+        pos.transform(transform);
+        if(image_ == null)
+        {
+            if(shape_ == 0)
+            {
+                result = result + PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w) + PSnum_(h) + "ellipse\n";
+                if(isGroup_ && w > 4D && h > 4D)
+                {
+                    result = result + PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w - 4D) + PSnum_(h - 4D) + "ellipse\n";
+                }
+            } else
+            if(shape_ == 1)
+            {
+                result = result + PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w) + PSnum_(h) + "rectangle\n";
+                if(isGroup_ && w > 4D && h > 4D)
+                {
+                    result = result + PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w - 4D) + PSnum_(h - 4D) + "rectangle\n";
+                }
+            }
+        }
+        if(defaultLabel_ || label_.length > 0)
+        {
+            result = result + "[\n";
+            if(label_.length > 0)
+            {
+                for(int i = 0; i < label_.length; i++)
+                {
+                    result = result + "  (" + psString_(label_[i]) + ")\n";
+                }
+
+            } else
+            {
+                result = result + "  (Node " + id_ + ")\n";
+            }
+            result = result + "]\n";
+            if(labelPosition_ == 0)
+            {
+                result = result + PSnum_(pos.x) + PSnum_(pos.y + h / 2D) + "0 label\n";
+            } else
+            if(labelPosition_ == 2)
+            {
+                result = result + PSnum_(pos.x) + PSnum_(pos.y) + "1 label\n";
+            } else
+            {
+                if(shape_ == 0)
+                {
+                    w /= 1.4199999999999999D;
+                    h /= 1.4199999999999999D;
+                }
+                result = result + PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w) + PSnum_(h) + "2 label\n";
+            }
+        }
+        result = result + "\n";
+        return result;
+    }
+
+    public String toPSimage(int number, Matrix44 transform)
+    {
+        if(!isVisible())
+        {
+            return new String("");
+        }
+        double scale = transform.scale;
+        double w = width_ * scale;
+        double h = height_ * scale;
+        if(w < 1.0D)
+        {
+            w = 1.0D;
+        }
+        if(h < 1.0D)
+        {
+            h = 1.0D;
+        }
+        DPoint3 pos = new DPoint3(x_, y_, z_);
+        pos.transform(transform);
+        String result = PSnum_(pos.x) + PSnum_(pos.y) + PSnum_(w) + PSnum_(h) + "image" + number + " vgjimage\n\n";
+        return result;
+    }
+
+    public double getX()
+    {
+        return x_;
+    }
+
+    public double getY()
+    {
+        return y_;
+    }
+
+    public double getHeight(Matrix44 transform)
+    {
+        double scale = transform.scale;
+        double height = (short)(int)(height_ * scale);
+        return height;
+    }
+
+    public double getWidth(Matrix44 transform)
+    {
+        double scale = transform.scale;
+        double width = (short)(int)(width_ * scale);
+        return width;
+    }
+
+    public void drawOval(RandomAccessFile out_, Matrix44 transform, short minx, short miny)
+    {
+        short x = 0;
+        short y = 0;
+        short len = 0;
+        short len2 = 0;
+        short x2 = 0;
+        short y2 = 0;
+        short tx = 0;
+        short ty = 0;
+        short let = 5;
+        String label = null;
+        if(label_.length == 0)
+        {
+            return;
+        }
+        double scale = transform.scale;
+        short width = (short)(int)(width_ * scale);
+        short height = (short)(int)(height_ * scale);
+        if(width < 1)
+        {
+            width = 1;
+        }
+        if(height < 1)
+        {
+            height = 1;
+        }
+        x = (short)(int)((x_ - 0.5D * (double)width) + (double)minx);
+        y = (short)(int)((y_ - 0.5D * (double)height) + (double)miny);
+        boolean test;
+        if(label_.length > 0 && label_.length > 0)
+        {
+            for(int i = 0; i < label_.length; i++)
+            {
+                label = label + label_[i];
+            }
+
+            int lab = label.length();
+            test = label.startsWith("null");
+            if(test)
+            {
+                len2 = (short)(lab - 4);
+            } else
+            {
+                len2 = (short)lab;
+            }
+            len = (short)lab;
+        }
+        x2 = (short)(x + width);
+        y2 = (short)(y + height);
+        test = label.startsWith("nullIn");
+        try
+        {
+            if(shape_ == 0)
+            {
+                out_.writeShort(80);
+            } else
+            if(shape_ == 1)
+            {
+                out_.writeShort(48);
+            } else
+            {
+                out_.writeShort(80);
+            }
+            out_.writeShort(y);
+            out_.writeShort(x);
+            out_.writeShort(y2);
+            out_.writeShort(x2);
+            if((defaultLabel_ || label_.length > 0) && label != "null" && len2 > 0)
+            {
+                out_.writeShort(13);
+                ty = (short)(y + height / 2);
+                tx = (short)(x + width / 2);
+                test = label.startsWith("nullIn");
+                if(test)
+                {
+                    ty += 2;
+                    tx -= 2 + 8 * (len2 / 3);
+                    out_.writeShort(6);
+                    tx += 6;
+                } else
+                if(len2 * 6 < width && height > 20)
+                {
+                    ty += 4;
+                    tx -= let * (len2 / 2);
+                    tx -= 2;
+                    out_.writeShort(12);
+                } else
+                if(len2 * 5 < width && height > 14)
+                {
+                    ty += 3;
+                    tx -= let * (len2 / 2);
+                    out_.writeShort(10);
+                } else
+                if(len2 * 4 < width && height > 10)
+                {
+                    ty += 2;
+                    tx -= 4 * (len2 / 2);
+                    out_.writeShort(8);
+                } else
+                {
+                    ty++;
+                    tx -= 3 * (len2 / 2);
+                    out_.writeShort(6);
+                    tx += 6;
+                }
+                if(len2 > 0)
+                {
+                    drawtext(tx, ty, len, label, out_);
+                }
+            }
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+    }
+
+    public void drawtext(int x1, int y1, int len1, String label, RandomAccessFile out_)
+    {
+        short x = (short)x1;
+        short y = (short)y1;
+        short len = (short)len1;
+        short first = 0;
+        short middle = 0;
+        short letter = 0;
+        int place = 0;
+        int temp1 = 0;
+        try
+        {
+            out_.writeShort(40);
+            out_.writeShort(y);
+            out_.writeShort(x);
+            boolean test = label.startsWith("null");
+            if(test)
+            {
+                first = (short)(len - 4);
+                first <<= 8;
+                place += 4;
+                char let = label.charAt(place);
+                place++;
+                letter = (short)let;
+                first += let;
+            } else
+            {
+                first = len;
+                first <<= 8;
+                char let = label.charAt(place);
+                place++;
+                letter = (short)let;
+                first += let;
+            }
+            out_.writeShort(first);
+            while(place < len) 
+            {
+                char let = label.charAt(place);
+                place++;
+                middle = (short)let;
+                middle <<= 8;
+                if(place != len)
+                {
+                    let = label.charAt(place);
+                    place++;
+                    middle += (short)let;
+                }
+                out_.writeShort(middle);
+            }
+        }
+        catch(IOException f)
+        {
+            f.printStackTrace();
+        }
+    }
+
+    public static final int OVAL = 0;
+    public static final int RECTANGLE = 1;
+    public static final int BELOW = 0;
+    public static final int IN = 1;
+    public static final int CENTER = 2;
+    public static final String shapeNames[] = {
+        "Oval", "Rectangle", null
+    };
+    private static boolean defaultLabel_ = true;
+    private static Toolkit toolkit_ = null;
+    private static URL context_ = null;
+    private static char hexchars_[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
+        'a', 'b', 'c', 'd', 'e', 'f'
+    };
+    public static String defaultDataTypes_[] = {
+        "Frequency", "Weight", "Sequence"
+    };
+    public static Node defaults = new Node(1);
+    private Set adjacencies_;
+    protected double x_;
+    protected double y_;
+    protected double z_;
+    protected DPoint3 oldpos_;
+    protected DPoint3 grouppos_;
+    protected DDimension3 oldbox_;
+    protected DDimension3 groupbox_;
+    private double movingZ_;
+    protected double width_;
+    protected double height_;
+    protected double depth_;
+    private int shape_;
+    private String label_[];
+    private String label2_[];
+    private int labelPosition_;
+    private String imageLocation_;
+    private String imageType_;
+    private Image image_;
+    private double temp_;
+    protected boolean isDummy_;
+    protected int index_;
+    private boolean selected_;
+    protected int id_;
+    protected boolean haveId_;
+    private boolean imageChange_;
+    protected int groupNodeId_;
+    protected Node groupNode_;
+    protected boolean isGroup_;
+    protected boolean groupActive_;
+    protected boolean inActiveGroup_;
+    public Object data;
+    public Hashtable data_;
+
+}

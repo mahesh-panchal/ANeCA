@@ -1,0 +1,209 @@
+// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
+// Jad home page: http://www.kpdus.com/jad.html
+// Decompiler options: packimports(3) braces 
+// Source File Name:   GMLlexer.java
+
+package EDU.auburn.VGJ.graph;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+public class GMLlexer
+{
+
+    public GMLlexer(InputStream streamin)
+    {
+        linenumber_ = 0;
+        nextChar_ = 10;
+        stream_ = streamin;
+    }
+
+    public double getDoubleval()
+    {
+        return doubleval_;
+    }
+
+    public int getLineNumber()
+    {
+        return linenumber_;
+    }
+
+    public String getStringval()
+    {
+        return stringval_;
+    }
+
+    public int getTokenType()
+    {
+        return tokenType_;
+    }
+
+    public int nextToken()
+        throws IOException
+    {
+        skipWhitespace_();
+        if(nextChar_ >= 97 && nextChar_ <= 122 || nextChar_ >= 65 && nextChar_ <= 90)
+        {
+            stringval_ = "";
+            int index = 0;
+            for(; nextChar_ >= 97 && nextChar_ <= 122 || nextChar_ >= 65 && nextChar_ <= 90 || nextChar_ >= 48 && nextChar_ <= 57; nextChar_ = stream_.read())
+            {
+                stringval_ += String.valueOf((char)nextChar_);
+            }
+
+            return tokenType_ = GMLkey;
+        }
+        if(nextChar_ == 45 || nextChar_ >= 48 && nextChar_ <= 57)
+        {
+            double fracval = 0.0D;
+            double expval = 0.0D;
+            double intval = 0.0D;
+            boolean havefrac = false;
+            boolean haveexp = false;
+            boolean isneg = false;
+            boolean expisneg = false;
+            if(nextChar_ == 45)
+            {
+                isneg = true;
+                nextChar_ = stream_.read();
+                boolean _tmp = nextChar_ < 48 || nextChar_ > 57;
+            }
+            for(; nextChar_ >= 48 && nextChar_ <= 57; nextChar_ = stream_.read())
+            {
+                intval = (intval * 10D + (double)nextChar_) - 48D;
+            }
+
+            if(nextChar_ == 46)
+            {
+                havefrac = true;
+                for(nextChar_ = stream_.read(); nextChar_ >= 48 && nextChar_ <= 57; nextChar_ = stream_.read())
+                {
+                    fracval = (fracval + (double)(nextChar_ - 48)) / 10D;
+                }
+
+            }
+            if(nextChar_ == 101 || nextChar_ == 69)
+            {
+                stream_.mark(3);
+                nextChar_ = stream_.read();
+                if(nextChar_ < 48 && nextChar_ > 57 && nextChar_ != 45 && nextChar_ != 43)
+                {
+                    stream_.reset();
+                } else
+                {
+                    if(nextChar_ == 43 || nextChar_ == 45)
+                    {
+                        if(nextChar_ == 45)
+                        {
+                            expisneg = true;
+                        }
+                        nextChar_ = stream_.read();
+                    }
+                    if(nextChar_ < 48 && nextChar_ > 57)
+                    {
+                        stream_.reset();
+                    } else
+                    {
+                        haveexp = true;
+                        for(; nextChar_ >= 48 && nextChar_ <= 57; nextChar_ = stream_.read())
+                        {
+                            expval = expval * 10D + (double)(nextChar_ - 48);
+                        }
+
+                    }
+                }
+            }
+            doubleval_ = intval;
+            if(havefrac)
+            {
+                doubleval_ += fracval;
+            }
+            if(isneg)
+            {
+                doubleval_ = -doubleval_;
+            }
+            if(expisneg)
+            {
+                expval = -expval;
+            }
+            if(haveexp)
+            {
+                doubleval_ *= Math.pow(10D, expval);
+            }
+            if(!havefrac && !haveexp)
+            {
+                return tokenType_ = GMLinteger;
+            } else
+            {
+                return GMLreal;
+            }
+        }
+        if(nextChar_ == 34)
+        {
+            stringval_ = "";
+            for(nextChar_ = stream_.read(); nextChar_ >= 0 && nextChar_ != 34; nextChar_ = stream_.read())
+            {
+                stringval_ += String.valueOf((char)nextChar_);
+            }
+
+            nextChar_ = stream_.read();
+            return tokenType_ = GMLstring;
+        }
+        if(nextChar_ != -1)
+        {
+            int retval = nextChar_;
+            stringval_ = String.valueOf((char)nextChar_);
+            nextChar_ = stream_.read();
+            return tokenType_ = retval;
+        } else
+        {
+            return tokenType_ = GMLeof;
+        }
+    }
+
+    private void skipWhitespace_()
+        throws IOException
+    {
+        while(nextChar_ == 32 || nextChar_ == 9 || nextChar_ == 10 || nextChar_ == 13) 
+        {
+            if(nextChar_ == 10 || nextChar_ == 13)
+            {
+                int chr = nextChar_;
+                linenumber_++;
+                nextChar_ = stream_.read();
+                if(chr == 13 && nextChar_ == 10)
+                {
+                    nextChar_ = stream_.read();
+                }
+                if(nextChar_ == 35)
+                {
+                    for(; nextChar_ != 10 && nextChar_ != 13 && nextChar_ != -1; nextChar_ = stream_.read())
+                    {
+                        chr = nextChar_;
+                    }
+
+                    if(chr == 13 && nextChar_ == 10)
+                    {
+                        nextChar_ = stream_.read();
+                    }
+                }
+            } else
+            {
+                nextChar_ = stream_.read();
+            }
+        }
+    }
+
+    public static int GMLstring = 256;
+    public static int GMLinteger = 257;
+    public static int GMLreal = 258;
+    public static int GMLeof = 259;
+    public static int GMLkey = 260;
+    private InputStream stream_;
+    private int linenumber_;
+    private int nextChar_;
+    private String stringval_;
+    private double doubleval_;
+    private int tokenType_;
+
+}
